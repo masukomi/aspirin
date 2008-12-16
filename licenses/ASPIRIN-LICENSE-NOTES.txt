@@ -1,0 +1,33 @@
+Aspirin is composed of a handful of classes written by 
+Kate Rhodes and two classes that build upon a good number of 
+classes from the Apache James project. As a result Aspirin is 
+also distributed under the Apache 1.1 license. 
+
+The libraries included as jars are distributed under the 
+corresponding licenses included here. For JDom's license see
+the JDom-license.txt file, for JavaMail see the 
+JavaMail-license.txt, etc. 
+
+* activation.jar (JavaBeans Activation Framework)
+	http://java.sun.com
+	Sun Microsystems, Inc. Binary Code License Agreement
+* dnsjava-1.2.3.jar 
+	http://www.xbill.org/dnsjava/
+	BSD License
+* jdom.jar 
+	http://www.jdom.org/
+	Apache Style License
+* junit-3.8.1.jar 
+	http://www.junit.org
+	Common Public License v 1.0
+	http://www.opensource.org/licenses/cpl.php
+* mail_1_3.jar
+	http://java.sun.com 
+	Sun binary code license with JavaMail addendum
+* omt-logging-1.0.10.jar
+	http://tools.masukomi.org 
+	MIT License
+
+Source code should be available at the respective sites. If it isn't 
+please contact Kate Rhodes ( masukomi at masukomi dot org )
+http://www.masukomi.org

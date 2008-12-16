@@ -1,0 +1,70 @@
+# Aspirin, because sending mail shouldn't be a headache. #
+
+## What is it? ##
+
+Aspirin is an embeddable send-only SMTP server for Java developers.
+
+## Why would I want that? ## 
+
+The JavaMail API doesn't really let you send mail. And that's just annoying. Developers shouldn't have to jump through hoops to send an e-mail and requiring your users to correctly configure the settings for their SMTP servers means you have to write configuration screens and hope that your end users know enough about mail systems to correctly configure a connection to their mail server. And then what happens when they try and use your app on a laptop, where the mail server settings keep changing. Talk about headaches.
+
+Aspirin is good for that kind of headache. Just add Aspirin to your app and you'll be able to send mail from any computer with a net connection regardless of their current mail server configuration.
+
+## Where do I get it? ## 
+
+Aspirin can be found on GitHub at [http://github.com/masukomi/aspirin](http://github.com/masukomi/aspirin) Just check it out and run ant to build it. Please read the [RELEASE_NOTES](RELEASE_NOTES.mkdn) before using.
+
+## How do I use it? ##
+
+Using Asprin is pretty simple. All you have to do is generate a standard javax.mail.internet.MimeMessage and then add it to an instance of MailQue via 
+
+	myMailQue.queMail(MimeMessage message)
+
+If you don't want to bother with manually creating the Session and Properties objects needed to generate a MimeMessage just call 
+
+	SimpleMimeMessageGenerator.getNewMimeMessage() 
+
+and it will return you a brand new MimeMessage object ready to be filled with your e-mail.
+
+That's it. Your Mail will be sent.
+
+Want to know if it went through? That's slightly more work.
+
+First you implement 
+	org.masukomi.aspirin.core.MailWatcher
+(see SimpleMailWatcherImpl for an example).
+
+Then you call MailQue.addWatcher(MailWatcher watcher) and give it your watcher. Whenever a mail succeeds or fails it will call the appropriate method in MailWatcher. The MailAddress is the address of the recipient it succeded or failed with. Currently the deliverySuccess method is called once for each recipient.
+
+	public void deliverySuccess(MimeMessage message, MailAddress recipient);
+	public void deliveryFailure(MimeMessage message, MailAddress recipient);
+
+For more details on configuring Aspirin's default settings see the configuration page.
+
+## What License? ##
+
+Aspirin is distributed under the Apache 1.1 license because of its significant incorporation of classes from the Apache James project.
+
+## What are the requirements? ##
+
+Aspirin uses the Commons Logging package. This and other required jars can be found in the lib directory.  Obviously, if you want mail to actually go through, you need a valid net connection.
+
+## Limitations ##
+
+In most cases mail sent from Aspirin will not be accepted by a server implementing SPF mail authorization. This would be the case with ANY smtp server deployed on a user's desktop or any other machine not specified in the DNS record from corresponding to the "from" addresses host name.
+
+Aspirin will not pass SPF authorization because SPF looks up the DNS record for an e-mail's "from" address's host. If the ip address of the computer you're sending from doesn't match any of the appropriate DNS records in that host it will think you're spoofing the from address which is frequently a sign of spam. Unfortunately this rejects a number of valid e-mails too. For more details and a better explanation visit the SPF site.
+
+### What does this mean to you? ### 
+
+If you use aspirin (or any other embeded SMTP server) in an app that's on a user's desktop, with a typical dynamic ip address that most at home users have, their ISPs spam prevention methods will prevent the mail from going out. So, this'll ease your development when running on a server that would be able to send mail from anyway, but sadly not for desktop apps where it would be most helpful (unless you know for a fact that e-mail can be sent directly from an SMTP server on that box).
+
+## Any Notes? ##
+
+Aspirin uses commons logging.
+
+## Who wrote all this stuff? ##
+
+Aspirin is written and maintained by Kate Rhodes masukomi at masukomi dot org.  Any code contributions or suggestions would be greatly appreciated.
+
+Aspirin builds upon the great work of Apache's James team. Aspirin takes some of James' core classes and combines them with a new queing system to make a small SMTP server. 

@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Aspirin - embeddable java smtp server</title>
+</head>
+<body>
+<span style="font-weight: bold;"><img alt="An Aspirin..."
+ src="pill.gif" style="width: 100px; height: 100px;"><big>Aspirin,
+because sending mail shouldn't be a headache. </big><br>
+<br>
+Configuring Aspirin</span><br>
+<div style="margin-left: 40px;">
+<p>Aspirin can be configured three ways. You can set system preferences before it loads. 
+	You can call the setters in org.masukomi.aspirin.code.Configuration. Or, you can do nothing and 
+	accept the defaul settings.  </p>
+<p><b>Setting System Preferences</b><br/>
+	Aspirin uses the following system preferences:
+	</p>
+	<ul>
+		<li>aspirinRetryInterval - the number of milliseconds before a failed e-mail is retried. Default is 5 minutes</li>
+		<li>aspirinDeliverThreads - the number of delivery threads in the thread pool. Default is 3.</li>
+		<li>aspirinPostmaster - the e-mail address of the person to send bounce messages to.</li>
+		<li>aspirinMaxAttempts - the maximum number of times it will try and send a message if it has problems.</li>
+	</ul>
+<p><b>Configuring via setter methods</b><br />
+	See the Javadocs in <tt>org.masukomi.aspirin.core.Configuration</tt>for details on this method.  </p>
+<p><b>Configuring via doing nothing</b><br />
+	See above for the default settings. </p>
+<p><b>Configuring Aspirin's Logging</span><br>
+
+Aspirin uses <a href="http://jakarta.apache.org/commons/logging/">Commons Logging</a>. Please see the "Configuration" section of the 
+Commons Logging <a href="http://jakarta.apache.org/commons/logging/guide.html">User Guide</a> for details. 
+</p>
+<p><b>Classpath Requirements</b><br />
+	mail.jar and activation.jar must be added to the classpath. </p>
+</div>
+</body>
+</html>

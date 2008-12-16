@@ -1,0 +1,15 @@
+## Release notes
+
+### Current version (0.6.7b )
+WARNING CURRENTLY UNTESTED!
+This will be updated. I'm just importing what's currently available.  
+
+Starting with the most recent code at https://aspirin.dev.java.net/
+this version:
+
+* disables the thread pooling (there was a problem with it not quitting without a System.exit()
+* makes MailQue instantiatable so that you can, if you want have multiple queues
+* makes QueManager end it's run as soon as there are no more items waiting to be sent.
+** adding a new item to the MailQue will restart the QueManager if needed. 
+
+

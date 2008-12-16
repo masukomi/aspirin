@@ -1,0 +1,92 @@
+<project name="Aspirin" default="all" basedir=".">
+
+	<property file="build.properties"/>
+	
+	<path id="classpath">
+		<pathelement location="${src}/"/>
+		<fileset dir="${lib}" includes="**/*.jar" />
+	</path>
+	
+	<target name="pre-clean" >
+		<delete dir="${classes}" />
+		<delete dir="${runtime}" />
+		<delete dir="${src}" includes="**/*.class"/>
+	</target>
+	
+	<target name="post-clean" >
+		<delete dir="${classes}" />
+		<delete dir="${src}" includes="**/*.class"/>
+	</target>
+	
+	<target name="prepare" depends="pre-clean">
+		<mkdir dir="${classes}"/>
+		<mkdir dir="${runtime}"/>
+	</target>
+	
+	<target name="compile" depends="prepare">
+		<javac srcdir="${src}" destdir="${classes}" deprecation="on" debug="${debug}">
+			<classpath refid="classpath"/>
+		</javac>
+		<javac srcdir="${test}" destdir="${classes}" deprecation="on" debug="${debug}">
+			<classpath refid="classpath"/>
+		</javac>
+	</target>
+	
+	<target name="jar" depends="compile">
+		<jar jarfile="${runtime}/aspirin.jar" manifest="${manifest}">
+			<fileset dir="${classes}">
+				<include name="**/*"/>
+				<exclude name="**/*.java"/>
+				<!--<exclude name="**/*.properties"/>-->
+				<!--<exclude name="**/*.xml"/>-->
+
+			</fileset>
+			<fileset dir="${src}">
+				<include name="**/*.properties"/>
+                <include name="**/*.xml"/>
+			</fileset>
+			<!--<metainf dir="../config">
+				<include name="**/*"/>
+			</metainf> -->
+		</jar>
+	</target>
+	
+	<target name="assemble" depends="jar">
+		<!-- no lib or docs to copy
+        <copy todir="${runtime}/lib">
+			<fileset dir="${lib}" includes="**/*"/>
+		</copy>
+		
+        <copy todir="${runtime}">
+			<fileset dir="${doc}" includes="**/*"/>
+		</copy>
+        -->
+        <copy todir="${runtime}/lib">
+			<fileset dir="${lib}" includes="**/*"/>
+		</copy>
+		<copy todir="${runtime}/config">
+			<fileset dir="../config" includes="**/*"/>
+		</copy>
+        <!--<copy todir="${runtime}/prefs">
+			<fileset dir="${prefs}">
+                <include name="**/*"/>
+                <exclude name=".source.jam" />
+            </fileset>
+		</copy>-->
+	</target>
+	
+	<target name="src">
+		<jar jarfile="${runtime}/aspirin-src.zip" manifest="${manifest}">
+			<fileset dir="${src}">
+				<include name="**/*.java"/>
+				<include name="**/*.properties"/>
+				<include name="**/*.xml"/>
+				<exclude name="**/*.class"/>
+                <exclude name=".source.jam" />
+			</fileset>
+		</jar>
+	</target>
+	
+	<target name="all" depends="assemble,src,post-clean" />
+	
+</project>
