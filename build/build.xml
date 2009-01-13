@@ -64,9 +64,9 @@
         <copy todir="${runtime}/lib">
 			<fileset dir="${lib}" includes="**/*"/>
 		</copy>
-		<copy todir="${runtime}/config">
+		<!--<copy todir="${runtime}/config">
 			<fileset dir="../config" includes="**/*"/>
-		</copy>
+		</copy>-->
         <!--<copy todir="${runtime}/prefs">
 			<fileset dir="${prefs}">
                 <include name="**/*"/>
