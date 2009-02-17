@@ -520,7 +520,7 @@ public class RemoteDelivery implements Runnable {
 			Record[] records = new Lookup(hostName, Type.MX).run();
 			// Note: alteration here since above may be null
 			recordsColl = records != null ? new Vector(records.length) : new Vector();
-			for (int i = 0; i < recordsColl.size(); i++) { 
+			for (int i = 0; i < records.length; i++) { 
 				// if records was null .size() will be zero causing this to just skip
 				MXRecord mx = (MXRecord) records[i];
 				String targetString = mx.getTarget().toString();
