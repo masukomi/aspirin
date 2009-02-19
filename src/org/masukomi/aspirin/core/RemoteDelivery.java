@@ -71,6 +71,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
@@ -518,6 +519,16 @@ public class RemoteDelivery implements Runnable {
 		Vector recordsColl = null;
 		try {
 			Record[] records = new Lookup(hostName, Type.MX).run();
+
+            // Sort in MX priority (high number is lower priority)
+            if (records!=null)
+                Arrays.sort(records, new Comparator() {
+                    @Override
+                    public int compare(Object arg0, Object arg1) {
+                        return ((MXRecord)arg0).getPriority()-((MXRecord)arg1).getPriority();
+                    }
+                });
+
 			// Note: alteration here since above may be null
 			recordsColl = records != null ? new Vector(records.length) : new Vector();
 			for (int i = 0; i < records.length; i++) { 
