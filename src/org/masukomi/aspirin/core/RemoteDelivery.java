@@ -196,13 +196,16 @@ public class RemoteDelivery implements Runnable {
 				while (i.hasNext()) {
 					try {
 						URLName outgoingMailServer = (URLName) i.next();
-						StringBuffer logMessageBuffer = new StringBuffer(256)
-								.append("Attempting delivery of ").append(
-										mail.getName()).append(" to host ")
-								.append(outgoingMailServer.toString()).append(
-										" to addresses ").append(
-										Arrays.asList(addr));
-						if (log.isDebugEnabled()) {
+						StringBuffer logMessageBuffer = null;
+						if( log.isDebugEnabled() )
+						{
+							logMessageBuffer = new StringBuffer(256)
+								.append("Attempting delivery of ")
+								.append(mail.getName())
+								.append(" to host ")
+								.append(outgoingMailServer.toString())
+								.append(" to addresses ")
+								.append(Arrays.asList(addr));
 							log.debug(logMessageBuffer.toString());
 						}
 						;
