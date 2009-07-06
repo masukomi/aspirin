@@ -534,17 +534,19 @@ public class RemoteDelivery implements Runnable {
 
 			// Note: alteration here since above may be null
 			recordsColl = records != null ? new Vector(records.length) : new Vector();
-			for (int i = 0; i < records.length; i++) { 
-				// if records was null .size() will be zero causing this to just skip
-				MXRecord mx = (MXRecord) records[i];
-				String targetString = mx.getTarget().toString();
-				URLName uName = new URLName(RemoteDelivery.SMTPScheme
-						+ targetString.substring(0, targetString.length() - 1));
-				recordsColl.add(uName);
-				// System.out.println("Host " + uName.getHost() + " has
-				// preference " + mx.getPriority());
+			if( records != null )
+			{
+				for (int i = 0; i < records.length; i++) { 
+					// if records was null .size() will be zero causing this to just skip
+					MXRecord mx = (MXRecord) records[i];
+					String targetString = mx.getTarget().toString();
+					URLName uName = new URLName(RemoteDelivery.SMTPScheme
+							+ targetString.substring(0, targetString.length() - 1));
+					recordsColl.add(uName);
+					// System.out.println("Host " + uName.getHost() + " has
+					// preference " + mx.getPriority());
+				}
 			}
-
 			// No existing MX records can either mean:
 			// 1. the server doesn't do mail because it doesn't exist.
 			// 2. the server doesn't need another host to do its mail.
