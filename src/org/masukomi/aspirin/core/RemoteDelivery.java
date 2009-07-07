@@ -513,27 +513,63 @@ public class RemoteDelivery implements Runnable {
 		}
 	}
 
-	/*
+	/**
+	 * <p>This method gives back the host name(s) where we can send the email.
+	 * </p>
+	 * 
+	 * <p>First time we ask DNS to find MX record(s) of a domain name. If no MX 
+	 * records are found, we check the upper level domains (if exists). At last 
+	 * we try to get the domain A record, because the MX server could be same as 
+	 * the normal domain handler server. If none of these tries are successful, 
+	 * we give back an empty collection.</p>
+	 * 
 	 * Special Thanks to Tim Motika (tmotika at ionami dot com) for 
 	 * his reworking of this method.
+	 * 
+	 * @param hostName We search the associated MX server of this hostname.
+	 * @return Collection of URLName objects. If no MX server found, then it 
+	 * gives back an empty collection.
+	 * 
 	 */
-	public Collection getMXRecordsForHost(String hostName) {
+	public Collection<URLName> getMXRecordsForHost(String hostName) {
 
-		Vector recordsColl = null;
+		Vector<URLName> recordsColl = null;
 		try {
 			Record[] records = new Lookup(hostName, Type.MX).run();
+			
+			/*
+			 * Sometimes we should send an email to a subdomain which does not 
+			 * have own MX record and MX server. At this point we should find an 
+			 * upper level domain and server where we can deliver our email.
+			 *  
+			 * Example: subA.subB.domain.name has not own MX record and 
+			 * subB.domain.name is the mail exchange master of the subA domain 
+			 * too.
+			 */
+			if( records == null || records.length == 0 )
+			{
+				String upperLevelHostName = hostName;
+				while(		records == null &&
+							upperLevelHostName.indexOf(".") != upperLevelHostName.lastIndexOf(".") &&
+							upperLevelHostName.lastIndexOf(".") != -1
+					)
+				{
+					upperLevelHostName = upperLevelHostName.substring(upperLevelHostName.indexOf(".")+1);
+					records = new Lookup(upperLevelHostName, Type.MX).run();
+				}
+			}
 
-            // Sort in MX priority (high number is lower priority)
+            // Sort in MX priority (higher number is lower priority)
             if (records!=null)
-                Arrays.sort(records, new Comparator() {
+                Arrays.sort(records, new Comparator<Record>() {
                     @Override
-                    public int compare(Object arg0, Object arg1) {
+                    public int compare(Record arg0, Record arg1) {
                         return ((MXRecord)arg0).getPriority()-((MXRecord)arg1).getPriority();
                     }
                 });
 
 			// Note: alteration here since above may be null
-			recordsColl = records != null ? new Vector(records.length) : new Vector();
+			recordsColl = records != null ? new Vector<URLName>(records.length) : new Vector<URLName>();
 			if( records != null )
 			{
 				for (int i = 0; i < records.length; i++) { 
