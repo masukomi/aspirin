@@ -25,12 +25,12 @@ package org.masukomi.aspirin.core;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Vector;
 
 import javax.mail.MessagingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.james.core.MailImpl;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
 /**
@@ -38,8 +38,9 @@ import org.apache.mailet.MailAddress;
  * variables to manage it's place in the que and retries.
  * 
  * @author kate rhodes masukomi at masukomi dot org
+ * @version $Id$€€
  */
-public class QuedItem implements Comparable {
+public class QuedItem implements Comparable<QuedItem> {
 	static private Log log = LogFactory.getLog(QuedItem.class);
 	/** A Collection of MailWatchers */
 	//protected Collection watchers;
@@ -93,11 +94,11 @@ public class QuedItem implements Comparable {
 	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
-	public int compareTo(Object o) {
+	public int compareTo(QuedItem qi) {
 		try {
-			if (((QuedItem) o).getNextAttempt() > getNextAttempt()) {
+			if (qi.getNextAttempt() > getNextAttempt()) {
 				return -1;
-			} else if (((QuedItem) o).getNextAttempt() < getNextAttempt()) {
+			} else if (qi.getNextAttempt() < getNextAttempt()) {
 				return 1; // that one should go first
 			}
 			return 0;
@@ -265,4 +266,16 @@ public class QuedItem implements Comparable {
 		return false;
 		
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(QuedItem.class.getSimpleName()).append(" [");
+		sb.append("id=").append(((MailImpl)getMail()).getName()).append("; ");
+		sb.append("status=").append(getStatus()).append("; ");
+		sb.append("]; ");
+		return sb.toString();
+	}
+	
+	
 }
