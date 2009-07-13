@@ -10,7 +10,8 @@ import org.apache.commons.threadpool.ThreadPoolMonitor;
 
 /**
  * @author masukomi (masukomi at masukomi dot org)
- *  
+ * 
+ * @deprecated Use Apache Commons Pool instead
  */
 public class TrackableThreadPool extends DefaultThreadPool implements Runnable {
 	protected int runnablesExecutingCount;
