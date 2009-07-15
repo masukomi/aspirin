@@ -38,7 +38,7 @@ import org.apache.mailet.MailAddress;
  * variables to manage it's place in the que and retries.
  * 
  * @author kate rhodes masukomi at masukomi dot org
- * @version $Id$€€
+ * @version $Id$
  */
 public class QuedItem implements Comparable<QuedItem> {
 	static private Log log = LogFactory.getLog(QuedItem.class);
@@ -132,6 +132,7 @@ public class QuedItem implements Comparable<QuedItem> {
 			
 		}
 		if (isCompleted()) {
+			// TODO Release QuedItem
 			setStatus(COMPLETED);
 			//this will flag it for removal from the que
 		}
@@ -260,11 +261,19 @@ public class QuedItem implements Comparable<QuedItem> {
 			return true;
 		}
 		
-		if (recipientFailures != null && ((Integer)recipientFailures.get(recipient)).intValue() >2) {
+		if (recipientFailures != null && recipientFailures.containsKey(recipient) && ((Integer)recipientFailures.get(recipient)).intValue() >2) {
 			return true;
 		}
 		return false;
 		
+	}
+	
+	public void lock() {
+		this.setStatus(IN_PROCESS);
+	}
+	
+	public void release() {
+		// TODO Implement
 	}
 	
 	@Override
