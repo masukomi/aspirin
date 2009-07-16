@@ -22,16 +22,21 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.masukomi.aspirin.core;
 
-import java.util.Collection;
-
 import javax.mail.internet.MimeMessage;
+
 import org.apache.mailet.MailAddress;
 /**
+ * <p>This is a listener interface. This defines the mail delivery listeners, 
+ * which could get messages if an email is delivered to a recipient (with the 
+ * delivery result) and if an email is delivered to all recipients.</p>
+ * 
  * @author kate rhodes,  masukomi at masukomi dot org
- *
+ * 
+ * @version $Id$
  * 
  */
 public interface MailWatcher {
 	public void deliverySuccess(MailQue que, MimeMessage message, MailAddress recipient);
 	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recipient);
+	public void deliveryFinished(MailQue que, MimeMessage message);
 }

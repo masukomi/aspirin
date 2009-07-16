@@ -8,8 +8,8 @@ package org.masukomi.aspirin.core;
 import java.util.Collection;
 
 import javax.mail.internet.MimeMessage;
+
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.mailet.MailAddress;
 /**
  * @author masukomi
@@ -20,7 +20,7 @@ import org.apache.mailet.MailAddress;
  * sophisticated MailWatcher is capable of. 
  */
 public class SimpleMailWatcherImpl implements MailWatcher {
-	static private Log log = LogFactory.getLog(SimpleMailWatcherImpl.class);
+	static private Log log = Configuration.getInstance().getLog();
 	boolean hasSucceeded = false;
 	boolean hasFailed = false;
 	MimeMessage message;
@@ -101,5 +101,10 @@ public class SimpleMailWatcherImpl implements MailWatcher {
 			lastRecipient = recipient;
 			que.removeWatcher(this);
 		}
+	}
+	@Override
+	public void deliveryFinished(MailQue que, MimeMessage message) {
+		// TODO Auto-generated method stub
+		
 	}
 }

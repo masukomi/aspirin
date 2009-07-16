@@ -5,9 +5,8 @@
  */
 package org.masukomi.aspirin.core;
 
-import java.util.Collection;
-
 import javax.mail.internet.MimeMessage;
+
 import org.apache.mailet.MailAddress;
 /**
  * @author masukomi
@@ -37,6 +36,12 @@ public class TestMailWatcher implements MailWatcher {
 	 */
 	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recepient) {
 		hasFailed=true;
+	}
+
+	@Override
+	public void deliveryFinished(MailQue que, MimeMessage message) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
