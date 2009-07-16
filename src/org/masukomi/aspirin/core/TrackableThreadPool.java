@@ -20,6 +20,7 @@ public class TrackableThreadPool extends DefaultThreadPool implements Runnable {
 	 * @param monitor
 	 * @param numberOfThreads
 	 * @param threadPriority
+	 * Unused
 	 */
 	public TrackableThreadPool(ThreadPoolMonitor monitor, int numberOfThreads,
 			int threadPriority) {
@@ -30,6 +31,7 @@ public class TrackableThreadPool extends DefaultThreadPool implements Runnable {
 	/**
 	 * @param monitor
 	 * @param numberOfThreads
+	 * Unused
 	 */
 	public TrackableThreadPool(ThreadPoolMonitor monitor, int numberOfThreads) {
 		super(monitor, numberOfThreads);
@@ -37,7 +39,7 @@ public class TrackableThreadPool extends DefaultThreadPool implements Runnable {
 	}
 
 	/**
-	 *  
+	 * Unused
 	 */
 	public TrackableThreadPool() {
 		super();
@@ -55,6 +57,7 @@ public class TrackableThreadPool extends DefaultThreadPool implements Runnable {
 	/**
 	 * @param numberOfThreads
 	 * @param threadPriority
+	 * Unused
 	 */
 	public TrackableThreadPool(int numberOfThreads, int threadPriority) {
 		super(numberOfThreads, threadPriority);

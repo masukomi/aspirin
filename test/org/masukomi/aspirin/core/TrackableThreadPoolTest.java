@@ -8,6 +8,7 @@ package org.masukomi.aspirin.core;
 import junit.framework.TestCase;
 
 /**
+ * @deprecated
  * @author masukomi (masukomi at masukomi dot org)
  *
  */
