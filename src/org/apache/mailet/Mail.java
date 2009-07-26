@@ -93,7 +93,7 @@ public interface Mail extends Serializable, Cloneable {
      *
      * @return a Collection of MailAddress objects that are recipients of this message
      */
-    Collection getRecipients();
+    Collection<MailAddress> getRecipients();
 
     /**
      * The sender of the message, as specified by the MAIL FROM header, or internally defined

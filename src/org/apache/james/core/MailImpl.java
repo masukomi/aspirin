@@ -117,7 +117,7 @@ public class MailImpl implements Mail {
 	/**
 	 * The collection of recipients to whom this mail was sent.
 	 */
-	private Collection recipients;
+	private Collection<MailAddress> recipients;
 
 	/**
 	 * The identifier for this mail message
@@ -157,7 +157,7 @@ public class MailImpl implements Mail {
 	 * @param recipients
 	 *            the collection of recipients of this MailImpl
 	 */
-	public MailImpl(String name, MailAddress sender, Collection recipients) {
+	public MailImpl(String name, MailAddress sender, Collection<MailAddress> recipients) {
 		this();
 		this.name = name;
 		this.sender = sender;
@@ -165,8 +165,8 @@ public class MailImpl implements Mail {
 
 		// Copy the recipient list
 		if (recipients != null) {
-			Iterator theIterator = recipients.iterator();
-			this.recipients = new ArrayList();
+			Iterator<MailAddress> theIterator = recipients.iterator();
+			this.recipients = new ArrayList<MailAddress>();
 			while (theIterator.hasNext()) {
 				this.recipients.add(theIterator.next());
 			}
@@ -186,7 +186,7 @@ public class MailImpl implements Mail {
 	 * @param messageIn
 	 *            a stream containing the message source
 	 */
-	public MailImpl(String name, MailAddress sender, Collection recipients,
+	public MailImpl(String name, MailAddress sender, Collection<MailAddress> recipients,
 			InputStream messageIn) throws MessagingException {
 		this(name, sender, recipients);
 		MimeMessageSource source = new MimeMessageInputStreamSource(name,
@@ -208,7 +208,7 @@ public class MailImpl implements Mail {
 	 * @param message
 	 *            the MimeMessage associated with this MailImpl
 	 */
-	public MailImpl(String name, MailAddress sender, Collection recipients,
+	public MailImpl(String name, MailAddress sender, Collection<MailAddress> recipients,
 			MimeMessage message) {
 		this(name, sender, recipients);
 		this.setMessage(message);
@@ -227,7 +227,7 @@ public class MailImpl implements Mail {
 		addresses = message.getFrom();
 		MailAddress sender = new MailAddress(new InternetAddress(addresses[0]
 				.toString()));
-		Collection recipients = new ArrayList();
+		Collection<MailAddress> recipients = new ArrayList<MailAddress>();
 		addresses = message.getRecipients(MimeMessage.RecipientType.TO);
 		if (addresses != null) {
 			for (int i = 0; i < addresses.length; i++) {
@@ -333,7 +333,7 @@ public class MailImpl implements Mail {
 	 * 
 	 * @return the recipients of this MailImpl
 	 */
-	public Collection getRecipients() {
+	public Collection<MailAddress> getRecipients() {
 		return recipients;
 	}
 
@@ -442,7 +442,7 @@ public class MailImpl implements Mail {
 	 * @param recipients
 	 *            the recipients for this MailImpl
 	 */
-	public void setRecipients(Collection recipients) {
+	public void setRecipients(Collection<MailAddress> recipients) {
 		this.recipients = recipients;
 	}
 
@@ -539,7 +539,7 @@ public class MailImpl implements Mail {
 		MimeMessage original = getMessage();
 		MimeMessage reply = (MimeMessage) original.reply(false);
 		reply.setSubject("Re: " + original.getSubject());
-		Collection recipients = new HashSet();
+		Collection<MailAddress> recipients = new HashSet<MailAddress>();
 		recipients.add(getSender());
 		InternetAddress addr[] = { new InternetAddress(getSender().toString()) };
 		reply.setRecipients(Message.RecipientType.TO, addr);
@@ -615,7 +615,7 @@ public class MailImpl implements Mail {
 			throw new IOException("Error parsing sender address: "
 					+ pe.getMessage());
 		}
-		recipients = (Collection) in.readObject();
+		recipients = (Collection<MailAddress>) in.readObject();
 		state = (String) in.readObject();
 		errorMessage = (String) in.readObject();
 		name = (String) in.readObject();
