@@ -7,25 +7,28 @@ package org.masukomi.aspirin.core;
 
 import java.util.Collection;
 
+import javax.mail.URLName;
+
 import junit.framework.TestCase;
-import org.xbill.DNS.*;
 /**
+ * <p>Test of DNS resolving.</p>
+ * 
  * @author masukomi (masukomi at masukomi dot org)
  *
  */
 public class DNSJavaTest extends TestCase {
 
-	public static void main(String[] args) {
-	}
+	public static void main(String[] args) {}
 	
-	public void testDNSLookup(){
-		// test With Three problematic domains. 
+	/**
+	 * DNS test with three problematic domains. 
+	 */
+	public void testDNSLookup() {
 		System.out.println("three problematic domains for MX Record retreival");
-		MailQue que = new MailQue();
 		
-		RemoteDelivery rd = new RemoteDelivery(que, null);
+		RemoteDelivery rd = new RemoteDelivery(new ThreadGroup("tempThreadGroup"));
 		System.out.println("testing gmx.net");
-		Collection mxRecords = rd.getMXRecordsForHost("gmx.net");
+		Collection<URLName> mxRecords = rd.getMXRecordsForHost("gmx.net");
 		assertFalse(mxRecords == null);
 		assertTrue(mxRecords.size() > 0);
 		System.out.println("testing green.ch");

@@ -63,16 +63,13 @@
 //TODO make retries be based on recepients not QuedItems
 package org.masukomi.aspirin.core;
 
-//import org.apache.avalon.framework.component.ComponentException;
-//import org.apache.avalon.framework.component.ComponentManager;
-//import org.apache.avalon.framework.configuration.DefaultConfiguration;
-//import org.apache.james.Constants;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
@@ -88,7 +85,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.commons.pool.ObjectPool;
 import org.apache.james.core.MailImpl;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
@@ -99,16 +96,45 @@ import org.xbill.DNS.TextParseException;
 import org.xbill.DNS.Type;
 
 /**
+ * <p>This thread </p>
+ * 
  * Heavily leverages the RemoteDelivery class from James
  */
-public class RemoteDelivery implements Runnable {
-	static private Log log = LogFactory.getLog(RemoteDelivery.class);
+public class RemoteDelivery extends Thread {
+	
+	private boolean running = false;
+	private Session mailSession = null;
+	private ObjectPool myObjectPool = null;
+	
+	static private Log log = Configuration.getInstance().getLog();
 
 	protected QuedItem qi;
 	protected MailQue que;
 	
 	private static final String SMTPScheme = "smtp://";
 	
+	// TODO This is a temporary constructor, it should be changed
+	public RemoteDelivery(ThreadGroup parentThreadGroup) {
+		super(parentThreadGroup, RemoteDelivery.class.getSimpleName());
+		
+		// Set up default session
+		Properties mailSessionProps = System.getProperties();
+		mailSessionProps.put("mail.smtp.host", Configuration.getInstance().getHostname()); //The SMTP server to connect to.
+		mailSessionProps.put("mail.smtp.localhost", Configuration.getInstance().getHostname()); //Local host name. Defaults to InetAddress.getLocalHost().getHostName(). Should not normally need to be set if your JDK and your name service are configured properly.
+		mailSessionProps.put("mail.mime.charset", Configuration.getInstance().getEncoding()); //The mail.mime.charset System property can be used to specify the default MIME charset to use for encoded words and text parts that don't otherwise specify a charset. Normally, the default MIME charset is derived from the default Java charset, as specified in the file.encoding System property. Most applications will have no need to explicitly set the default MIME charset. In cases where the default MIME charset to be used for mail messages is different than the charset used for files stored on the system, this property should be set.
+		mailSessionProps.put("mail.smtp.connectiontimeout", Configuration.getInstance().getConnectionTimeout()); //Socket connection timeout value in milliseconds. Default is infinite timeout.
+		mailSessionProps.put("mail.smtp.timeout", Configuration.getInstance().getConnectionTimeout()); //Socket I/O timeout value in milliseconds. Default is infinite timeout.
+		mailSession = Session.getInstance(mailSessionProps);
+		// TODO Set communication debug
+		
+	}
+	
+	
+	/**
+	 * @deprecated
+	 * @param que
+	 * @param qi
+	 */
 	public RemoteDelivery(MailQue que, QuedItem qi) {
 		this.que = que;
 		this.qi = qi;
@@ -131,199 +157,206 @@ public class RemoteDelivery implements Runnable {
 	 */
 	private boolean deliver(QuedItem qi, Session session) {
 		MailAddress rcpt = null;
-		try {
-			if (log.isDebugEnabled()) {
-				log
-						.debug("entering RemoteDelivery.deliver(QuedItem qi, Session session)");
-			}
+		try
+		{
+			if( log.isDebugEnabled() )
+				log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Starting mail delivery. qi="+qi);
+			
+			// Get objects required from QuedItem
 			MailImpl mail = (MailImpl) qi.getMail();
 			MimeMessage message = mail.getMessage();
-			// Create an array of the recipients as InternetAddress objects
-			Collection recipients = mail.getRecipients();
-			InternetAddress addr[] = new InternetAddress[recipients.size()];
-			int j = 0;
-			// funky ass look because you can't getElementAt() in a Collection
-			
-			for (Iterator i = recipients.iterator(); i.hasNext(); j++) {
-				MailAddress currentRcpt = (MailAddress) i.next();
-				addr[j] = currentRcpt.toInternetAddress();
-			}
-			if (addr.length <= 0) {
-				if (log.isDebugEnabled()) {
-					log.debug("No recipients specified... returning");
-				}
+			// Get all recipients
+			Collection<MailAddress> recipients = mail.getRecipients();
+//			InternetAddress addr[] = new InternetAddress[recipients.size()];
+//			int j = 0;
+//			// funky ass look because you can't getElementAt() in a Collection
+//			
+//			for (Iterator i = recipients.iterator(); i.hasNext(); j++) {
+//				MailAddress currentRcpt = (MailAddress) i.next();
+//				addr[j] = currentRcpt.toInternetAddress();
+//			}
+			if( recipients.size() <= 0 )
+			{
+				if (log.isDebugEnabled())
+					log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): No recipients specified... returning");
 				return true;
 			}
+			Iterator<MailAddress> it = recipients.iterator();
+			while (it.hasNext()) {
+				rcpt = (MailAddress) it.next();
+				if( !qi.recepientHasBeenHandled(rcpt) )
+					break;
+			}
+			InternetAddress[] addr = new InternetAddress[]{rcpt.toInternetAddress()};
+			
+			// If recipient is null, we could not handle this email
+			if (rcpt == null)
+			{
+				log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): unable to find recipient that handn't already been handled");
+				return false;
+			}
+			String host = rcpt.getHost();
+			// Lookup the possible targets
 			// Figure out which servers to try to send to. This collection
 			// will hold all the possible target servers
-			Collection targetServers = null;
-			Iterator it = recipients.iterator();
-			while (it.hasNext()) {
-				rcpt = (MailAddress) recipients.iterator().next();
-				if (!qi.recepientHasBeenHandled(rcpt)) {
-					break;
-				}
-			}
+			Collection<URLName> targetServers = null;
 			// theoretically it is possible to not hav eone that hasn't been
 			// handled
 			// however that's only if something has gone really wrong.
-			if (rcpt != null) {
-				String host = rcpt.getHost();
-				// Lookup the possible targets
+			try {
+				// targetServers = MXLookup.urlsForHost(host); // farking
+				// unreliable jndi bs
+				targetServers = getMXRecordsForHost(host);
+			} catch (Exception e) {
+				log.error(e);
+			}
+			if (targetServers == null || targetServers.size() == 0) {
+				log.warn(getClass().getSimpleName()+" ("+getName()+").deliver(): No mail server found for: " + host);
+				StringBuffer exceptionBuffer = new StringBuffer(128)
+				.append(
+						"I found no MX record entries for the hostname ")
+						.append(host)
+						.append(
+								".  I cannot determine where to send this message.");
+				return failMessage(qi, rcpt, new MessagingException(
+						exceptionBuffer.toString()), true);
+			} else if (log.isTraceEnabled()) {
+				log.trace(getClass().getSimpleName()+" ("+getName()+").deliver(): "+ targetServers.size() + " servers found for "
+						+ host);
+			}
+			MessagingException lastError = null;
+			Iterator<URLName> i = targetServers.iterator();
+			while (i.hasNext()) {
 				try {
-					// targetServers = MXLookup.urlsForHost(host); // farking
-					// unreliable jndi bs
-					targetServers = getMXRecordsForHost(host);
-				} catch (Exception e) {
-					log.error(e);
-				}
-				if (targetServers == null || targetServers.size() == 0) {
-					log.warn("No mail server found for: " + host);
-					StringBuffer exceptionBuffer = new StringBuffer(128)
-							.append(
-									"I found no MX record entries for the hostname ")
-							.append(host)
-							.append(
-									".  I cannot determine where to send this message.");
-					return failMessage(qi, rcpt, new MessagingException(
-							exceptionBuffer.toString()), true);
-				} else if (log.isTraceEnabled()) {
-					log.trace(targetServers.size() + " servers found for "
-							+ host);
-				}
-				MessagingException lastError = null;
-				Iterator i = targetServers.iterator();
-				while (i.hasNext()) {
+					URLName outgoingMailServer = (URLName) i.next();
+					StringBuffer logMessageBuffer = null;
+					if( log.isDebugEnabled() )
+					{
+						logMessageBuffer = new StringBuffer(256)
+						.append(getClass().getSimpleName()+" ("+getName()+").deliver(): ")
+						.append("Attempting delivery of ")
+						.append(mail.getName())
+						.append(" to host ")
+						.append(outgoingMailServer.toString())
+						.append(" to addresses ")
+						.append(Arrays.asList(addr));
+						log.debug(logMessageBuffer.toString());
+					}
+					;
+					// URLName urlname = new URLName("smtp://"
+					// + outgoingMailServer);
+					Properties props = session.getProperties();
+					if (mail.getSender() == null) {
+						props.put("mail.smtp.from", "<>");
+					} else {
+						String sender = mail.getSender().toString();
+						props.put("mail.smtp.from", sender);
+					}
+					// Many of these properties are only in later JavaMail
+					// versions
+					// "mail.smtp.ehlo" //default true
+					// "mail.smtp.auth" //default false
+					// "mail.smtp.dsn.ret" //default to nothing... appended
+					// as
+					// RET= after MAIL FROM line.
+					// "mail.smtp.dsn.notify" //default to
+					// nothing...appended as
+					// NOTIFY= after RCPT TO line.
+					Transport transport = null;
 					try {
-						URLName outgoingMailServer = (URLName) i.next();
-						StringBuffer logMessageBuffer = null;
-						if( log.isDebugEnabled() )
-						{
-							logMessageBuffer = new StringBuffer(256)
-								.append("Attempting delivery of ")
-								.append(mail.getName())
-								.append(" to host ")
-								.append(outgoingMailServer.toString())
-								.append(" to addresses ")
-								.append(Arrays.asList(addr));
-							log.debug(logMessageBuffer.toString());
-						}
-						;
-						// URLName urlname = new URLName("smtp://"
-						// + outgoingMailServer);
-						Properties props = session.getProperties();
-						if (mail.getSender() == null) {
-							props.put("mail.smtp.from", "<>");
-						} else {
-							String sender = mail.getSender().toString();
-							props.put("mail.smtp.from", sender);
-						}
-						// Many of these properties are only in later JavaMail
-						// versions
-						// "mail.smtp.ehlo" //default true
-						// "mail.smtp.auth" //default false
-						// "mail.smtp.dsn.ret" //default to nothing... appended
-						// as
-						// RET= after MAIL FROM line.
-						// "mail.smtp.dsn.notify" //default to
-						// nothing...appended as
-						// NOTIFY= after RCPT TO line.
-						Transport transport = null;
+						transport = session.getTransport(outgoingMailServer);
 						try {
-							transport = session
-									.getTransport(outgoingMailServer);
-							try {
-								transport.connect();
-							} catch (MessagingException me) {
-								log.error(me);
-								// Any error on connect should cause the mailet
-								// to
-								// attempt
-								// to connect to the next SMTP server associated
-								// with this MX record,
-								// assuming the number of retries hasn't been
-								// exceeded.
-								if (failMessage(qi, rcpt, me, false)) {
-									return true;
-								} else {
-									continue;
-								}
+							transport.connect();
+						} catch (MessagingException me) {
+							log.error(me);
+							// Any error on connect should cause the mailet
+							// to
+							// attempt
+							// to connect to the next SMTP server associated
+							// with this MX record,
+							// assuming the number of retries hasn't been
+							// exceeded.
+							if (failMessage(qi, rcpt, me, false)) {
+								return true;
+							} else {
+								continue;
 							}
-							transport.sendMessage(message, addr);
-							// log.debug("message sent to " +addr);
+						}
+						transport.sendMessage(message, addr);
+						// log.debug("message sent to " +addr);
 						/*TODO: catch failures that should result 
 						 * in failure with no retries
 						 } catch (SendFailedException sfe){
 							qi.failForRecipient(que, );
-							*/
-						} finally {
-							if (transport != null) {
-								transport.close();
-								transport = null;
-							}
+						 */
+					} finally {
+						if (transport != null) {
+							transport.close();
+							transport = null;
 						}
-						logMessageBuffer = new StringBuffer(256).append(
-								"Mail (").append(mail.getName()).append(
-								") sent successfully to ").append(
-								outgoingMailServer);
-						log.debug(logMessageBuffer.toString());
-						qi.succeededForRecipient(que, rcpt);
-						return true;
-					} catch (MessagingException me) {
-						log.error(me);
-						// MessagingException are horribly difficult to figure
-						// out
-						// what actually happened.
-						StringBuffer exceptionBuffer = new StringBuffer(256)
-								.append("Exception delivering message (")
-								.append(mail.getName()).append(") - ").append(
-										me.getMessage());
-						log.warn(exceptionBuffer.toString());
-						if ((me.getNextException() != null)
-								&& (me.getNextException() instanceof java.io.IOException)) {
-							// This is more than likely a temporary failure
-							// If it's an IO exception with no nested exception,
-							// it's probably
-							// some socket or weird I/O related problem.
-							lastError = me;
-							continue;
-						}
-						// This was not a connection or I/O error particular to
-						// one
-						// SMTP server of an MX set. Instead, it is almost
-						// certainly
-						// a protocol level error. In this case we assume that
-						// this
-						// is an error we'd encounter with any of the SMTP
-						// servers
-						// associated with this MX record, and we pass the
-						// exception
-						// to the code in the outer block that determines its
-						// severity.
-						throw me;
-					} // end catch
-				} // end while
-				// If we encountered an exception while looping through,
-				// throw the last MessagingException we caught. We only
-				// do this if we were unable to send the message to any
-				// server. If sending eventually succeeded, we exit
-				// deliver() though the return at the end of the try
-				// block.
-				if (lastError != null) {
-					throw lastError;
-				}
-			} // END if (rcpt != null)
-			else {
-				log
-						.error("unable to find recipient that handn't already been handled");
+					}
+					logMessageBuffer = new StringBuffer(256).append(
+					"Mail (").append(mail.getName()).append(
+					") sent successfully to ").append(
+							outgoingMailServer);
+					log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): "+logMessageBuffer.toString());
+					qi.succeededForRecipient(que, rcpt);
+					return true;
+				} catch (MessagingException me) {
+					log.error(me);
+					// MessagingException are horribly difficult to figure
+					// out
+					// what actually happened.
+					StringBuffer exceptionBuffer = new StringBuffer(256)
+					.append("Exception delivering message (")
+					.append(mail.getName()).append(") - ").append(
+							me.getMessage());
+					log.warn(exceptionBuffer.toString());
+					if ((me.getNextException() != null)
+							&& (me.getNextException() instanceof java.io.IOException)) {
+						// This is more than likely a temporary failure
+						// If it's an IO exception with no nested exception,
+						// it's probably
+						// some socket or weird I/O related problem.
+						lastError = me;
+						continue;
+					}
+					// This was not a connection or I/O error particular to
+					// one
+					// SMTP server of an MX set. Instead, it is almost
+					// certainly
+					// a protocol level error. In this case we assume that
+					// this
+					// is an error we'd encounter with any of the SMTP
+					// servers
+					// associated with this MX record, and we pass the
+					// exception
+					// to the code in the outer block that determines its
+					// severity.
+					throw me;
+				} // end catch
+			} // end while
+			// If we encountered an exception while looping through,
+			// throw the last MessagingException we caught. We only
+			// do this if we were unable to send the message to any
+			// server. If sending eventually succeeded, we exit
+			// deliver() though the return at the end of the try
+			// block.
+			if (lastError != null) {
+				throw lastError;
 			}
+//			} // END if (rcpt != null)
+//			else {
+//				log
+//						.error("unable to find recipient that handn't already been handled");
+//			}
 		} catch (SendFailedException sfe) {
 			log.error(sfe);
 			boolean deleteMessage = false;
-			Collection recipients = qi.getMail().getRecipients();
+			Collection<MailAddress> recipients = qi.getMail().getRecipients();
 			// Would like to log all the types of email addresses
 			if (log.isDebugEnabled()) {
-				log.debug("Recipients: " + recipients);
+				log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Recipients: " + recipients);
 			}
 			/*
 			 * The rest of the recipients failed for one reason or another.
@@ -346,10 +379,21 @@ public class RemoteDelivery implements Runnable {
 			if (sfe.getInvalidAddresses() != null) {
 				Address[] address = sfe.getInvalidAddresses();
 				if (address.length > 0) {
-					recipients.clear();
+					/*
+					 * This clear() call modify the original recipient object.  
+					 * After this clear the mail recipient cout is changed, and 
+					 * the isCompleted() method of QuedItem gives back wrong 
+					 * result, because it get not the original count of 
+					 * recipients. So I comment this clearing and replace 
+					 * collection with a new one.
+					 * 
+					 * TODO We need this part?
+					 */
+//					recipients.clear();
+					Collection<MailAddress> invalidRecipients = new HashSet<MailAddress>();
 					for (int i = 0; i < address.length; i++) {
 						try {
-							recipients.add(new MailAddress(address[i]
+							invalidRecipients.add(new MailAddress(address[i]
 									.toString()));
 						} catch (ParseException pe) {
 							// this should never happen ... we should have
@@ -362,7 +406,7 @@ public class RemoteDelivery implements Runnable {
 						}
 					}
 					if (log.isDebugEnabled()) {
-						log.debug("Invalid recipients: " + recipients);
+						log.debug("Invalid recipients: " + invalidRecipients);
 					}
 					deleteMessage = failMessage(qi, rcpt, sfe, true);
 				}
@@ -370,10 +414,21 @@ public class RemoteDelivery implements Runnable {
 			if (sfe.getValidUnsentAddresses() != null) {
 				Address[] address = sfe.getValidUnsentAddresses();
 				if (address.length > 0) {
-					recipients.clear();
+					/*
+					 * This clear() call modify the original recipient object.  
+					 * After this clear the mail recipient cout is changed, and 
+					 * the isCompleted() method of QuedItem gives back wrong 
+					 * result, because it get not the original count of 
+					 * recipients. So I comment this clearing and replace 
+					 * collection with a new one.
+					 * 
+					 * TODO We need this part?
+					 */
+//					recipients.clear();
+					Collection<MailAddress> validUnsentRecipients = new HashSet<MailAddress>();
 					for (int i = 0; i < address.length; i++) {
 						try {
-							recipients.add(new MailAddress(address[i]
+							validUnsentRecipients.add(new MailAddress(address[i]
 									.toString()));
 						} catch (ParseException pe) {
 							// this should never happen ... we should have
@@ -387,7 +442,7 @@ public class RemoteDelivery implements Runnable {
 						}
 					}
 					if (log.isDebugEnabled()) {
-						log.debug("Unsent recipients: " + recipients);
+						log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Unsent recipients: " + validUnsentRecipients);
 					}
 					deleteMessage = failMessage(qi, rcpt, sfe, false);
 				}
@@ -435,7 +490,7 @@ public class RemoteDelivery implements Runnable {
 	private boolean failMessage(QuedItem qi, MailAddress recepient,
 			MessagingException ex, boolean permanent) {
 		log
-				.debug("entering failMessage(QuedItem qi, MessagingException ex, boolean permanent)");
+				.debug(getClass().getSimpleName()+" ("+getName()+").failMessage(): Method called. qi="+qi);
 		// weird printy bits inherited from JAMES
 		MailImpl mail = (MailImpl) qi.getMail();
 		StringWriter sout = new StringWriter();
@@ -466,10 +521,14 @@ public class RemoteDelivery implements Runnable {
 				mail.setLastUpdated(new Date());
 			}
 			if (qi.retryable(recepient)) {
-				logBuffer = new StringBuffer(128).append("Storing message ")
-						.append(mail.getName()).append(" into que after ")
-						.append(qi.getNumAttempts()).append(" attempts");
 				if (log.isDebugEnabled()) {
+					logBuffer = new StringBuffer(128)
+						.append("Storing message ")
+						.append(mail.getName())
+						.append(" into que after ")
+						.append(qi.getNumAttempts())
+						.append(" attempts")
+					;
 					log.debug(logBuffer.toString());
 				}
 				qi.retry(que, recepient);
@@ -477,10 +536,14 @@ public class RemoteDelivery implements Runnable {
 				mail.setLastUpdated(new Date());
 				return false;
 			} else {
-				logBuffer = new StringBuffer(128).append("Bouncing message ")
-						.append(mail.getName()).append(" after ").append(
-								qi.getNumAttempts()).append(" attempts");
 				if (log.isDebugEnabled()) {
+					logBuffer = new StringBuffer(128)
+						.append("Bouncing message ")
+						.append(mail.getName())
+						.append(" after ")
+						.append(qi.getNumAttempts())
+						.append(" attempts")
+					;
 					log.debug(logBuffer.toString());
 				}
 				qi.failForRecipient(que, recepient);
@@ -488,29 +551,133 @@ public class RemoteDelivery implements Runnable {
 		} else {
 			qi.failForRecipient(que, recepient);
 		}
-		try {
-			Bouncer.bounce(que, mail, ex.toString(), Configuration.getInstance()
-					.getPostmaster());
-		} catch (MessagingException me) {
-			log.debug("failed to bounce");
-			log.error(me);
+		try
+		{
+			Bouncer.bounce(que, mail, ex.toString(), Configuration.getInstance().getPostmaster());
+		}catch (MessagingException me)
+		{
+			log.error(getClass().getSimpleName()+" ("+getName()+").run(): failed to bounce",me);
 		}
 		return true;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Runnable#run()
-	 */
+	@Override
 	public void run() {
-		try {
-			Session session = Session.getInstance(System.getProperties(), null);
-			deliver(qi, session);
-		} catch (Exception e) {
-			log.error(e);
-			throw new RuntimeException(e);
+		running = true;
+		
+		while( running )
+		{
+			// Try to deliver the QuedItem
+			try
+			{
+				if( qi != null )
+				{
+					log.trace(getClass().getSimpleName()+" ("+getName()+").run(): Call delivering... qi="+qi);
+					deliver(qi, mailSession);
+				}
+			}catch (Exception e)
+			{
+				log.error(getClass().getSimpleName()+" ("+getName()+").run(): Could not deliver message. qi="+qi, e);
+			}finally
+			/*
+			 * Sometimes it could be a QuedItem is in the qi variable with 
+			 * IN_PROCESS status. This QuedItem have to be released before we 
+			 * finish this round of running. After releasing the qi variable 
+			 * will be nullified.
+			 */
+			{
+				if( qi != null && !qi.isReadyToSend() )
+				{
+					qi.release();
+					log.trace(getClass().getSimpleName()+" ("+getName()+").run(): Release item. qi="+qi);
+					qi = null;
+				}
+			}
+			synchronized (this) {
+				if( qi == null )
+				{
+					try
+					{
+						log.info(getClass().getSimpleName()+" ("+getName()+").run(): Try to give back RemoteDelivery object into the pool.");
+						myObjectPool.returnObject(this);
+					}catch (Exception e)
+					{
+						this.shutdown();
+						log.error(getClass().getSimpleName()+" ("+getName()+").run(): The object could not be returned into the pool.",e);
+					}
+					// Wait for next QuedItem to deliver 
+					try
+					{
+						log.trace(getClass().getSimpleName()+" ("+getName()+").run(): Wait for next sendable item.");
+						wait();
+					} catch (InterruptedException ie)
+					/*
+					 * On interrupt we shutdown this thread and remove from 
+					 * pool. It could be a QuedItem in the qi variable, so we 
+					 * try to release it before finish the work.
+					 */
+					{
+						if( qi != null )
+						{
+							log.trace(getClass().getSimpleName()+" ("+getName()+").run(): Release item after interruption. qi="+qi);
+							qi.release();
+							qi = null;
+						}
+						running = false;
+						try
+						{
+							log.info(getClass().getSimpleName()+" ("+getName()+").run(): Invalidate RemoteDelivery object in the pool.");
+							myObjectPool.invalidateObject(this);
+						}catch (Exception e)
+						{
+							throw new RuntimeException("The object could not be invalidated in the pool.",e);
+						}
+					}
+				}
+			}
 		}
+	}
+	
+	/**
+	 * <p>You can set the next QuedItem to deliver with this method. It wakes 
+	 * up this delivery thread which try to deliver the QuedItem set.</p>
+	 * 
+	 * @param qi A QuedItem to deliver.
+	 * @throws MessagingException This is thrown if the previous qi is not 
+	 * null.
+	 */
+	public void setQuedItem(QuedItem qi) throws MessagingException {
+		/*
+		 * If the this.qi variable is not null, then the previous item could be 
+		 * in. If the previous item is not ready to send and is not completed, 
+		 * we have to try send this item with this thread. After wake up this 
+		 * thread we throw an Exception.
+		 */
+		synchronized (this) {
+			if( this.qi != null )
+			{
+				if( !this.qi.isReadyToSend() && !this.qi.isCompleted() )
+					notify();
+				throw new MessagingException("The previous QuedItem was not removed from this thread.");
+			}
+			this.qi = qi;
+			log.trace(getName()+".setQuedItem(): Item was set. qi="+qi);
+			notify();
+		}
+	}
+	
+	/**
+	 * <p>This method sets the parent pool, which this thread is given back
+	 * into after finishing delivery.</p>
+	 * 
+	 * @param pool The pool which this thread is borrowed from.
+	 */
+	public void setParentPool(ObjectPool pool) {
+		this.myObjectPool = pool;
+	}
+	
+	public void setQue(MailQue que) {
+		this.que = que;
 	}
 
 	/**
@@ -520,8 +687,10 @@ public class RemoteDelivery implements Runnable {
 	 * <p>First time we ask DNS to find MX record(s) of a domain name. If no MX 
 	 * records are found, we check the upper level domains (if exists). At last 
 	 * we try to get the domain A record, because the MX server could be same as 
-	 * the normal domain handler server. If none of these tries are successful, 
-	 * we give back an empty collection.</p>
+	 * the normal domain handler server. If only upper level domain has MX 
+	 * record then we append the A record of original hostname (if exists) as 
+	 * first element of record collection. If none of these tries are 
+	 * successful, we give back an empty collection.</p>
 	 * 
 	 * Special Thanks to Tim Motika (tmotika at ionami dot com) for 
 	 * his reworking of this method.
@@ -530,11 +699,14 @@ public class RemoteDelivery implements Runnable {
 	 * @return Collection of URLName objects. If no MX server found, then it 
 	 * gives back an empty collection.
 	 * 
+	 * TODO public -> private
+	 * 
 	 */
 	public Collection<URLName> getMXRecordsForHost(String hostName) {
 
 		Vector<URLName> recordsColl = null;
 		try {
+			boolean foundOriginalMX = true;
 			Record[] records = new Lookup(hostName, Type.MX).run();
 			
 			/*
@@ -548,6 +720,7 @@ public class RemoteDelivery implements Runnable {
 			 */
 			if( records == null || records.length == 0 )
 			{
+				foundOriginalMX = false;
 				String upperLevelHostName = hostName;
 				while(		records == null &&
 							upperLevelHostName.indexOf(".") != upperLevelHostName.lastIndexOf(".") &&
@@ -559,48 +732,65 @@ public class RemoteDelivery implements Runnable {
 				}
 			}
 
-            // Sort in MX priority (higher number is lower priority)
-            if (records!=null)
+            if( records != null )
+            {
+            	// Sort in MX priority (higher number is lower priority)
                 Arrays.sort(records, new Comparator<Record>() {
                     @Override
                     public int compare(Record arg0, Record arg1) {
                         return ((MXRecord)arg0).getPriority()-((MXRecord)arg1).getPriority();
                     }
                 });
-
-			// Note: alteration here since above may be null
-			recordsColl = records != null ? new Vector<URLName>(records.length) : new Vector<URLName>();
-			if( records != null )
-			{
-				for (int i = 0; i < records.length; i++) { 
-					// if records was null .size() will be zero causing this to just skip
+                // Create records collection
+                recordsColl = new Vector<URLName>(records.length);
+                for (int i = 0; i < records.length; i++)
+				{ 
 					MXRecord mx = (MXRecord) records[i];
 					String targetString = mx.getTarget().toString();
-					URLName uName = new URLName(RemoteDelivery.SMTPScheme
-							+ targetString.substring(0, targetString.length() - 1));
+					URLName uName = new URLName(
+							RemoteDelivery.SMTPScheme +
+							targetString.substring(0, targetString.length() - 1)
+					);
 					recordsColl.add(uName);
-					// System.out.println("Host " + uName.getHost() + " has
-					// preference " + mx.getPriority());
 				}
-			}
-			// No existing MX records can either mean:
-			// 1. the server doesn't do mail because it doesn't exist.
-			// 2. the server doesn't need another host to do its mail.
-			// If the server resolves, assume it does its own mail.
-			if (recordsColl.size() <= 0) {
+            }else
+            {
+            	foundOriginalMX = false;
+            	recordsColl = new Vector<URLName>();
+            }
+            
+            /*
+             * If we found no MX record for the original hostname (the upper 
+             * level domains does not matter), then we add the original domain 
+             * name (identified with an A record) to the record collection, 
+             * because the mail exchange server could be the main server too.
+			 * 
+			 * We append the A record to the first place of the record 
+			 * collection, because the standard says if no MX record found then 
+			 * we should to try send email to the server identified by the A 
+			 * record.
+             */
+			if( !foundOriginalMX )
+			{
 				Record[] recordsTypeA = new Lookup(hostName, Type.A).run();
-
-				if (recordsTypeA != null && recordsTypeA.length > 0) {
-					recordsColl.addElement(new URLName(
-							RemoteDelivery.SMTPScheme + hostName));
+				if (recordsTypeA != null && recordsTypeA.length > 0)
+				{
+					recordsColl.add(0, new URLName(RemoteDelivery.SMTPScheme + hostName));
 				}
 			}
 
 		} catch (TextParseException e) {
-			log.warn(e);
+			log.warn("",e);
 		}
 
 		return recordsColl;
+	}
+	
+	public void shutdown() {
+		running = false;
+		synchronized (this) {
+			notify();
+		}
 	}
 
 }

@@ -22,28 +22,37 @@
  * SOFTWARE.
  */
 package org.masukomi.aspirin.core;
-import java.io.File;
-import java.util.prefs.BackingStoreException;
-import java.util.Vector;
 import javax.mail.internet.ParseException;
-import org.apache.mailet.MailAddress;
-//import org.masukomi.prefs.XMLPreferences;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-//import org.masukomi.tools.logging.Logs;
+import org.apache.mailet.MailAddress;
+
 /**
+ * <p>This class represents the configuration of Aspirin. You can configure this 
+ * software two ways
+ * 
+ * 
  * @author Kate Rhodes masukomi at masukomi dot org
+ * @version $Id$
  */
 public class Configuration {
-	//static protected long retryInterval = 21600000; // 6 hours default
-	static private Log log = LogFactory.getLog(Configuration.class);
+//	static protected long retryInterval = 21600000; // 6 hours default
+	// TODO set log name dinamically
+	private static Log log = LogFactory.getLog("MailService");
 	protected MailAddress postmaster;
 	//private XMLPreferences prefs;
 	static private Configuration instance;
-	private long retryInterval = -1;
-	private int deliveryThreads;
-	private int maxAttempts;
-
+	private long retryInterval = 300000;
+	private int deliveryThreads = 3;
+	private int maxAttempts = 3;
+	private int connectionTimeout = 30000; // in milliseconds
+	private String encoding = "UTF-8";
+	private String loggerName = "Aspirin";
+	private String logPrefix = "Aspirin ";
+	
+	private String hostname = "localhost";
+	private boolean debugCommunication = false;
 
 	static public Configuration getInstance() {
 		if (instance == null) {
@@ -51,22 +60,18 @@ public class Configuration {
 		}
 		return instance;
 	}
+	
 	/**
 	 *  
 	 */
 	private Configuration() {
-		super();
 		if (System.getProperty("aspirinRetryInterval") != null) {
 			retryInterval = Long.parseLong(System
 					.getProperty("aspirinRetryInterval"));
-		} else {
-			retryInterval = 300000;
 		}
 		if (System.getProperty("aspirinDeliverThreads") != null) {
 			deliveryThreads = Integer.parseInt(System
 					.getProperty("aspirinDeliverThreads"));
-		} else {
-			deliveryThreads = 3;
 		}
 		if (System.getProperty("aspirinPostmaster") != null) {
 			try {
@@ -76,16 +81,20 @@ public class Configuration {
 				log.error(e);
 				throw new RuntimeException(e);
 			} 
-		} else {
-			deliveryThreads = 3;
 		}
 		if (System.getProperty("aspirinMaxAttempts") != null) {
 			maxAttempts = Integer.parseInt(System
 					.getProperty("aspirinMaxAttempts"));
-		} else {
-			maxAttempts = 3;
 		}
-
+		
+		if( System.getProperty("aspirinHostname") != null )
+		{
+			hostname = System.getProperty("aspirinHostname");
+		}else
+		if( System.getProperty("mail.smtp.host") != null )
+		{
+			hostname = System.getProperty("mail.smtp.host");
+		}
 		
 	}
 	/**
@@ -147,6 +156,40 @@ public class Configuration {
 	}
 	public void setMaxAttempts(int maxAttempts) {
 		this.maxAttempts = maxAttempts;
+	}
+	public Log getLog() {
+		return log;
+	}
+	
+		public String getHostname() {
+		return hostname;
+	}
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
+	}
+	public boolean isDebugCommunication() {
+		return debugCommunication;
+	}
+	public void setDebugCommunication(boolean debugCommunication) {
+		this.debugCommunication = debugCommunication;
+	}
+	public String getEncoding() {
+		return encoding;
+	}
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
+	}
+	public String getLogPrefix() {
+		return logPrefix;
+	}
+	public void setLogPrefix(String logPrefix) {
+		this.logPrefix = logPrefix+" ";
+	}
+	public int getConnectionTimeout() {
+		return connectionTimeout;
+	}
+	public void setConnectionTimeout(int connectionTimeout) {
+		this.connectionTimeout = connectionTimeout;
 	}
 
 }

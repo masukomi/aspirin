@@ -29,7 +29,6 @@ import java.util.Iterator;
 import javax.mail.MessagingException;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.james.core.MailImpl;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
@@ -38,10 +37,12 @@ import org.apache.mailet.MailAddress;
  * variables to manage it's place in the que and retries.
  * 
  * @author kate rhodes masukomi at masukomi dot org
+ * 
  * @version $Id$
+ * 
  */
 public class QuedItem implements Comparable<QuedItem> {
-	static private Log log = LogFactory.getLog(QuedItem.class);
+	static private Log log = Configuration.getInstance().getLog();
 	/** A Collection of MailWatchers */
 	//protected Collection watchers;
 	/** The mail to be sent */
@@ -49,10 +50,10 @@ public class QuedItem implements Comparable<QuedItem> {
 
 	/** DOCUMENT ME! */
 	protected long nextAttempt;
-	static public int IN_QUE = 0;
-	static public int IN_PROCESS = 1;
-	static public int COMPLETED = 3;
-	protected int status = 0;
+	private static final int IN_QUE = 0;
+	private static final int IN_PROCESS = 1;
+	private static final int COMPLETED = 3;
+	protected Integer status = IN_QUE;
 	protected HashMap<MailAddress, Integer> recipientFailures;
 	protected HashMap<MailAddress, Integer> recipientSuccesses;
 	protected int numSuccesses;
@@ -60,7 +61,7 @@ public class QuedItem implements Comparable<QuedItem> {
 	/**
 	 *  
 	 */
-	public QuedItem(Mail mail) {
+	public QuedItem(Mail mail, MailQue que) {
 		this.mail = mail;
 		//this.watchers = listeners;
 		nextAttempt = System.currentTimeMillis();
@@ -94,15 +95,22 @@ public class QuedItem implements Comparable<QuedItem> {
 	 * 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
+	@Override
 	public int compareTo(QuedItem qi) {
-		try {
-			if (qi.getNextAttempt() > getNextAttempt()) {
+		try
+		{
+			// return (int)Math.signum(getNextAttempt() - qi.getNextAttempt());
+			if (qi.getNextAttempt() > getNextAttempt())
+			{
 				return -1;
-			} else if (qi.getNextAttempt() < getNextAttempt()) {
+			}else
+			if (qi.getNextAttempt() < getNextAttempt())
+			{
 				return 1; // that one should go first
 			}
 			return 0;
-		} catch (ClassCastException cce) {
+		}catch (ClassCastException cce)
+		{
 			return 0;
 		}
 	}
@@ -122,6 +130,8 @@ public class QuedItem implements Comparable<QuedItem> {
 			for (MailWatcher watcher : que.getListeners()){
 				try {
 					watcher.deliveryFailure(que, getMail().getMessage(), recipient);
+					if( isCompleted() )
+						watcher.deliveryFinished(que, getMail().getMessage());
 				} catch (MessagingException e) {
 					log.error(e);
 				}
@@ -131,11 +141,13 @@ public class QuedItem implements Comparable<QuedItem> {
 			// one recipient it doesn't mean the message is done sending
 			
 		}
-		if (isCompleted()) {
-			// TODO Release QuedItem
-			setStatus(COMPLETED);
-			//this will flag it for removal from the que
-		}
+		// It will be released after processing
+//		release();
+//		if (isCompleted()) {
+//			
+//			setStatus(COMPLETED);
+//			//this will flag it for removal from the que
+//		}
 	}
 	/**
 	 * DOCUMENT ME!
@@ -156,7 +168,9 @@ public class QuedItem implements Comparable<QuedItem> {
 			
 			nextAttempt = System.currentTimeMillis()
 					+ Configuration.getInstance().getRetryInterval();
-			setStatus(QuedItem.IN_QUE);
+			// It will be released after processing
+//			release();
+//			setStatus(QuedItem.IN_QUE);
 			if (log.isTraceEnabled()) {
 				log.trace("will retry message at "
 						+ new Date(nextAttempt).toString());
@@ -171,18 +185,36 @@ public class QuedItem implements Comparable<QuedItem> {
 			}
 		}
 	}
-	/**
-	 * @param i
-	 */
-	public void setStatus(int i) {
-		status = i;
+//	/**
+//	 * @param i
+//	 */
+//	public void setStatus(int i) {
+//		status = i;
+//	}
+	
+	public void lock() {
+		synchronized (status) {
+			status = IN_PROCESS;
+		}
 	}
+	
+	public void release() {
+		synchronized (status) {
+			log.debug(getClass().getSimpleName()+".release(): Item released.");
+			if( isCompleted() )
+				status = COMPLETED;
+			else
+				status = IN_QUE;
+			log.trace(getClass().getSimpleName()+".release(): Item info. qi="+this);
+		}
+	}
+	
 	/**
 	 * @return true if the current recipient can be retried again
 	 */
 	public boolean retryable(MailAddress recipient) {
 		if (recipientFailures == null) {
-			recipientFailures = new HashMap();
+			recipientFailures = new HashMap<MailAddress, Integer>();
 		}
 		if (recipientFailures.containsKey(recipient)) {
 			Integer numFailures = (Integer) recipientFailures.get(recipient);
@@ -225,32 +257,38 @@ public class QuedItem implements Comparable<QuedItem> {
 	public void succeededForRecipient(MailQue que, MailAddress recipient) {
 		numSuccesses++;
 		if (recipientSuccesses == null) {
-			recipientSuccesses = new HashMap();
+			recipientSuccesses = new HashMap<MailAddress, Integer>();
 		}
 		recipientSuccesses.put(recipient, null);
 		
 		if (que.getListeners() != null
 				&& que.getListeners().size() > 0) {
 			que.incrementNotifiersCount();
-			Iterator it = que.getListeners().iterator();
+			Iterator<MailWatcher> it = que.getListeners().iterator();
 			while (it.hasNext()) {
-				MailWatcher watcher = (MailWatcher) it.next();
+				MailWatcher watcher = it.next();
 				try {
 					//watcher.deliverySuccess(getMail().getMessage(), recipients);
 					watcher.deliverySuccess(que, getMail().getMessage(), recipient);
+					if( isCompleted() )
+						watcher.deliveryFinished(que, getMail().getMessage());
 				} catch (MessagingException e) {
 					log.error(e);
 				}
 			}
 			que.decrementNotifiersCount();
 		}
-		if (isCompleted()) {
-			setStatus(COMPLETED);
-			// this will flag it for removal from the que
-		}
+		// It will be released after processing
+//		release();
+//		if (isCompleted()) {
+//			setStatus(COMPLETED);
+//			// this will flag it for removal from the que
+//		}
 	}
 	boolean isCompleted() {
-		if (numSuccesses + numFailures >= getMail().getRecipients().size()) {
+		int recipientsCount = getMail().getRecipients().size();
+		log.trace(getClass().getSimpleName()+" ("+((MailImpl)getMail()).getName()+").isCompleted(): S"+numSuccesses+"+F"+numFailures+"/A"+recipientsCount);
+		if (numSuccesses + numFailures >= recipientsCount) {
 			return true;
 		}
 		return false;
@@ -268,23 +306,14 @@ public class QuedItem implements Comparable<QuedItem> {
 		
 	}
 	
-	public void lock() {
-		this.setStatus(IN_PROCESS);
-	}
-	
-	public void release() {
-		// TODO Implement
-	}
-	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(QuedItem.class.getSimpleName()).append(" [");
+		sb.append(getClass().getSimpleName()).append(" [");
 		sb.append("id=").append(((MailImpl)getMail()).getName()).append("; ");
-		sb.append("status=").append(getStatus()).append("; ");
+		sb.append("status=").append(status).append("; ");
 		sb.append("]; ");
 		return sb.toString();
 	}
-	
-	
+
 }

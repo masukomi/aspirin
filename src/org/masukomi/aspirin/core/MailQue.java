@@ -29,9 +29,7 @@
 package org.masukomi.aspirin.core;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Locale;
 import java.util.Vector;
 
 import javax.mail.MessagingException;
@@ -39,23 +37,21 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.james.core.MailImpl;
-import org.apache.mailet.Mail;
-import org.apache.mailet.MailAddress;
-//import org.masukomi.tools.logging.Logs;
+
 /**
- * @author masukomi
+ * <p>This class represents the mailing queue of the Aspirin.</p>
  * 
- * To change the template for this generated type comment go to Window -
- * Preferences - Java - Code Generation - Code and Comments
+ * @author masukomi
+ * @version $Id$
+ * 
  */
 public class MailQue {
-	private Log log = LogFactory.getLog(MailQue.class);
+	private Log log = Configuration.getInstance().getLog();
 	protected QueManager qm;
 	protected Vector<QuedItem> que;
 	protected Vector<MailWatcher> listeners;
-	MailQue mq;
+//	MailQue mq;
 	private Vector<MailWatcher> listenersToRemove;
 	private Vector<MailWatcher> listenersToAdd;
 	private int notificationCount;
@@ -70,9 +66,7 @@ public class MailQue {
 	}
 	public void queMail(MimeMessage message) throws MessagingException {
 		service(message, getListeners());
-		if (! getQueManager().isRunning()){
-			getQueManager().start();
-		}
+		notifyQueManager();
 	}
 	protected void service(MimeMessage mimeMessage, Collection<MailWatcher> watchers)
 			throws AddressException, MessagingException {
@@ -82,100 +76,151 @@ public class MailQue {
 		if (log.isDebugEnabled()) {
 			log.debug("Remotely delivering mail " + sourceMail.getName());
 		}
-		Collection recipients = sourceMail.getRecipients();
+		
+		/*
+		 * We don't need to organize recipients and separate into unique mails. 
+		 * The RemoteDelivery could handle a mail with multiple recipients and 
+		 * target servers.
+		 */
+		
+//		Collection recipients = sourceMail.getRecipients();
 		// Must first organize the recipients into distinct servers (name made
 		// case insensitive)
-		Hashtable<String, Vector<MailAddress>> targets = new Hashtable<String, Vector<MailAddress>>();
-		for (Iterator i = recipients.iterator(); i.hasNext();) {
-			MailAddress target = (MailAddress) i.next();
-			String targetServer = target.getHost().toLowerCase(Locale.US);
-			//Locale.US because only ASCII supported in domains? -kate
-			
-			//got any for this domain yet?
-			Vector<MailAddress> temp = targets.get(targetServer);
-			if (temp == null) {
-				temp = new Vector<MailAddress>();
-				targets.put(targetServer, temp);
-			}
-			temp.add(target);
-		}
+//		Hashtable<String, Vector<MailAddress>> targets = new Hashtable<String, Vector<MailAddress>>();
+//		for (Iterator i = recipients.iterator(); i.hasNext();) {
+//			MailAddress target = (MailAddress) i.next();
+//			String targetServer = target.getHost().toLowerCase(Locale.US);
+//			//Locale.US because only ASCII supported in domains? -kate
+//			
+//			//got any for this domain yet?
+//			Vector<MailAddress> temp = targets.get(targetServer);
+//			if (temp == null) {
+//				temp = new Vector<MailAddress>();
+//				targets.put(targetServer, temp);
+//			}
+//			temp.add(target);
+//		}
 		//We have the recipients organized into distinct servers... put them
 		// into the
 		//delivery store organized like this... this is ultra inefficient I
 		// think...
 		// Store the new message containers, organized by server, in the que
 		// mail repository
-		for (Iterator<String> i = targets.keySet().iterator(); i.hasNext();) {
-			//make a copy of it for each recipient
-			MailImpl uniqueMail = new MailImpl(mimeMessage);
-			String name = uniqueMail.getName();
-			String host = (String) i.next();
-			Vector<MailAddress> rec = targets.get(host);
-			if (log.isDebugEnabled()) {
-				StringBuffer logMessageBuffer = new StringBuffer(128).append(
-						"Sending mail to ").append(rec).append(" on host ")
-						.append(host);
-				log.debug(logMessageBuffer.toString());
-			}
-			uniqueMail.setRecipients(rec);
-			StringBuffer nameBuffer = new StringBuffer(128).append(name)
-					.append("-to-").append(host);
-			uniqueMail.setName(nameBuffer.toString());
-			store(new QuedItem(uniqueMail));
-			//Set it to try to deliver (in a separate thread) immediately
-			// (triggered by storage)
-			uniqueMail.setState(Mail.GHOST);
+//		for (Iterator<String> i = targets.keySet().iterator(); i.hasNext();) {
+//			//make a copy of it for each recipient
+//			MailImpl uniqueMail = new MailImpl(mimeMessage);
+//			String name = uniqueMail.getName();
+//			String host = (String) i.next();
+//			Vector<MailAddress> rec = targets.get(host);
+//			if (log.isDebugEnabled()) {
+//				StringBuffer logMessageBuffer = new StringBuffer(128).append(
+//						"Sending mail to ").append(rec).append(" on host ")
+//						.append(host);
+//				log.debug(logMessageBuffer.toString());
+//			}
+//			uniqueMail.setRecipients(rec);
+//			StringBuffer nameBuffer = new StringBuffer(128).append(name)
+//					.append("-to-").append(host);
+//			uniqueMail.setName(nameBuffer.toString());
+//			store(new QuedItem(uniqueMail));
+//			//Set it to try to deliver (in a separate thread) immediately
+//			// (triggered by storage)
+//			uniqueMail.setState(Mail.GHOST);
+//			}
+//		}
+		// TODO Prioritaire email
+		QuedItem qi = new QuedItem(sourceMail, this);
+		synchronized (this) {
+			getQue().add(qi);
 		}
 	}
-	protected void store(QuedItem qi) {
-		getQue().add(qi);
-		// try and send it
-	}
+	// Unused
+//	protected void store(QuedItem qi) {
+//		getQue().add(qi);
+//		// try and send it
+//	}
 	/**
-	 * In addition to findig and returnign the next sendable item this method
-	 * will remove any completed items from the que.
+	 * It gives back the next item to send and removes all completed items.
 	 * 
-	 * @return the next sendable item
+	 * @return The next item to send, or null, if no such item exists.
 	 */
 	public synchronized QuedItem getNextSendable() {
+		if( getQue().size() <= 0 )
+			return null;
+		
 		Collections.sort(getQue());
-		Iterator<QuedItem> it = getQue().iterator();
-		for (QuedItem qi : getQue()){
-			if (qi.isReadyToSend()) {
-				return qi;
+		
+		Vector<QuedItem> itemsToRemove = new Vector<QuedItem>();
+		QuedItem itemToSend = null;
+		
+//		Iterator<QuedItem> it = getQue().iterator();
+		for( QuedItem qi : getQue() )
+		{
+			if( qi.isCompleted() )
+			{
+				itemsToRemove.add(qi);
+				continue;
+			}else
+			if( qi.isReadyToSend() )
+			{
+				itemToSend = qi;
+				break;
 			}
 		}
 		// if we've made it this far there are no mails waiting to send
 		// let's clean out the old mails.
-		Vector<QuedItem> que = getQue();
-		if (que.size() > 0) {
-			Vector<QuedItem> itemsToRemove = new Vector<QuedItem>();
-			for (QuedItem qi : getQue()){
-				if (qi.getStatus() == QuedItem.COMPLETED){
-					itemsToRemove.add(qi);
-				}
-			}
+//		Vector<QuedItem> que = getQue();
+//		if (que.size() > 0) {
+//			for (QuedItem qi : getQue()){
+//				if (qi.getStatus() == QuedItem.COMPLETED){
+//					itemsToRemove.add(qi);
+//				}
+//			}
 			getQue().removeAll(itemsToRemove);
+			if( log.isTraceEnabled() && 0 < itemsToRemove.size() )
+				log.trace(getClass().getSimpleName()+".getNextSendable(): Remove all items: "+itemsToRemove);
+//		}
+		// Lock QuedItem
+		if( itemToSend != null )
+		{
+			log.trace(getClass().getSimpleName()+".getNextSendable(): Found item to send. qi="+itemToSend);
+			itemToSend.lock();
 		}
-		return null;
+		return itemToSend;
 	}
+	
+	public int getQueueSize() {
+		return getQue().size();
+	}
+	
 	/**
 	 * Occasionally a QuedItem will be dropped from the Que. This method will
 	 * re-insert it.
 	 * 
 	 * @param item
 	 */
-	public void reQue(QuedItem item) {
-		if (getQue().indexOf(item) == -1) {
+	public synchronized void reQue(QuedItem item) {
+		if( getQue().indexOf(item) == -1 )
+		{
 			getQue().add(item);
+			notifyQueManager();
 		}
 	}
 	QueManager getQueManager() {
-		if (qm == null) {
-			qm = new QueManager(this);
+		synchronized (qm) {
+			if (qm == null)
+			{
+				qm = new QueManager(this);
+			}
 		}
 		return qm;
 	}
+	
+	/**
+	 * PUBLIC FOR TESTING ONLY
+	 * TODO public -> private
+	 * @return
+	 */
 	public Vector<QuedItem> getQue() {
 		return que;
 	}
@@ -230,4 +275,34 @@ public class MailQue {
 	public synchronized boolean isNotifying() {
 		return notificationCount != 0;
 	}
+	
+		public synchronized void terminate() {
+		if( qm != null )
+		{
+			synchronized (qm) {
+				qm.terminateRun();
+			}
+		}
+	}
+	
+	void resetQueManager() {
+		if( qm != null )
+		{
+			synchronized (qm) {
+				qm.terminateRun();
+				qm = null;
+			}
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	private void notifyQueManager() {
+		if( !getQueManager().isRunning() )
+			getQueManager().start();
+//		else
+//			getQueManager().notifyWithMail();
+	}
+
 }

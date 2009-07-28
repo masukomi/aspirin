@@ -11,11 +11,13 @@
 		<delete dir="${classes}" />
 		<delete dir="${runtime}" />
 		<delete dir="${src}" includes="**/*.class"/>
+		<delete file="${manifest}"/>
 	</target>
 	
 	<target name="post-clean" >
 		<delete dir="${classes}" />
 		<delete dir="${src}" includes="**/*.class"/>
+		<delete file="${manifest}"/>
 	</target>
 	
 	<target name="prepare" depends="pre-clean">
@@ -27,55 +29,26 @@
 		<javac srcdir="${src}" destdir="${classes}" deprecation="on" debug="${debug}">
 			<classpath refid="classpath"/>
 		</javac>
+		<!-- TODO Move the test folder into the src folder -->
 		<javac srcdir="${test}" destdir="${classes}" deprecation="on" debug="${debug}">
 			<classpath refid="classpath"/>
 		</javac>
 	</target>
 	
-	<target name="jar" depends="compile">
+	<target name="jar" depends="compile, create-manifest">
 		<jar jarfile="${runtime}/aspirin.jar" manifest="${manifest}">
 			<fileset dir="${classes}">
 				<include name="**/*"/>
 				<exclude name="**/*.java"/>
-				<!--<exclude name="**/*.properties"/>-->
-				<!--<exclude name="**/*.xml"/>-->
-
 			</fileset>
 			<fileset dir="${src}">
 				<include name="**/*.properties"/>
                 <include name="**/*.xml"/>
 			</fileset>
-			<!--<metainf dir="../config">
-				<include name="**/*"/>
-			</metainf> -->
 		</jar>
 	</target>
 	
-	<target name="assemble" depends="jar">
-		<!-- no lib or docs to copy
-        <copy todir="${runtime}/lib">
-			<fileset dir="${lib}" includes="**/*"/>
-		</copy>
-		
-        <copy todir="${runtime}">
-			<fileset dir="${doc}" includes="**/*"/>
-		</copy>
-        -->
-        <copy todir="${runtime}/lib">
-			<fileset dir="${lib}" includes="**/*"/>
-		</copy>
-		<!--<copy todir="${runtime}/config">
-			<fileset dir="../config" includes="**/*"/>
-		</copy>-->
-        <!--<copy todir="${runtime}/prefs">
-			<fileset dir="${prefs}">
-                <include name="**/*"/>
-                <exclude name=".source.jam" />
-            </fileset>
-		</copy>-->
-	</target>
-	
-	<target name="src">
+	<target name="src" depends="create-manifest">
 		<jar jarfile="${runtime}/aspirin-src.zip" manifest="${manifest}">
 			<fileset dir="${src}">
 				<include name="**/*.java"/>
@@ -87,6 +60,23 @@
 		</jar>
 	</target>
 	
-	<target name="all" depends="assemble,src,post-clean" />
+	<target name="create-manifest">
+		<tstamp>
+			<format property="version.date" pattern="yyyyMMddHHmm"/>
+		</tstamp>
+		<pathconvert property="mf.classpath" pathsep=" ">
+			<path refid="classpath" />
+			<flattenmapper />
+		</pathconvert>
+		<manifest file="${manifest}">
+			<attribute name="Created-By" value="${creator.fullname} ${creator.email}"/>
+			<attribute name="Developers" value="${developers}"/>
+			<attribute name="Version" value="${version}.${version.date}"/>
+			<attribute name="Description" value="This package contains Aspirin core."/>
+			<attribute name="Class-Path" value="${mf.classpath}"/>
+		</manifest>
+	</target>
+	
+	<target name="all" depends="prepare,src,jar,post-clean" />
 	
 </project>

@@ -25,34 +25,68 @@
 package org.masukomi.aspirin.core;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-//import org.masukomi.tools.logging.Logs;
+import org.apache.commons.pool.ObjectPool;
+import org.apache.commons.pool.impl.GenericObjectPool;
+
 /**
+ * <p>This object is the manager, the main class of mail delivering.</p>
+ * 
+ * <p></p>
+ * 
  * Iterates over the items in a MailQue and sends them all out.
  * 
  * Please note, that in an effort to address some threading issues 
  * this class no longer utilizes a ThreadPool. Instead it sends the items 
  * in the MailQue out sequentially.
  * 
- * @author masukomi 
+ * @author masukomi
+ * 
+ * @version $Id$
+ * 
  */
 class QueManager extends Thread {
-	static private Log log = LogFactory.getLog(QueManager.class);
-	protected boolean terminateRun = false;
-	protected boolean running = false;
-	protected boolean pauseNewSends = false;
-	//protected TrackableThreadPool threadPool = null;
+	
+	private boolean running = false;
+	private ObjectPool remoteDeliveryObjectPool = null;
 	protected MailQue que;
+	
+	static private Log log = Configuration.getInstance().getLog();
+	protected boolean pauseNewSends = false;
 	
 	/**
 	 * Iterates over the items in a MailQue and sends them all out.
 	 *
 	 * @param que
 	 */
-	public QueManager(MailQue que){
+	public QueManager(MailQue que) {
+		// Set up default objects.
 		this.que = que;
-	//	threadPool = new TrackableThreadPool(Configuration.getInstance()
-	//			.getDeliveryThreads());
+		this.setName("Aspirin-"+getClass().getSimpleName()+"-"+getId());
+		
+		// Configure pool of RemoteDelivery threads
+		GenericObjectPool.Config gopConf = new GenericObjectPool.Config();
+		gopConf.lifo = false;
+		gopConf.maxActive = Configuration.getInstance().getDeliveryThreads();
+		gopConf.maxIdle = Math.max(1, (int)Configuration.getInstance().getDeliveryThreads()/2);
+		gopConf.maxWait = 5000;
+		gopConf.testOnReturn = true;
+		gopConf.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_BLOCK;
+		
+		// Create RemoteDelivery object factory used in pool
+		GenericPoolableRemoteDeliveryFactory remoteDeliveryObjectFactory = new GenericPoolableRemoteDeliveryFactory();
+		
+		// Create pool
+		remoteDeliveryObjectPool = new GenericObjectPool(
+				remoteDeliveryObjectFactory,
+				gopConf
+		);
+		
+		// Initialize object factory of pool
+		remoteDeliveryObjectFactory.init(
+				new ThreadGroup("RemoteDeliveryThreadGroup"),
+				remoteDeliveryObjectPool
+		);
+		
 	}
 	
 	
@@ -67,10 +101,13 @@ class QueManager extends Thread {
 	 * 
 	 */
 	public void terminateRun() {
-		terminateRun = true;
+		running = false;
+		synchronized (this) {
+			notifyAll();
+		}
 	}
 	public boolean isTerminated(){
-		return terminateRun;
+		return running;
 	}
 	public void pauseNewSends() {
 		pauseNewSends = true;
@@ -87,70 +124,101 @@ class QueManager extends Thread {
 	 */
 	public void run() {
 		running = true;
-		terminateRun = false; 
+//		terminateRun = false; 
 		// if we're HERE then run has JUST 
 		// been called, and obviously someone wants us to run,
 		// which we can't do if we're terminated. 
 		// this will frequently need to be flipped back like this
 		// if you're restarting a QueManager that has already been 
 		// through a cycle.
-		while (true) {
-			if (!isTerminated()) {
-				if (!isPaused()) {
-					QuedItem qi = getQue().getNextSendable();
-					if (qi != null) {
-						qi.setStatus(QuedItem.IN_PROCESS);
-						try {
-							if (log.isDebugEnabled()) {
-								log.debug("About to create new RemoteDelivery");
+		while (running)
+		{
+			if( !isPaused() )
+			{
+				QuedItem qi = null;
+				try
+				{
+					qi = getQue().getNextSendable();
+					if( qi != null )
+					{
+						try 
+						{
+							if( log.isDebugEnabled() )
+								log.debug(getClass().getSimpleName()+".run(): Start delivery. qi="+qi);
+							RemoteDelivery rd = (RemoteDelivery)remoteDeliveryObjectPool.borrowObject();
+							if( log.isDebugEnabled() )
+							{
+								log.debug(getClass().getSimpleName()+".run(): Borrow RemoteDelivery object. rd="+rd.getName());
+								log.info(getClass().getSimpleName()+".run(): Pool state. A"+remoteDeliveryObjectPool.getNumActive()+"/I"+remoteDeliveryObjectPool.getNumIdle());
 							}
-							RemoteDelivery rd = new RemoteDelivery(getQue(), qi);
-							rd.run();
-							//threadPool.invokeLater(rd);
+							rd.setQuedItem(qi);
+							if( !rd.isAlive() )
+							{
+								rd.setQue(que);
+								rd.start();
+							}
 						} catch (Exception e) {
-							if (log.isDebugEnabled()) {
-								log
-										.debug("failed while trying to call threadPool.invokeLater(Runnable)");
-							}
-							log.error(e);
-							qi.setStatus(QuedItem.IN_QUE);
+							log.error("failed while trying to call threadPool.invokeLater(Runnable)",e);
+							qi.release();
+//							qi.setStatus(QuedItem.IN_QUE);
 						}
-					} else {
+					} else
+					{
 						log.debug("no nextSendable for que. Quitting");
 						//The queManager should die out when the que is empty
 						//The MailQue will restart it as needed
-						break;
+						synchronized (this) {
+							try
+							{
+								wait(60000);
+							}catch (InterruptedException e)
+							{
+								running = false;
+								que.resetQueManager();
+								return;
+							}
+						}
 					}
-					
-				} else { // we need to pause the sending of new messages
-					// this is most likely so that a watcher can be added or removed
-					try {
-						sleep(500);
-					} catch (InterruptedException e) {
-						log.error(e);
-					}
+				}catch (Throwable t)
+				{
+					if( qi != null )
+						qi.release();
 				}
-				// hang out until we're needed
-			} else {
-				break;
+				
+
+//			} else { // we need to pause the sending of new messages
+//				// this is most likely so that a watcher can be added or removed
+//				try {
+//					sleep(500);
+//				} catch (InterruptedException e) {
+//					log.error(e);
+//				}
 			}
-		}//END while (true)
-		//threadPool.stop();
-		running = false;
-		
+		}
+		try
+		{
+			remoteDeliveryObjectPool.clear();
+		}catch (Exception e)
+		{
+			log.error("Could not clear remote delivery pool.", e);
+		}
 	}
 	
-	/*public TrackableThreadPool getThreadPool(){
-		return threadPool;
-	*/
-
-
 	public MailQue getQue() {
 		return que;
 	}
-
-
+	
+	
 	public void setQue(MailQue que) {
 		this.que = que;
 	}
+	
+	public ObjectPool getRemoteDeliveryObjectPool() {
+		return remoteDeliveryObjectPool;
+	}
+	
+	public synchronized void notifyWithMail() {
+		notify();
+	}
+
 }

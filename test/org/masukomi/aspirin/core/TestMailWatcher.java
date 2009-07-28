@@ -20,28 +20,24 @@ public class TestMailWatcher implements MailWatcher {
 	/**
 	 * 
 	 */
-	public TestMailWatcher() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
+	public TestMailWatcher() {}
 
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliverySuccess(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
 	public void deliverySuccess(MailQue que, MimeMessage message, MailAddress recepient) {
-		hasSucceeded = true;
+		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliverySuccess(): recipient="+recepient+"; msg="+message);
 	}
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliveryFailure(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
 	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recepient) {
-		hasFailed=true;
+		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliveryFailure(): recipient="+recepient+"; msg="+message);
 	}
 
 	@Override
 	public void deliveryFinished(MailQue que, MimeMessage message) {
-		// TODO Auto-generated method stub
-		
+		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliveryFinished(): msg="+message);
 	}
 
 }

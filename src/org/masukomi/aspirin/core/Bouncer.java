@@ -26,18 +26,19 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+
+import org.apache.commons.logging.Log;
 import org.apache.james.util.RFC2822Headers;
 import org.apache.james.util.RFC822DateFormat;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 /**
  * DOCUMENT ME!
  * 
@@ -46,7 +47,7 @@ import org.apache.commons.logging.LogFactory;
  *         Comments
  */
 public class Bouncer {
-	static private Log log = LogFactory.getLog(Bouncer.class);
+	static private Log log = Configuration.getInstance().getLog();
 	/** An RFC822 date formatter used to format dates in mail headers */
 	private static RFC822DateFormat rfc822DateFormat = new RFC822DateFormat();
 	/**

@@ -1,7 +1,7 @@
 /*
  * Created on May 19, 2004
  * 
- * This class was based on a method in JMTA.java by Rapha‘l Szwarc
+ * This class was based on a method in JMTA.java by Raphaï¿½l Szwarc
  * 
  * 
  * CURRENTLY UNUSED BECAUSE JNDI KEEPS TIMING OUT FOR SOME DOMAINS
@@ -12,9 +12,9 @@
 // 
 //Title: JMTA.java
 //Description: [Description]
-//Author: Rapha‘l Szwarc <zoe (underscore) info (at) mac (dot) com>
+//Author: Raphaï¿½l Szwarc <zoe (underscore) info (at) mac (dot) com>
 //Creation Date: Tue May 18 2004
-//Legal: Copyright (C) 2004 Rapha‘l Szwarc
+//Legal: Copyright (C) 2004 Raphaï¿½l Szwarc
 //
 //This software is provided 'as-is', without any express or implied warranty.
 //In no event will the author be held liable for any damages arising from
@@ -50,20 +50,22 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 /**
  * @author masukomi
  * 
  * TODO To change the template for this generated type comment go to Window -
  * Preferences - Java - Code Generation - Code and Comments
+ * 
+ * @deprecated Unused
  */
 public class MXLookup {
-	private static final Log log = LogFactory.getLog(MXLookup.class);
+	private static final Log log = Configuration.getInstance().getLog();
 	private static final String[] DNSRecords = {"MX"};
 	private static final String DNSScheme = "dns://"; //was dns:/
 	private static final String SMTPScheme = "smtp://";
 	private static Hashtable env;
 	
+	// Unused
 	static public Collection urlsForHost(final String host)
 			throws NamingException {
 		if (host != null && !host.equals("")) {
@@ -120,7 +122,7 @@ public class MXLookup {
 		throw new IllegalArgumentException(
 				"MXLookup.urlForAddress: null address.");
 	}
-	
+	// Unused
 	static public void setJNDIEnvironment(Hashtable environment){
 		env = environment;
 	}

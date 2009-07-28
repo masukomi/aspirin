@@ -64,7 +64,7 @@ public class MS {
 		}
 
 		QueManager qm = mq.getQueManager();
-		qm.terminateRun();
+//		qm.terminateRun();
 
 	}
 

@@ -107,9 +107,9 @@ public class MailQueTest extends TestCase {
 			
 			
 			que.addWatcher(watcher);
-			System.out.println("Que Size1: " + que.getQue().size());
+			System.out.println("Que Size1: " + que.getQueueSize());
 			que.queMail(testMessage);
-			System.out.println("Que Size2: " + que.getQue().size());
+			System.out.println("Que Size2: " + que.getQueueSize());
 			long startTime = System.currentTimeMillis();
 			//while((System.currentTimeMillis() - startTime) < 180000){
 			System.out.println("Waiting for send to complete. This may take a bit. ");
@@ -128,9 +128,9 @@ public class MailQueTest extends TestCase {
 			assertTrue(checkForMessage(messageId, user2, password2));
 
 			
-			System.out.println("Que Size3: " + que.getQue().size());
+			System.out.println("Que Size3: " + que.getQueueSize());
 			
-			if(que.getQue().size() >0){
+			if(que.getQueueSize() >0){
 				Iterator it = que.getQue().iterator();
 				while(it.hasNext()){
 					QuedItem qi = (QuedItem)it.next();
@@ -138,7 +138,7 @@ public class MailQueTest extends TestCase {
 				}
 			}
 			
-			assertTrue(que.getQue().size() == 0);
+			assertTrue(que.getQueueSize() == 0);
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
