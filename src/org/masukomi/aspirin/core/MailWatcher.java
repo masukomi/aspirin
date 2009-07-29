@@ -22,6 +22,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.masukomi.aspirin.core;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.mailet.MailAddress;
@@ -37,6 +38,6 @@ import org.apache.mailet.MailAddress;
  */
 public interface MailWatcher {
 	public void deliverySuccess(MailQue que, MimeMessage message, MailAddress recipient);
-	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recipient);
+	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recipient, MessagingException mex);
 	public void deliveryFinished(MailQue que, MimeMessage message);
 }

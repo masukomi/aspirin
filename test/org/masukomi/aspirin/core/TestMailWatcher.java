@@ -5,6 +5,7 @@
  */
 package org.masukomi.aspirin.core;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.mailet.MailAddress;
@@ -31,8 +32,8 @@ public class TestMailWatcher implements MailWatcher {
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliveryFailure(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
-	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recepient) {
-		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliveryFailure(): recipient="+recepient+"; msg="+message);
+	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recepient, MessagingException mex) {
+		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliveryFailure(): recipient="+recepient+"; msg="+message,mex);
 	}
 
 	@Override

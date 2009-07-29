@@ -7,6 +7,7 @@ package org.masukomi.aspirin.core;
 
 import java.util.Collection;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.logging.Log;
@@ -91,7 +92,7 @@ public class SimpleMailWatcherImpl implements MailWatcher {
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliveryFailure(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
-	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recipient) {
+	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recipient, MessagingException mex) {
 		if (this.message == null){
 			hasFailed = true;
 			lastRecipient = recipient;

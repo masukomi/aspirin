@@ -117,7 +117,7 @@ public class QuedItem implements Comparable<QuedItem> {
 	/**
 	 * Sends a failure notice to any watchers about the current mail and recipient.
 	 */
-	public void failForRecipient(MailQue que, MailAddress recipient) {
+	public void failForRecipient(MailQue que, MailAddress recipient, MessagingException mex) {
 		numFailures++;
 		if (recipientFailures == null) {
 			recipientFailures = new HashMap<MailAddress, Integer>();
@@ -129,7 +129,7 @@ public class QuedItem implements Comparable<QuedItem> {
 			que.incrementNotifiersCount();
 			for (MailWatcher watcher : que.getListeners()){
 				try {
-					watcher.deliveryFailure(que, getMail().getMessage(), recipient);
+					watcher.deliveryFailure(que, getMail().getMessage(), recipient, mex);
 					if( isCompleted() )
 						watcher.deliveryFinished(que, getMail().getMessage());
 				} catch (MessagingException e) {
@@ -177,7 +177,7 @@ public class QuedItem implements Comparable<QuedItem> {
 			}
 		} else {
 			try {
-				failForRecipient(que, recipient);
+				failForRecipient(que, recipient, null);
 				Bouncer.bounce(que, getMail(), "Maxumum retries exceeded for " +recipient,
 						Configuration.getInstance().getPostmaster());
 			} catch (MessagingException e) {

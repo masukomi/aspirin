@@ -546,10 +546,10 @@ public class RemoteDelivery extends Thread {
 					;
 					log.debug(logBuffer.toString());
 				}
-				qi.failForRecipient(que, recepient);
+				qi.failForRecipient(que, recepient, ex);
 			}
 		} else {
-			qi.failForRecipient(que, recepient);
+			qi.failForRecipient(que, recepient, ex);
 		}
 		try
 		{
