@@ -131,6 +131,7 @@ class QueManager extends Thread {
 		// this will frequently need to be flipped back like this
 		// if you're restarting a QueManager that has already been 
 		// through a cycle.
+		log.info(getClass().getSimpleName()+".run(): QueManager started.");
 		while (running)
 		{
 			if( !isPaused() )
@@ -145,35 +146,46 @@ class QueManager extends Thread {
 						{
 							if( log.isDebugEnabled() )
 								log.debug(getClass().getSimpleName()+".run(): Start delivery. qi="+qi);
+							
 							RemoteDelivery rd = (RemoteDelivery)remoteDeliveryObjectPool.borrowObject();
-							if( log.isDebugEnabled() )
+							if( log.isTraceEnabled() )
 							{
-								log.debug(getClass().getSimpleName()+".run(): Borrow RemoteDelivery object. rd="+rd.getName());
-								log.info(getClass().getSimpleName()+".run(): Pool state. A"+remoteDeliveryObjectPool.getNumActive()+"/I"+remoteDeliveryObjectPool.getNumIdle());
+								log.trace(getClass().getSimpleName()+".run(): Borrow RemoteDelivery object. rd="+rd.getName());
+								log.trace(getClass().getSimpleName()+".run(): Pool state. A"+remoteDeliveryObjectPool.getNumActive()+"/I"+remoteDeliveryObjectPool.getNumIdle());
 							}
 							rd.setQuedItem(qi);
+							/*
+							 * On first borrow the RemoteDelivery is created and 
+							 * initialized, but not started, because the first 
+							 * time we have to set up the QueItem to deliver.
+							 */
 							if( !rd.isAlive() )
 							{
 								rd.setQue(que);
 								rd.start();
 							}
-						} catch (Exception e) {
-							log.error("failed while trying to call threadPool.invokeLater(Runnable)",e);
+						} catch (Exception e)
+						{
+							log.error(getClass().getSimpleName()+".run(): Failed borrow delivery thread object.",e);
+							log.trace(getClass().getSimpleName()+".run(): Pool state. A"+remoteDeliveryObjectPool.getNumActive()+"/I"+remoteDeliveryObjectPool.getNumIdle());
 							qi.release();
-//							qi.setStatus(QuedItem.IN_QUE);
 						}
 					} else
 					{
-						log.debug("no nextSendable for que. Quitting");
-						//The queManager should die out when the que is empty
-						//The MailQue will restart it as needed
+						if( log.isTraceEnabled() && 0 < getQue().getQueueSize() )
+							log.trace(getClass().getSimpleName()+"run(): There is no sendable item in the queue. Fallback to waiting state for a minute.");
 						synchronized (this) {
 							try
 							{
+								/*
+								 * We should wait for a specified time, because 
+								 * some emails unsent could be sendable again.
+								 */
 								wait(60000);
 							}catch (InterruptedException e)
 							{
 								running = false;
+								// Before stopping QueManager remove it from MailQue.
 								que.resetQueManager();
 								return;
 							}
@@ -181,18 +193,10 @@ class QueManager extends Thread {
 					}
 				}catch (Throwable t)
 				{
+					log.error(getClass().getSimpleName()+".run(): Sending of QueItem failed. qi="+qi, t);
 					if( qi != null )
 						qi.release();
 				}
-				
-
-//			} else { // we need to pause the sending of new messages
-//				// this is most likely so that a watcher can be added or removed
-//				try {
-//					sleep(500);
-//				} catch (InterruptedException e) {
-//					log.error(e);
-//				}
 			}
 		}
 		try
@@ -200,8 +204,9 @@ class QueManager extends Thread {
 			remoteDeliveryObjectPool.clear();
 		}catch (Exception e)
 		{
-			log.error("Could not clear remote delivery pool.", e);
+			log.error(getClass().getSimpleName()+".run(): Could not clear remote delivery pool.", e);
 		}
+		log.info(getClass().getSimpleName()+".run(): QueManager closed.");
 	}
 	
 	public MailQue getQue() {

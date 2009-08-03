@@ -73,9 +73,8 @@ public class MailQue {
 		
 		MailImpl sourceMail = new MailImpl(mimeMessage);
 		// Do I want to give the internal key, or the message's Message ID
-		if (log.isDebugEnabled()) {
-			log.debug("Remotely delivering mail " + sourceMail.getName());
-		}
+		if (log.isDebugEnabled())
+			log.debug(getClass().getSimpleName()+".service(): Remotely delivering mail " + sourceMail.getName());
 		
 		/*
 		 * We don't need to organize recipients and separate into unique mails. 
@@ -176,9 +175,11 @@ public class MailQue {
 //					itemsToRemove.add(qi);
 //				}
 //			}
-			getQue().removeAll(itemsToRemove);
-			if( log.isTraceEnabled() && 0 < itemsToRemove.size() )
-				log.trace(getClass().getSimpleName()+".getNextSendable(): Remove all items: "+itemsToRemove);
+		if( log.isTraceEnabled() ) 
+			log.trace(getClass().getSimpleName()+".getNextSendable(): Maintenance of MailQue - removed "+itemsToRemove.size()+" items from "+getQue().size());
+		getQue().removeAll(itemsToRemove);
+		if( log.isTraceEnabled() && 0 < itemsToRemove.size() )
+			log.trace(getClass().getSimpleName()+".getNextSendable(): Remove all items: "+itemsToRemove);
 //		}
 		// Lock QuedItem
 		if( itemToSend != null )

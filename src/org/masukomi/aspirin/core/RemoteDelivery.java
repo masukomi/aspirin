@@ -125,8 +125,9 @@ public class RemoteDelivery extends Thread {
 		mailSessionProps.put("mail.smtp.connectiontimeout", Configuration.getInstance().getConnectionTimeout()); //Socket connection timeout value in milliseconds. Default is infinite timeout.
 		mailSessionProps.put("mail.smtp.timeout", Configuration.getInstance().getConnectionTimeout()); //Socket I/O timeout value in milliseconds. Default is infinite timeout.
 		mailSession = Session.getInstance(mailSessionProps);
-		// TODO Set communication debug
-		
+		// Set communication debug
+		if( log.isDebugEnabled() && Configuration.getInstance().isDebugCommunication() )
+			mailSession.setDebug(true);
 	}
 	
 	
@@ -192,7 +193,7 @@ public class RemoteDelivery extends Thread {
 			// If recipient is null, we could not handle this email
 			if (rcpt == null)
 			{
-				log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): unable to find recipient that handn't already been handled");
+				log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): Could not find unhandled recipient.");
 				return false;
 			}
 			String host = rcpt.getHost();
@@ -208,7 +209,7 @@ public class RemoteDelivery extends Thread {
 				// unreliable jndi bs
 				targetServers = getMXRecordsForHost(host);
 			} catch (Exception e) {
-				log.error(e);
+				log.error(getClass().getSimpleName()+" ("+getName()+" ).deliver(): Could not get MX for "+host+".",e);
 			}
 			if (targetServers == null || targetServers.size() == 0) {
 				log.warn(getClass().getSimpleName()+" ("+getName()+").deliver(): No mail server found for: " + host);
@@ -221,8 +222,7 @@ public class RemoteDelivery extends Thread {
 				return failMessage(qi, rcpt, new MessagingException(
 						exceptionBuffer.toString()), true);
 			} else if (log.isTraceEnabled()) {
-				log.trace(getClass().getSimpleName()+" ("+getName()+").deliver(): "+ targetServers.size() + " servers found for "
-						+ host);
+				log.trace(getClass().getSimpleName()+" ("+getName()+").deliver(): "+ targetServers.size() + " servers found for "+ host+".");
 			}
 			MessagingException lastError = null;
 			Iterator<URLName> i = targetServers.iterator();
@@ -233,18 +233,18 @@ public class RemoteDelivery extends Thread {
 					if( log.isDebugEnabled() )
 					{
 						logMessageBuffer = new StringBuffer(256)
-						.append(getClass().getSimpleName()+" ("+getName()+").deliver(): ")
-						.append("Attempting delivery of ")
-						.append(mail.getName())
-						.append(" to host ")
-						.append(outgoingMailServer.toString())
-						.append(" to addresses ")
-						.append(Arrays.asList(addr));
+							.append(getClass().getSimpleName())
+							.append(" (")
+							.append(getName())
+							.append(").deliver(): ")
+							.append("Attempting delivery of ")
+							.append(mail.getName())
+							.append(" to host ")
+							.append(outgoingMailServer.toString())
+							.append(" to addresses ")
+							.append(Arrays.asList(addr));
 						log.debug(logMessageBuffer.toString());
 					}
-					;
-					// URLName urlname = new URLName("smtp://"
-					// + outgoingMailServer);
 					Properties props = session.getProperties();
 					if (mail.getSender() == null) {
 						props.put("mail.smtp.from", "<>");
@@ -268,7 +268,7 @@ public class RemoteDelivery extends Thread {
 						try {
 							transport.connect();
 						} catch (MessagingException me) {
-							log.error(me);
+							log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): Connection failed.",me);
 							// Any error on connect should cause the mailet
 							// to
 							// attempt
@@ -295,22 +295,24 @@ public class RemoteDelivery extends Thread {
 							transport = null;
 						}
 					}
-					logMessageBuffer = new StringBuffer(256).append(
-					"Mail (").append(mail.getName()).append(
-					") sent successfully to ").append(
-							outgoingMailServer);
+					logMessageBuffer = new StringBuffer(256)
+						.append("Mail (")
+						.append(mail.getName())
+						.append(") sent successfully to ")
+						.append(outgoingMailServer);
 					log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): "+logMessageBuffer.toString());
 					qi.succeededForRecipient(que, rcpt);
 					return true;
 				} catch (MessagingException me) {
-					log.error(me);
+					log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): ", me);
 					// MessagingException are horribly difficult to figure
 					// out
 					// what actually happened.
 					StringBuffer exceptionBuffer = new StringBuffer(256)
-					.append("Exception delivering message (")
-					.append(mail.getName()).append(") - ").append(
-							me.getMessage());
+						.append("Exception delivering message (")
+						.append(mail.getName())
+						.append(") - ")
+						.append(me.getMessage());
 					log.warn(exceptionBuffer.toString());
 					if ((me.getNextException() != null)
 							&& (me.getNextException() instanceof java.io.IOException)) {
@@ -351,12 +353,12 @@ public class RemoteDelivery extends Thread {
 //						.error("unable to find recipient that handn't already been handled");
 //			}
 		} catch (SendFailedException sfe) {
-			log.error(sfe);
+			log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): ",sfe);
 			boolean deleteMessage = false;
 			Collection<MailAddress> recipients = qi.getMail().getRecipients();
 			// Would like to log all the types of email addresses
-			if (log.isDebugEnabled()) {
-				log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Recipients: " + recipients);
+			if (log.isTraceEnabled()) {
+				log.trace(getClass().getSimpleName()+" ("+getName()+").deliver(): Recipients: " + recipients);
 			}
 			/*
 			 * The rest of the recipients failed for one reason or another.
@@ -400,13 +402,13 @@ public class RemoteDelivery extends Thread {
 							// caught malformed addresses long before we
 							// got to this code.
 							if (log.isDebugEnabled()) {
-								log.debug("Can't parse invalid address: "
+								log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Can't parse invalid address: "
 										+ pe.getMessage());
 							}
 						}
 					}
 					if (log.isDebugEnabled()) {
-						log.debug("Invalid recipients: " + invalidRecipients);
+						log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Invalid recipients: " + invalidRecipients);
 					}
 					deleteMessage = failMessage(qi, rcpt, sfe, true);
 				}
@@ -434,11 +436,7 @@ public class RemoteDelivery extends Thread {
 							// this should never happen ... we should have
 							// caught malformed addresses long before we
 							// got to this code.
-							if (log.isDebugEnabled()) {
-								log.debug("Can't parse unsent address: "
-										+ pe.getMessage());
-							}
-							pe.printStackTrace();
+							log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): Can't parse unsent address.", pe);
 						}
 					}
 					if (log.isDebugEnabled()) {
@@ -449,7 +447,7 @@ public class RemoteDelivery extends Thread {
 			}
 			return deleteMessage;
 		} catch (MessagingException ex) {
-			log.error(ex);
+			log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): ",ex);
 			// We should do a better job checking this... if the failure is a
 			// general
 			// connect exception, this is less descriptive than more specific
@@ -464,7 +462,7 @@ public class RemoteDelivery extends Thread {
 			// We fail permanently if this was a 5xx error
 			return failMessage(qi, rcpt, ex, ('5' == ex.getMessage().charAt(0)));
 		} catch (Throwable t) {
-			log.error(t);
+			log.error(getClass().getSimpleName()+" ("+getName()+").deliver():",t);
 		}
 		/*
 		 * If we get here, we've exhausted the loop of servers without sending
@@ -489,8 +487,7 @@ public class RemoteDelivery extends Thread {
 	 */
 	private boolean failMessage(QuedItem qi, MailAddress recepient,
 			MessagingException ex, boolean permanent) {
-		log
-				.debug(getClass().getSimpleName()+" ("+getName()+").failMessage(): Method called. qi="+qi);
+		log.debug(getClass().getSimpleName()+" ("+getName()+").failMessage(): Method called. qi="+qi);
 		// weird printy bits inherited from JAMES
 		MailImpl mail = (MailImpl) qi.getMail();
 		StringWriter sout = new StringWriter();
@@ -500,7 +497,12 @@ public class RemoteDelivery extends Thread {
 		} else {
 			out.print("Temporary");
 		}
-		StringBuffer logBuffer = new StringBuffer(64).append(
+		StringBuffer logBuffer = new StringBuffer(64)
+			.append(getClass().getSimpleName())
+			.append(" (")
+			.append(getName())
+			.append(").failMessage(): ")
+			.append(
 				" exception delivering mail (").append(mail.getName()).append(
 				": ");
 		out.print(logBuffer.toString());
@@ -523,6 +525,7 @@ public class RemoteDelivery extends Thread {
 			if (qi.retryable(recepient)) {
 				if (log.isDebugEnabled()) {
 					logBuffer = new StringBuffer(128)
+						.append(getClass().getSimpleName()+" ("+getName()+").failMessage(): ")
 						.append("Storing message ")
 						.append(mail.getName())
 						.append(" into que after ")
@@ -538,6 +541,7 @@ public class RemoteDelivery extends Thread {
 			} else {
 				if (log.isDebugEnabled()) {
 					logBuffer = new StringBuffer(128)
+						.append(getClass().getSimpleName()+" ("+getName()+").failMessage(): ")
 						.append("Bouncing message ")
 						.append(mail.getName())
 						.append(" after ")
@@ -556,7 +560,7 @@ public class RemoteDelivery extends Thread {
 			Bouncer.bounce(que, mail, ex.toString(), Configuration.getInstance().getPostmaster());
 		}catch (MessagingException me)
 		{
-			log.error(getClass().getSimpleName()+" ("+getName()+").run(): failed to bounce",me);
+			log.error(getClass().getSimpleName()+" ("+getName()+").failMessage(): failed to bounce",me);
 		}
 		return true;
 	}
@@ -661,7 +665,7 @@ public class RemoteDelivery extends Thread {
 				throw new MessagingException("The previous QuedItem was not removed from this thread.");
 			}
 			this.qi = qi;
-			log.trace(getName()+".setQuedItem(): Item was set. qi="+qi);
+			log.trace(getClass().getSimpleName()+" ("+getName()+").setQuedItem(): Item was set. qi="+qi);
 			notify();
 		}
 	}
@@ -780,7 +784,7 @@ public class RemoteDelivery extends Thread {
 			}
 
 		} catch (TextParseException e) {
-			log.warn("",e);
+			log.warn(getClass().getSimpleName()+" ("+getName()+").getMXRecordsForHost(): Failed get MX record.",e);
 		}
 
 		return recordsColl;

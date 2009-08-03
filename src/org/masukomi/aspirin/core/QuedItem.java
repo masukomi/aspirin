@@ -133,7 +133,7 @@ public class QuedItem implements Comparable<QuedItem> {
 					if( isCompleted() )
 						watcher.deliveryFinished(que, getMail().getMessage());
 				} catch (MessagingException e) {
-					log.error(e);
+					log.error(getClass().getSimpleName()+".failForRecipient(): ",e);
 				}
 			}
 			que.decrementNotifiersCount(); 
@@ -172,7 +172,7 @@ public class QuedItem implements Comparable<QuedItem> {
 //			release();
 //			setStatus(QuedItem.IN_QUE);
 			if (log.isTraceEnabled()) {
-				log.trace("will retry message at "
+				log.trace(getClass().getSimpleName()+".retry(): will retry message at "
 						+ new Date(nextAttempt).toString());
 			}
 		} else {
@@ -181,7 +181,7 @@ public class QuedItem implements Comparable<QuedItem> {
 				Bouncer.bounce(que, getMail(), "Maxumum retries exceeded for " +recipient,
 						Configuration.getInstance().getPostmaster());
 			} catch (MessagingException e) {
-				log.error(e);
+				log.error(getClass().getSimpleName()+".retry(): ",e);
 			}
 		}
 	}
@@ -200,12 +200,11 @@ public class QuedItem implements Comparable<QuedItem> {
 	
 	public void release() {
 		synchronized (status) {
-			log.debug(getClass().getSimpleName()+".release(): Item released.");
 			if( isCompleted() )
 				status = COMPLETED;
 			else
 				status = IN_QUE;
-			log.trace(getClass().getSimpleName()+".release(): Item info. qi="+this);
+			log.trace(getClass().getSimpleName()+".release(): Item released. qi="+this);
 		}
 	}
 	
@@ -273,7 +272,7 @@ public class QuedItem implements Comparable<QuedItem> {
 					if( isCompleted() )
 						watcher.deliveryFinished(que, getMail().getMessage());
 				} catch (MessagingException e) {
-					log.error(e);
+					log.error(getClass().getSimpleName()+"succeededForRecipient(): ",e);
 				}
 			}
 			que.decrementNotifiersCount();
