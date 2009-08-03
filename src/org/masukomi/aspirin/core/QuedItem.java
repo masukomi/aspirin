@@ -97,22 +97,22 @@ public class QuedItem implements Comparable<QuedItem> {
 	 */
 	@Override
 	public int compareTo(QuedItem qi) {
-		try
-		{
-			// return (int)Math.signum(getNextAttempt() - qi.getNextAttempt());
-			if (qi.getNextAttempt() > getNextAttempt())
-			{
-				return -1;
-			}else
-			if (qi.getNextAttempt() < getNextAttempt())
-			{
-				return 1; // that one should go first
-			}
-			return 0;
-		}catch (ClassCastException cce)
-		{
-			return 0;
-		}
+//		try
+//		{
+			return (int)Math.signum(getNextAttempt() - qi.getNextAttempt());
+//			if (qi.getNextAttempt() > getNextAttempt())
+//			{
+//				return -1;
+//			}else
+//			if (qi.getNextAttempt() < getNextAttempt())
+//			{
+//				return 1; // that one should go first
+//			}
+//			return 0;
+//		}catch (ClassCastException cce)
+//		{
+//			return 0;
+//		}
 	}
 	/**
 	 * Sends a failure notice to any watchers about the current mail and recipient.
