@@ -606,8 +606,8 @@ public class RemoteDelivery extends Thread {
 						myObjectPool.returnObject(this);
 					}catch (Exception e)
 					{
-						this.shutdown();
 						log.error(getClass().getSimpleName()+" ("+getName()+").run(): The object could not be returned into the pool.",e);
+						this.shutdown();
 					}
 					// Wait for next QuedItem to deliver 
 					try
@@ -791,6 +791,7 @@ public class RemoteDelivery extends Thread {
 	}
 	
 	public void shutdown() {
+		log.trace(getClass().getSimpleName()+" ("+getName()+").shutdown(): Called.");
 		running = false;
 		synchronized (this) {
 			notify();

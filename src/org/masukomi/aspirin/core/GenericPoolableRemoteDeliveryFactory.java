@@ -46,6 +46,7 @@ public class GenericPoolableRemoteDeliveryFactory extends BasePoolableObjectFact
 			rd.setName(RemoteDelivery.class.getSimpleName()+"-"+rdCount);
 		}
 		rd.setParentPool(myParentPool);
+		Configuration.getInstance().getLog().trace(getClass().getSimpleName()+".makeObject(): New RemoteDelivery object created: "+rd.getName());
 		/*
 		 * This will be started after first borrow of this object, because the 
 		 * first item to process will be set after first borrow too.
@@ -59,6 +60,7 @@ public class GenericPoolableRemoteDeliveryFactory extends BasePoolableObjectFact
 		if( obj instanceof RemoteDelivery )
 		{
 			RemoteDelivery rd = (RemoteDelivery)obj;
+			Configuration.getInstance().getLog().trace(getClass().getSimpleName()+".destroyObject(): destroy thread "+rd.getName());
 			rd.shutdown();
 		}
 	}
