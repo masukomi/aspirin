@@ -302,8 +302,8 @@ public class MailQue {
 	private void notifyQueManager() {
 		if( !getQueManager().isRunning() )
 			getQueManager().start();
-//		else
-//			getQueManager().notifyWithMail();
+		else
+			getQueManager().notifyWithMail();
 	}
 
 }
