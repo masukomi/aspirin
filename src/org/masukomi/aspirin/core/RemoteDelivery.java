@@ -612,8 +612,11 @@ public class RemoteDelivery extends Thread {
 					// Wait for next QuedItem to deliver 
 					try
 					{
-						log.trace(getClass().getSimpleName()+" ("+getName()+").run(): Wait for next sendable item.");
-						wait();
+						if( running )
+						{
+							log.trace(getClass().getSimpleName()+" ("+getName()+").run(): Wait for next sendable item.");
+							wait();
+						}
 					} catch (InterruptedException ie)
 					/*
 					 * On interrupt we shutdown this thread and remove from 
