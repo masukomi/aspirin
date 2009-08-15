@@ -84,7 +84,7 @@ public class Bouncer {
 								.getHeader(RFC2822Headers.RETURN_PATH)[0]));
 			}
 			//Create the list of recipients in our MailAddress format
-			Collection recipients = new HashSet();
+			Collection<MailAddress> recipients = new HashSet<MailAddress>();
 			Address[] addresses = reply.getAllRecipients();
 			for (int i = 0; i < addresses.length; i++) {
 				recipients.add(new MailAddress((InternetAddress) addresses[i]));
