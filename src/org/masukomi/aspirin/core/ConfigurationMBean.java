@@ -106,12 +106,12 @@ public interface ConfigurationMBean {
 	 * @param encoding The MIME encoding.
 	 */
 	public void setEncoding(String encoding);
-//	/**
-//	 * If you have got an own logger, you can set up a logger name, which is 
-//	 * used in your system. 
-//	 * @param loggerName The name of your logger.
-//	 */
-//	public void setLoggerName(String loggerName);
+	/**
+	 * If you have got an own logger, you can set up a logger name, which is 
+	 * used in your system. 
+	 * @param loggerName The name of your logger.
+	 */
+	public void setLoggerName(String loggerName);
 	/**
 	 * Set the logger prefix, which will be appended to the start of log 
 	 * entries.

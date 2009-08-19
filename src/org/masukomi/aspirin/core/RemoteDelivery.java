@@ -100,11 +100,17 @@ import org.xbill.DNS.Type;
  * 
  * Heavily leverages the RemoteDelivery class from James
  */
-public class RemoteDelivery extends Thread {
+public class RemoteDelivery extends Thread implements ConfigurationChangeListener {
 	
 	private boolean running = false;
 	private Session mailSession = null;
 	private ObjectPool myObjectPool = null;
+	
+	private static final String MAIL_MIME_CHARSET = "mail.mime.charset";
+	private static final String MAIL_SMTP_CONNECTIONTIMEOUT = "mail.smtp.connectiontimeout";
+	private static final String MAIL_SMTP_HOST = "mail.smtp.host";
+	private static final String MAIL_SMTP_LOCALHOST = "mail.smtp.localhost";
+	private static final String MAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
 	
 	static private Log log = Configuration.getInstance().getLog();
 
@@ -119,14 +125,14 @@ public class RemoteDelivery extends Thread {
 		
 		// Set up default session
 		Properties mailSessionProps = System.getProperties();
-		mailSessionProps.put("mail.smtp.host", Configuration.getInstance().getHostname()); //The SMTP server to connect to.
-		mailSessionProps.put("mail.smtp.localhost", Configuration.getInstance().getHostname()); //Local host name. Defaults to InetAddress.getLocalHost().getHostName(). Should not normally need to be set if your JDK and your name service are configured properly.
-		mailSessionProps.put("mail.mime.charset", Configuration.getInstance().getEncoding()); //The mail.mime.charset System property can be used to specify the default MIME charset to use for encoded words and text parts that don't otherwise specify a charset. Normally, the default MIME charset is derived from the default Java charset, as specified in the file.encoding System property. Most applications will have no need to explicitly set the default MIME charset. In cases where the default MIME charset to be used for mail messages is different than the charset used for files stored on the system, this property should be set.
-		mailSessionProps.put("mail.smtp.connectiontimeout", Configuration.getInstance().getConnectionTimeout()); //Socket connection timeout value in milliseconds. Default is infinite timeout.
-		mailSessionProps.put("mail.smtp.timeout", Configuration.getInstance().getConnectionTimeout()); //Socket I/O timeout value in milliseconds. Default is infinite timeout.
+		mailSessionProps.put(MAIL_SMTP_HOST, Configuration.getInstance().getHostname()); //The SMTP server to connect to.
+		mailSessionProps.put(MAIL_SMTP_LOCALHOST, Configuration.getInstance().getHostname()); //Local host name. Defaults to InetAddress.getLocalHost().getHostName(). Should not normally need to be set if your JDK and your name service are configured properly.
+		mailSessionProps.put(MAIL_MIME_CHARSET, Configuration.getInstance().getEncoding()); //The mail.mime.charset System property can be used to specify the default MIME charset to use for encoded words and text parts that don't otherwise specify a charset. Normally, the default MIME charset is derived from the default Java charset, as specified in the file.encoding System property. Most applications will have no need to explicitly set the default MIME charset. In cases where the default MIME charset to be used for mail messages is different than the charset used for files stored on the system, this property should be set.
+		mailSessionProps.put(MAIL_SMTP_CONNECTIONTIMEOUT, Configuration.getInstance().getDeliveryTimeout()); //Socket connection timeout value in milliseconds. Default is infinite timeout.
+		mailSessionProps.put(MAIL_SMTP_TIMEOUT, Configuration.getInstance().getDeliveryTimeout()); //Socket I/O timeout value in milliseconds. Default is infinite timeout.
 		mailSession = Session.getInstance(mailSessionProps);
 		// Set communication debug
-		if( log.isDebugEnabled() && Configuration.getInstance().isDebugCommunication() )
+		if( log.isDebugEnabled() && Configuration.getInstance().isDeliveryDebug() )
 			mailSession.setDebug(true);
 	}
 	
@@ -529,7 +535,7 @@ public class RemoteDelivery extends Thread {
 						.append("Storing message ")
 						.append(mail.getName())
 						.append(" into que after ")
-						.append(qi.getNumAttempts())
+//						.append(qi.getNumAttempts())
 						.append(" attempts")
 					;
 					log.debug(logBuffer.toString());
@@ -545,7 +551,7 @@ public class RemoteDelivery extends Thread {
 						.append("Bouncing message ")
 						.append(mail.getName())
 						.append(" after ")
-						.append(qi.getNumAttempts())
+//						.append(qi.getNumAttempts())
 						.append(" attempts")
 					;
 					log.debug(logBuffer.toString());
@@ -798,6 +804,28 @@ public class RemoteDelivery extends Thread {
 		running = false;
 		synchronized (this) {
 			notify();
+		}
+	}
+
+
+	@Override
+	public void configChanged(String parameterName) {
+		if( ConfigurationMBean.PARAM_DELIVERY_TIMEOUT.equals(parameterName) )
+		{
+			Properties sessProps = mailSession.getProperties();
+			sessProps.setProperty(MAIL_SMTP_CONNECTIONTIMEOUT, String.valueOf(Configuration.getInstance().getDeliveryTimeout()));
+			sessProps.setProperty(MAIL_SMTP_TIMEOUT, String.valueOf(Configuration.getInstance().getDeliveryTimeout()));
+		}else
+		if( ConfigurationMBean.PARAM_ENCODING.equals(parameterName) )
+		{
+			Properties sessProps = mailSession.getProperties();
+			sessProps.setProperty(MAIL_MIME_CHARSET, Configuration.getInstance().getEncoding());
+		}else
+		if( ConfigurationMBean.PARAM_HOSTNAME.equals(parameterName) )
+		{
+			Properties sessProps = mailSession.getProperties();
+			sessProps.setProperty(MAIL_SMTP_HOST, Configuration.getInstance().getHostname());
+			sessProps.setProperty(MAIL_SMTP_LOCALHOST, Configuration.getInstance().getHostname());
 		}
 	}
 

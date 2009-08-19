@@ -123,7 +123,7 @@ public class QuedItem implements Comparable<QuedItem> {
 			recipientFailures = new HashMap<MailAddress, Integer>();
 		}
 		recipientFailures.put(recipient, 
-				new Integer(Configuration.getInstance().getMaxAttempts())); 
+				new Integer(Configuration.getInstance().getDeliveryAttemptCount())); 
 		// tell anyone who cares
 		if (que.getListeners() != null) {
 			que.incrementNotifiersCount();
@@ -166,8 +166,7 @@ public class QuedItem implements Comparable<QuedItem> {
 			
 			
 			
-			nextAttempt = System.currentTimeMillis()
-					+ Configuration.getInstance().getRetryInterval();
+			nextAttempt = System.currentTimeMillis() + Configuration.getInstance().getDeliveryAttemptDelay();
 			// It will be released after processing
 //			release();
 //			setStatus(QuedItem.IN_QUE);
@@ -218,7 +217,7 @@ public class QuedItem implements Comparable<QuedItem> {
 		if (recipientFailures.containsKey(recipient)) {
 			Integer numFailures = (Integer) recipientFailures.get(recipient);
 			if ((numFailures.intValue() + 1) < Configuration.getInstance()
-					.getMaxAttempts()) {
+					.getDeliveryAttemptCount()) {
 				return true;
 			}
 		} else {
@@ -286,7 +285,8 @@ public class QuedItem implements Comparable<QuedItem> {
 	}
 	boolean isCompleted() {
 		int recipientsCount = getMail().getRecipients().size();
-		log.trace(getClass().getSimpleName()+" ("+((MailImpl)getMail()).getName()+").isCompleted(): S"+numSuccesses+"+F"+numFailures+"/A"+recipientsCount);
+		if( log != null && log.isTraceEnabled() )
+			log.trace(getClass().getSimpleName()+" ("+((MailImpl)getMail()).getName()+").isCompleted(): S"+numSuccesses+"+F"+numFailures+"/A"+recipientsCount);
 		if (numSuccesses + numFailures >= recipientsCount) {
 			return true;
 		}

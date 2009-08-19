@@ -44,7 +44,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
  * @version $Id$
  * 
  */
-class QueManager extends Thread {
+class QueManager extends Thread implements ConfigurationChangeListener {
 	
 	private boolean running = false;
 	private ObjectPool remoteDeliveryObjectPool = null;
@@ -66,8 +66,8 @@ class QueManager extends Thread {
 		// Configure pool of RemoteDelivery threads
 		GenericObjectPool.Config gopConf = new GenericObjectPool.Config();
 		gopConf.lifo = false;
-		gopConf.maxActive = Configuration.getInstance().getDeliveryThreads();
-		gopConf.maxIdle = Math.max(1, (int)Configuration.getInstance().getDeliveryThreads()/2);
+		gopConf.maxActive = Configuration.getInstance().getDeliveryThreadsActiveMax();
+		gopConf.maxIdle = Configuration.getInstance().getDeliveryThreadsIdleMax();
 		gopConf.maxWait = 5000;
 		gopConf.testOnReturn = true;
 		gopConf.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_BLOCK;
@@ -86,6 +86,8 @@ class QueManager extends Thread {
 				new ThreadGroup("RemoteDeliveryThreadGroup"),
 				remoteDeliveryObjectPool
 		);
+		
+		Configuration.getInstance().addListener(this);
 		
 	}
 	
@@ -173,7 +175,7 @@ class QueManager extends Thread {
 					} else
 					{
 						if( log.isTraceEnabled() && 0 < getQue().getQueueSize() )
-							log.trace(getClass().getSimpleName()+"run(): There is no sendable item in the queue. Fallback to waiting state for a minute.");
+							log.trace(getClass().getSimpleName()+".run(): There is no sendable item in the queue. Fallback to waiting state for a minute.");
 						synchronized (this) {
 							try
 							{
@@ -224,6 +226,25 @@ class QueManager extends Thread {
 	
 	public synchronized void notifyWithMail() {
 		notify();
+	}
+
+
+	@Override
+	public void configChanged(String parameterName) {
+		if( ConfigurationMBean.PARAM_DELIVERY_THREADS_ACTIVE_MAX.equals(parameterName) )
+		{
+			((GenericObjectPool)remoteDeliveryObjectPool).setMaxActive(Configuration.getInstance().getDeliveryThreadsActiveMax());
+		}else
+		if( ConfigurationMBean.PARAM_DELIVERY_THREADS_IDLE_MAX.equals(parameterName) )
+		{
+			((GenericObjectPool)remoteDeliveryObjectPool).setMaxIdle(Configuration.getInstance().getDeliveryThreadsIdleMax());
+		}
+	}
+	
+	@Override
+	protected void finalize() throws Throwable {
+		Configuration.getInstance().removeListener(this);
+		super.finalize();
 	}
 
 }

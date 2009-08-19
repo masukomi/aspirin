@@ -2,6 +2,7 @@ package org.masukomi.aspirin.core;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.lang.management.ManagementFactory;
 import java.util.Properties;
 
 import javax.mail.Address;
@@ -9,6 +10,8 @@ import javax.mail.Session;
 import javax.mail.Message.RecipientType;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 
 import junit.framework.TestCase;
 
@@ -21,14 +24,17 @@ public class ModuleTest extends TestCase {
 	public void testAspirin(String[] args) throws Exception {
 		// 1. Configure aspirin
 		Configuration config = Configuration.getInstance();
-		config.setConnectionTimeout(100000); // 100 seconds
-		config.setDebugCommunication(true);
-		config.setDeliveryThreads(3);
+		config.setDeliveryTimeout(100000); // 100 seconds
+		config.setDeliveryDebug(true);
+		config.setDeliveryThreadsActiveMax(3);
 		config.setEncoding("UTF-8");
 		config.setHostname("localhost");
-		config.setLogPrefix("MailService");
-		config.setMaxAttempts(3);
-		config.setRetryInterval(5);
+		config.setLoggerPrefix("MailService");
+		config.setDeliveryAttemptCount(3);
+		config.setDeliveryAttemptDelay(5);
+		
+		MBeanServer mbS = ManagementFactory.getPlatformMBeanServer();
+		mbS.registerMBean(Configuration.getInstance(), new ObjectName("org.masukomi.aspirin:type=Configuration"));
 
 //		@SuppressWarnings("unused")
 //		Logger logger = Logger.getLogger("MailService");

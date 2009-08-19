@@ -22,6 +22,8 @@
  * SOFTWARE.
  */
 package org.masukomi.aspirin.core;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Transport;
@@ -30,6 +32,7 @@ import javax.mail.internet.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.mailet.MailAddress;
+
 
 /**
  * <p>This class represents the configuration of Aspirin. You can configure this 
@@ -56,13 +59,15 @@ import org.apache.mailet.MailAddress;
  *     <td>aspirin.delivery.attempt.delay</td>
  *     <td>aspirinRetryInterval</td>
  *     <td>Integer</td>
- *     <td>The delay of next attempt to delivery in milliseconds. <i>Change by JMX applied immediately.</i></td>
+ *     <td>The delay of next attempt to delivery in milliseconds. <i>Change by 
+ *     JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.attempt.count</td>
  *     <td>aspirinMaxAttempts</td>
  *     <td>Integer</td>
- *     <td>Maximal number of delivery attempts of an email. <i>Change by JMX applied immediately.</i></td>
+ *     <td>Maximal number of delivery attempts of an email. <i>Change by JMX 
+ *     applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.debug</td>
@@ -74,50 +79,56 @@ import org.apache.mailet.MailAddress;
  *     <td>aspirin.delivery.threads.active.max</td>
  *     <td>aspirinDeliverThreads</td>
  *     <td>Integer</td>
- *     <td>Maximum number of active delivery threads in the pool.</td>
+ *     <td>Maximum number of active delivery threads in the pool. <i>Change by 
+ *     JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.threads.idle.max</td>
  *     <td>aspirinDeliverThreads</td>
  *     <td>Integer</td>
  *     <td>Maximum number of idle delivery threads in the pool (the deilvery 
- *     threads over this limit will be shutdown).</td>
+ *     threads over this limit will be shutdown). <i>Change by JMX applied 
+ *     immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.timeout</td>
  *     <td></td>
  *     <td>Integer</td>
- *     <td>Socket and {@link Transport} timeout in milliseconds.</td>
+ *     <td>Socket and {@link Transport} timeout in milliseconds. <i>Change by 
+ *     JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.encoding</td>
  *     <td></td>
  *     <td>String</td>
- *     <td>The MIME encoding.</td>
+ *     <td>The MIME encoding. <i>Change by JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.hostname</td>
  *     <td>aspirinHostname</td>
  *     <td>String</td>
- *     <td>The hostname.</td>
+ *     <td>The hostname. <i>Change by JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.logger.name</td>
  *     <td></td>
  *     <td>String</td>
- *     <td>The name of the logger. <i>Readonly.</i></td>
+ *     <td>The name of the logger. <i>Change by JMX applied immediately.</i>
+ *     </td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.logger.prefix</td>
  *     <td></td>
  *     <td>String</td>
- *     <td>The prefix of the logger. This will be put in the logs at the first position.</td>
+ *     <td>The prefix of the logger. This will be put in the logs at the first 
+ *     position. <i>Change by JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.postmaster.email</td>
  *     <td>aspirinPostmaster</td>
  *     <td>String</td>
- *     <td>The email address of the postmaster.</td>
+ *     <td>The email address of the postmaster. <i>Change by JMX applied 
+ *     immediately.</i></td>
  *   </tr>
  * </table>
  * 
@@ -139,6 +150,8 @@ public class Configuration implements ConfigurationMBean {
 	private static Log log = LogFactory.getLog(loggerName); // inherited from aspirin.logger.name
 	private String loggerPrefix = "Aspirin "; // aspirin.logger.prefix
 	protected MailAddress postmaster = null; // inherited from aspirin.postmaster.email
+	
+	private List<ConfigurationChangeListener> listeners;
 
 	static public Configuration getInstance() {
 		if (instance == null) {
@@ -293,7 +306,7 @@ public class Configuration implements ConfigurationMBean {
 	 * @deprecated Use getDeliveryAttemptDelay() instead.
 	 */
 	public long getRetryInterval() {
-		return retryInterval;
+		return getDeliveryAttemptDelay();
 	}
 	/**
 	 * @param retryInterval
@@ -302,7 +315,7 @@ public class Configuration implements ConfigurationMBean {
 	 * @deprecated Use setDeliveryAttemptDelay() instead.
 	 */
 	public void setRetryInterval(long retryInterval) {
-		this.retryInterval = retryInterval;
+		setDeliveryAttemptDelay((int)retryInterval);
 	}
 	/**
 	 * @return the number of threads in the thread pool available for mail
@@ -311,7 +324,7 @@ public class Configuration implements ConfigurationMBean {
 	 * @deprecated Use getDeliveryThreadsActiveMax() instead.
 	 */
 	public int getDeliveryThreads() {
-		return deliveryThreads;
+		return getDeliveryThreadsActiveMax();
 	}
 	/**
 	 * Sets the number of threads in the thread pool available for mail
@@ -325,7 +338,7 @@ public class Configuration implements ConfigurationMBean {
 	 * 
 	 */
 	public void setDeliveryThreads(int threadCount) {
-		this.deliveryThreads = threadCount;
+		setDeliveryThreadsActiveMax(threadCount);
 	}
 	/**
 	 * @return The email address of the postmaster in a MailAddress object.
@@ -338,13 +351,7 @@ public class Configuration implements ConfigurationMBean {
 	 * @param postmasterAddress
 	 */
 	public void setPostmaster(String postmasterAddress) {
-		
-		try {
-			postmaster = new MailAddress(postmasterAddress);
-		} catch (ParseException e) {
-			log.error(e);
-			throw new RuntimeException(e);
-		} 
+		setPostmasterEmail(postmasterAddress); 
 	}
 	/**
 	 * @return int representing the number of times the system will attempt to
@@ -352,14 +359,14 @@ public class Configuration implements ConfigurationMBean {
 	 * @deprecated Use getDeliveryAttemptCount() instead.
 	 */
 	public int getMaxAttempts() {
-		return maxAttempts;
+		return getDeliveryAttemptCount();
 	}
 	/**
 	 * @deprecated Use setDeliveryAttemptCount() instead.
 	 * @param maxAttempts
 	 */
 	public void setMaxAttempts(int maxAttempts) {
-		this.maxAttempts = maxAttempts;
+		setDeliveryAttemptCount(maxAttempts);
 	}
 	public Log getLog() {
 		return log;
@@ -370,54 +377,56 @@ public class Configuration implements ConfigurationMBean {
 	}
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
+		notifyListeners(PARAM_HOSTNAME);
 	}
 	/**
 	 * @deprecated Use isDeliveryDebug() instead.
 	 * @return
 	 */
 	public boolean isDebugCommunication() {
-		return debugCommunication;
+		return isDeliveryDebug();
 	}
 	/**
 	 * @deprecated Use setDeliveryDebug() instead.
 	 * @param debugCommunication
 	 */
 	public void setDebugCommunication(boolean debugCommunication) {
-		this.debugCommunication = debugCommunication;
+		setDeliveryDebug(debugCommunication);
 	}
 	public String getEncoding() {
 		return encoding;
 	}
 	public void setEncoding(String encoding) {
 		this.encoding = encoding;
+		notifyListeners(PARAM_ENCODING);
 	}
 	/**
 	 * @deprecated Use getLoggerPrefix() instead.
 	 * @return
 	 */
 	public String getLogPrefix() {
-		return loggerPrefix;
+		return getLoggerPrefix();
 	}
 	/**
 	 * @deprecated Use setLoggerPrefix() instead.
 	 * @param logPrefix
 	 */
 	public void setLogPrefix(String logPrefix) {
-		this.loggerPrefix = logPrefix+" ";
+		setLoggerPrefix(logPrefix);
 	}
 	/**
 	 * @deprecated Use getDeliveryTimeout() instead.
 	 * @return
 	 */
 	public int getConnectionTimeout() {
-		return connectionTimeout;
+		return getDeliveryTimeout();
 	}
 	/**
 	 * @deprecated Use setDeliveryTimeout() instead.
 	 * @param connectionTimeout
 	 */
 	public void setConnectionTimeout(int connectionTimeout) {
-		this.connectionTimeout = connectionTimeout;
+		setDeliveryTimeout(connectionTimeout);
 	}
 
 	@Override
@@ -468,42 +477,50 @@ public class Configuration implements ConfigurationMBean {
 	@Override
 	public void setDeliveryAttemptCount(int attemptCount) {
 		this.maxAttempts = attemptCount;
+		notifyListeners(PARAM_DELIVERY_ATTEMPT_COUNT);
 	}
 
 	@Override
 	public void setDeliveryAttemptDelay(int delay) {
 		this.retryInterval = delay;
+		notifyListeners(PARAM_DELIVERY_ATTEMPT_DELAY);
 	}
 
 	@Override
 	public void setDeliveryDebug(boolean debug) {
 		this.debugCommunication = debug;
+		notifyListeners(PARAM_DELIVERY_DEBUG);
 	}
 
 	@Override
 	public void setDeliveryThreadsActiveMax(int activeThreadsMax) {
 		this.deliveryThreads = activeThreadsMax;
+		notifyListeners(PARAM_DELIVERY_THREADS_ACTIVE_MAX);
 	}
 	
 	@Override
 	public void setDeliveryThreadsIdleMax(int idleThreadsMax) {
 		this.idleDeliveryThreads = idleThreadsMax;
+		notifyListeners(PARAM_DELIVERY_THREADS_IDLE_MAX);
 	}
 
 	@Override
 	public void setDeliveryTimeout(int timeout) {
 		this.connectionTimeout = timeout;
+		notifyListeners(PARAM_DELIVERY_TIMEOUT);
 	}
 
-//	@Override
-//	public void setLoggerName(String loggerName) {
-//		Configuration.loggerName = loggerName;
-//		log = LogFactory.getLog(loggerName); 
-//	}
+	@Override
+	public void setLoggerName(String loggerName) {
+		Configuration.loggerName = loggerName;
+		log = LogFactory.getLog(loggerName);
+		notifyListeners(PARAM_LOGGER_NAME);
+	}
 
 	@Override
 	public void setLoggerPrefix(String loggerPrefix) {
 		this.loggerPrefix = loggerPrefix;
+		notifyListeners(PARAM_LOGGER_PREFIX);
 	}
 
 	@Override
@@ -511,9 +528,37 @@ public class Configuration implements ConfigurationMBean {
 		try
 		{
 			this.postmaster = new MailAddress(emailAddress);
+			notifyListeners(PARAM_POSTMASTER_EMAIL);
 		}catch (ParseException e)
 		{
 			log.error(getClass().getSimpleName()+".setPostmasterEmail(): The email address is unparseable.", e);
+		}
+	}
+	
+	public void addListener(ConfigurationChangeListener listener) {
+		if( listeners == null )
+			listeners = new ArrayList<ConfigurationChangeListener>();
+		synchronized (listeners) {
+			listeners.add(listener);
+		}
+	}
+	
+	public void removeListener(ConfigurationChangeListener listener) {
+		if( listeners != null )
+		{
+			synchronized (listeners) {
+				listeners.remove(listener);
+			}
+		}
+	}
+	
+	private void notifyListeners(String changedParameterName) {
+		if( listeners != null )
+		{
+			synchronized (listeners) {
+				for( ConfigurationChangeListener listener : listeners )
+					listener.configChanged(changedParameterName);
+			}
 		}
 	}
 

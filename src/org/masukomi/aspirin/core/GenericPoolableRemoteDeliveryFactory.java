@@ -52,6 +52,7 @@ public class GenericPoolableRemoteDeliveryFactory extends BasePoolableObjectFact
 		 * first item to process will be set after first borrow too.
 		 */
 //		rd.start();
+		Configuration.getInstance().addListener(rd);
 		return rd;
 	}
 
@@ -62,6 +63,7 @@ public class GenericPoolableRemoteDeliveryFactory extends BasePoolableObjectFact
 			RemoteDelivery rd = (RemoteDelivery)obj;
 			Configuration.getInstance().getLog().trace(getClass().getSimpleName()+".destroyObject(): destroy thread "+rd.getName());
 			rd.shutdown();
+			Configuration.getInstance().removeListener(rd);
 		}
 	}
 

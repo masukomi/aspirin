@@ -59,13 +59,10 @@ public class MailQueTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		Configuration config = Configuration.getInstance();
-		config.setMaxAttempts(1);
-		config.setPostmaster("root@localhost");
-		config.setDeliveryThreads(1);
-		config.setRetryInterval(60000);
-		
-		
-		
+		config.setDeliveryAttemptCount(1);
+		config.setPostmasterEmail("root@localhost");
+		config.setDeliveryThreadsActiveMax(1);
+		config.setDeliveryAttemptDelay(60000);
 		
 		testMessage = SimpleMimeMessageGenerator.getNewMimeMessage();
 		testMessage.addRecipient(Message.RecipientType.TO, new InternetAddress("aspirin-test@masukomi.org"));
@@ -116,7 +113,7 @@ public class MailQueTest extends TestCase {
 			assertTrue(watcher.blockingSuccessCheck());
 			System.out.println("Giving it 60 seconds to be processed by the server. ");
 			try {
-				Thread.currentThread().sleep(60000);
+				Thread.sleep(60000);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
