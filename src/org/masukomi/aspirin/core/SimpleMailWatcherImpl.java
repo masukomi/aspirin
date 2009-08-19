@@ -5,8 +5,6 @@
  */
 package org.masukomi.aspirin.core;
 
-import java.util.Collection;
-
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
@@ -26,7 +24,7 @@ public class SimpleMailWatcherImpl implements MailWatcher {
 	boolean hasFailed = false;
 	MimeMessage message;
 	/** a collection of import org.apache.mailet.MailAddress objects relating to the e-mail */
-	Collection recipients;
+//	Collection recipients;
 	MailAddress lastRecipient;
 	/**
 	 * 
@@ -49,7 +47,7 @@ public class SimpleMailWatcherImpl implements MailWatcher {
 	public boolean blockingSuccessCheck(){
 		while(hasFailed == false && hasSucceeded == false){
 			try {
-				Thread.currentThread().sleep(1000);
+				Thread.sleep(1000);
 			} catch (InterruptedException e1) {
 				// TODO Auto-generated catch block
 				log.error(e1);
@@ -68,12 +66,12 @@ public class SimpleMailWatcherImpl implements MailWatcher {
 	public MimeMessage getMessage() {
 		return message;
 	}
-	/**
-	 * @return Returns the recipients.
-	 */
-	public Collection getRecipients() {
-		return recipients;
-	}
+//	/**
+//	 * @return Returns the recipients.
+//	 */
+//	public Collection getRecipients() {
+//		return recipients;
+//	}
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliverySuccess(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
