@@ -277,7 +277,7 @@ public class MailQue {
 		return notificationCount != 0;
 	}
 	
-		public synchronized void terminate() {
+	public synchronized void terminate() {
 		if( qm != null )
 		{
 			synchronized (qm) {
