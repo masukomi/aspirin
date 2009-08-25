@@ -73,7 +73,8 @@ import org.apache.mailet.MailAddress;
  *     <td>aspirin.delivery.debug</td>
  *     <td></td>
  *     <td>Boolean</td>
- *     <td>If true, full SMTP communication will be logged.</td>
+ *     <td>If true, full SMTP communication will be logged. <i>Change by JMX 
+ *     applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.threads.active.max</td>

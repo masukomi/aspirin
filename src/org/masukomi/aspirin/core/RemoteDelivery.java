@@ -826,6 +826,13 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 			Properties sessProps = mailSession.getProperties();
 			sessProps.setProperty(MAIL_SMTP_HOST, Configuration.getInstance().getHostname());
 			sessProps.setProperty(MAIL_SMTP_LOCALHOST, Configuration.getInstance().getHostname());
+		}else
+		if( ConfigurationMBean.PARAM_DELIVERY_DEBUG.equals(parameterName) )
+		{
+			mailSession.setDebug(
+				log.isDebugEnabled() &&
+				Configuration.getInstance().isDeliveryDebug()
+			);
 		}
 	}
 
