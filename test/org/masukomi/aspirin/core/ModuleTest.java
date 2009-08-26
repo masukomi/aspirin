@@ -24,14 +24,17 @@ public class ModuleTest extends TestCase {
 	public void testAspirin(String[] args) throws Exception {
 		// 1. Configure aspirin
 		Configuration config = Configuration.getInstance();
-		config.setDeliveryTimeout(100000); // 100 seconds
-		config.setDeliveryDebug(true);
-		config.setDeliveryThreadsActiveMax(3);
-		config.setEncoding("UTF-8");
-		config.setHostname("localhost");
-		config.setLoggerPrefix("MailService");
 		config.setDeliveryAttemptCount(3);
 		config.setDeliveryAttemptDelay(5);
+		config.setDeliveryDebug(true);
+		config.setDeliveryThreadsActiveMax(3);
+		config.setDeliveryThreadsIdleMax(3);
+		config.setDeliveryTimeout(100000); // 100 seconds
+		config.setEncoding("UTF-8");
+		config.setHostname("localhost");
+		config.setLoggerName("MailService");
+		config.setLoggerPrefix("MailService");
+		config.setPostmasterEmail(null);
 		
 		MBeanServer mbS = ManagementFactory.getPlatformMBeanServer();
 		mbS.registerMBean(Configuration.getInstance(), new ObjectName("org.masukomi.aspirin:type=Configuration"));
