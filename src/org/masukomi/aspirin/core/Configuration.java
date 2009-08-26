@@ -114,7 +114,10 @@ import org.apache.mailet.MailAddress;
  *     <td>aspirin.logger.name</td>
  *     <td></td>
  *     <td>String</td>
- *     <td>The name of the logger. <i>Change by JMX applied immediately.</i>
+ *     <td>
+ *       The name of the logger. <i>Change by JMX applied immediately.</i>
+ *       <br/>
+ *       <strong>WARNING! Changing logger name cause replacing of logger.</strong>
  *     </td>
  *   </tr>
  *   <tr>
@@ -526,6 +529,11 @@ public class Configuration implements ConfigurationMBean {
 
 	@Override
 	public void setPostmasterEmail(String emailAddress) {
+		if( emailAddress == null )
+		{
+			this.postmaster = null;
+			return;
+		}
 		try
 		{
 			this.postmaster = new MailAddress(emailAddress);
