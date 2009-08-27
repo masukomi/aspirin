@@ -1,5 +1,7 @@
 package org.masukomi.aspirin.core;
 
+import java.io.File;
+
 import javax.mail.Transport;
 
 /**
@@ -56,6 +58,11 @@ public interface ConfigurationMBean {
 	 * @return The prefix appended to the start of the log entries.
 	 */
 	public String getLoggerPrefix();
+//	/**
+//	 * @return The directory object where the mimemessage objects could be
+//	 * stored.
+//	 */
+//	public File getMailCacheDirectory();
 	/**
 	 * @return The email address of the postmaster.
 	 */
@@ -118,6 +125,11 @@ public interface ConfigurationMBean {
 	 * @param loggerPrefix The prefix string.
 	 */
 	public void setLoggerPrefix(String loggerPrefix);
+//	/**
+//	 * 
+//	 * @param mailCacheDirectory
+//	 */
+//	public void setMailCacheDirectory(File mailCacheDirectory);
 	/**
 	 * Set the email address of postmaster. If delivery failed, you can get an 
 	 * email about the failure to this address.

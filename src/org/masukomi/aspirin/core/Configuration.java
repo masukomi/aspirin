@@ -562,8 +562,10 @@ public class Configuration implements ConfigurationMBean {
 	}
 	
 	private void notifyListeners(String changedParameterName) {
-		if( listeners != null )
+		if( listeners != null && 0 < listeners.size() )
 		{
+			if( log.isInfoEnabled() )
+				log.info(getClass().getSimpleName()+".notifyListeners(): Configuration parameter '"+changedParameterName+"' changed.");
 			synchronized (listeners) {
 				for( ConfigurationChangeListener listener : listeners )
 					listener.configChanged(changedParameterName);
