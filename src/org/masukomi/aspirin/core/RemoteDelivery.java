@@ -217,19 +217,22 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 			} catch (Exception e) {
 				log.error(getClass().getSimpleName()+" ("+getName()+" ).deliver(): Could not get MX for "+host+".",e);
 			}
-			if (targetServers == null || targetServers.size() == 0) {
-				log.warn(getClass().getSimpleName()+" ("+getName()+").deliver(): No mail server found for: " + host);
-				StringBuffer exceptionBuffer = new StringBuffer(128)
-				.append(
-						"I found no MX record entries for the hostname ")
-						.append(host)
-						.append(
-								".  I cannot determine where to send this message.");
-				return failMessage(qi, rcpt, new MessagingException(
-						exceptionBuffer.toString()), true);
-			} else if (log.isTraceEnabled()) {
-				log.trace(getClass().getSimpleName()+" ("+getName()+").deliver(): "+ targetServers.size() + " servers found for "+ host+".");
-			}
+			/*
+             * If there was no target server, could be caused by a temporary
+             * failure in domain name resolving. So we should to deliver this
+             * email later.
+             */
+            if( targetServers == null || targetServers.size() == 0 )
+            {
+                log.warn(getClass().getSimpleName()+" ("+getName()+").deliver(): No mail server found for: " + host);
+                StringBuffer exceptionBuffer = new StringBuffer(128)
+                    .append("No MX record found for the hostname '")
+                    .append(host)
+                    .append("'. Message will be delivered later.");
+                return failMessage(qi, rcpt, new MessagingException( exceptionBuffer.toString()), false);
+            }else
+            if( log.isTraceEnabled() )
+                log.trace(getClass().getSimpleName()+" ("+getName()+").deliver(): "+ targetServers.size() + " servers found for "+ host+".");
 			MessagingException lastError = null;
 			Iterator<URLName> i = targetServers.iterator();
 			while (i.hasNext()) {
