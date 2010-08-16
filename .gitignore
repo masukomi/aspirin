@@ -2,4 +2,4 @@ bin
 *.class
 *.swp
 *~
-build/aspirin
+target
