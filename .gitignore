@@ -3,3 +3,6 @@ bin
 *.swp
 *~
 target
+.classpath
+.project
+.settings/*
