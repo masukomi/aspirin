@@ -44,10 +44,13 @@
                 <!-- <version>2.5</version> -->
                 <configuration>
                     <forkMode>pertest</forkMode>
-                    <argLine>-Dfile.encoding=UTF-8 -Xms256m -Xmx1024m -enableassertions</argLine>
+                    <argLine>-Dfile.encoding=UTF-8 -enableassertions</argLine>
                     <includes>
-                        <include>**/*/TestCase*.java</include>
+                        <include>**/*/Test.java</include>
                     </includes>
+                    <excludes>
+                        <exclude>**/*/Defunct*Test.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
         </plugins>
