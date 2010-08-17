@@ -46,7 +46,7 @@
                     <forkMode>pertest</forkMode>
                     <argLine>-Dfile.encoding=UTF-8 -enableassertions</argLine>
                     <includes>
-                        <include>**/*/Test.java</include>
+                        <include>**/*/*Test.java</include>
                     </includes>
                     <excludes>
                         <exclude>**/*/Defunct*Test.java</exclude>
