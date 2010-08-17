@@ -1,18 +1,18 @@
 /*
  * Created on Jan 3, 2004
- * 
+ *
  * Copyright (c) 2004 Katherine Rhodes (masukomi at masukomi dot org)
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,10 +20,10 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  * @author kate rhodes
- * @author Brian Schultheiss 
- * 
+ * @author Brian Schultheiss
+ *
  * Much thanks to Brian for fixing the multiple recepient bug.
  */
 package org.masukomi.aspirin.core;
@@ -41,10 +41,10 @@ import org.apache.james.core.MailImpl;
 
 /**
  * <p>This class represents the mailing queue of the Aspirin.</p>
- * 
+ *
  * @author masukomi
  * @version $Id$
- * 
+ *
  */
 public class MailQue {
 	private Log log = Configuration.getInstance().getLog();
@@ -55,7 +55,7 @@ public class MailQue {
 	private Vector<MailWatcher> listenersToRemove;
 	private Vector<MailWatcher> listenersToAdd;
 	private int notificationCount;
-	
+
 	public MailQue() {
 		qm = new QueManager(this);
 		que = new Vector<QuedItem>();
@@ -70,18 +70,18 @@ public class MailQue {
 	}
 	protected void service(MimeMessage mimeMessage, Collection<MailWatcher> watchers)
 			throws AddressException, MessagingException {
-		
+
 		MailImpl sourceMail = new MailImpl(mimeMessage);
 		// Do I want to give the internal key, or the message's Message ID
 		if (log.isDebugEnabled())
 			log.debug(getClass().getSimpleName()+".service(): Remotely delivering mail " + sourceMail.getName());
-		
+
 		/*
-		 * We don't need to organize recipients and separate into unique mails. 
-		 * The RemoteDelivery could handle a mail with multiple recipients and 
+		 * We don't need to organize recipients and separate into unique mails.
+		 * The RemoteDelivery could handle a mail with multiple recipients and
 		 * target servers.
 		 */
-		
+
 //		Collection recipients = sourceMail.getRecipients();
 		// Must first organize the recipients into distinct servers (name made
 		// case insensitive)
@@ -90,7 +90,7 @@ public class MailQue {
 //			MailAddress target = (MailAddress) i.next();
 //			String targetServer = target.getHost().toLowerCase(Locale.US);
 //			//Locale.US because only ASCII supported in domains? -kate
-//			
+//
 //			//got any for this domain yet?
 //			Vector<MailAddress> temp = targets.get(targetServer);
 //			if (temp == null) {
@@ -140,18 +140,18 @@ public class MailQue {
 //	}
 	/**
 	 * It gives back the next item to send and removes all completed items.
-	 * 
+	 *
 	 * @return The next item to send, or null, if no such item exists.
 	 */
 	public synchronized QuedItem getNextSendable() {
 		if( getQue().size() <= 0 )
 			return null;
-		
+
 		Collections.sort(getQue());
-		
+
 		Vector<QuedItem> itemsToRemove = new Vector<QuedItem>();
 		QuedItem itemToSend = null;
-		
+
 //		Iterator<QuedItem> it = getQue().iterator();
 		for( QuedItem qi : getQue() )
 		{
@@ -175,7 +175,7 @@ public class MailQue {
 //					itemsToRemove.add(qi);
 //				}
 //			}
-		if( log.isTraceEnabled() ) 
+		if( log.isTraceEnabled() )
 			log.trace(getClass().getSimpleName()+".getNextSendable(): Maintenance of MailQue - removed "+itemsToRemove.size()+" items from "+getQue().size());
 		getQue().removeAll(itemsToRemove);
 		if( log.isTraceEnabled() && 0 < itemsToRemove.size() )
@@ -189,15 +189,15 @@ public class MailQue {
 		}
 		return itemToSend;
 	}
-	
+
 	public int getQueueSize() {
 		return getQue().size();
 	}
-	
+
 	/**
 	 * Occasionally a QuedItem will be dropped from the Que. This method will
 	 * re-insert it.
-	 * 
+	 *
 	 * @param item
 	 */
 	public synchronized void reQue(QuedItem item) {
@@ -216,13 +216,13 @@ public class MailQue {
 		}
 		return qm;
 	}
-	
+
 	/**
-	 * PUBLIC FOR TESTING ONLY
-	 * TODO public -> private
+	 * PACKAGE PRIVATE FOR TESTING ONLY
+	 * TODO package -> private
 	 * @return
 	 */
-	public Vector<QuedItem> getQue() {
+	Vector<QuedItem> getQue() {
 		return que;
 	}
 
@@ -234,7 +234,7 @@ public class MailQue {
 			listenersToAdd.add(watcher);
 		}
 	}
-	
+
 	public void removeWatcher(MailWatcher watcher) {
 		if (!isNotifying()) {
 			getListeners().remove(watcher);
@@ -252,7 +252,7 @@ public class MailQue {
 	/**
 	 * decrements the number of notifiers currently happening and if there are
 	 * none in progress it will add or remove watchers as appropriate
-	 *  
+	 *
 	 */
 	public synchronized void decrementNotifiersCount() {
 		notificationCount--;
@@ -276,7 +276,7 @@ public class MailQue {
 	public synchronized boolean isNotifying() {
 		return notificationCount != 0;
 	}
-	
+
 	public synchronized void terminate() {
 		if( qm != null )
 		{
@@ -285,7 +285,7 @@ public class MailQue {
 			}
 		}
 	}
-	
+
 	void resetQueManager() {
 		if( qm != null )
 		{
@@ -295,9 +295,9 @@ public class MailQue {
 			}
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private void notifyQueManager() {
 		if( !getQueManager().isRunning() )
