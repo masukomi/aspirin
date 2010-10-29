@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import javax.mail.MessagingException;
+import javax.mail.Session;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
 
@@ -56,7 +57,11 @@ public class MailQue implements MailQueMBean {
 	private Vector<MailWatcher> listenersToAdd;
 	private int notificationCount;
 	
-
+	/** This session is used to generate new MimeMessage objects. */
+	private static Session defaultSession = null;
+	/** This counter is used to generate unique message ids. */
+	private static Integer idCounter = 0;
+	
 	public MailQue() {
 		qm = new QueManager(this);
 		que = new Vector<QuedItem>();
@@ -324,6 +329,23 @@ public class MailQue implements MailQueMBean {
 			getQueManager().start();
 		else
 			getQueManager().notifyWithMail();
+	}
+	
+	public static MimeMessage createNewMimeMessage() {
+		if( defaultSession == null )
+			defaultSession = Session.getDefaultInstance(System.getProperties());
+		MimeMessage mMesg = new MimeMessage(defaultSession);
+		synchronized (idCounter) {
+			long nowTime = System.currentTimeMillis()/1000;
+			String newId = nowTime+"."+Integer.toHexString(idCounter++);
+			try {
+				mMesg.setHeader(Configuration.ASPIRIN_MAIL_ID_HEADER, newId);
+			} catch (MessagingException msge) {
+				Configuration.getInstance().getLog().warn("Aspirin Mail ID could not be generated.", msge);
+				msge.printStackTrace();
+			}
+		}
+		return mMesg;
 	}
 
 }
