@@ -32,6 +32,8 @@ import javax.mail.internet.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.mailet.MailAddress;
+import org.masukomi.aspirin.core.store.MailStore;
+import org.masukomi.aspirin.core.store.SimpleMailStore;
 
 
 /**
@@ -134,6 +136,12 @@ import org.apache.mailet.MailAddress;
  *     <td>The email address of the postmaster. <i>Change by JMX applied 
  *     immediately.</i></td>
  *   </tr>
+ *   <tr>
+ *   	<td>aspirin.mailstore.class</td>
+ *   	<td></td>
+ *   	<td>String</td>
+ *   	<td>The class name of mail store. Default class is SimpleMailStore in org.masukomi.aspirin.core.store package.</td>
+ *   </tr>
  * </table>
  * 
  * @author Kate Rhodes masukomi at masukomi dot org
@@ -153,6 +161,8 @@ public class Configuration implements ConfigurationMBean {
 	private static String loggerName = "Aspirin"; // aspirin.logger.name
 	private static Log log = LogFactory.getLog(loggerName); // inherited from aspirin.logger.name
 	private String loggerPrefix = "Aspirin "; // aspirin.logger.prefix
+	private MailStore mailStore = null;
+	private String storeClassName = SimpleMailStore.class.getCanonicalName();
 	protected MailAddress postmaster = null; // inherited from aspirin.postmaster.email
 	
 	private List<ConfigurationChangeListener> listeners;
@@ -293,6 +303,8 @@ public class Configuration implements ConfigurationMBean {
 		if( loggerConfigName != null && !loggerConfigName.equals(loggerName) )
 			log = LogFactory.getLog(loggerName);
 		loggerPrefix = props.getProperty(PARAM_LOGGER_PREFIX, loggerPrefix);
+		
+		storeClassName = props.getProperty(PARAM_MAILSTORE_CLASS, storeClassName);
 	}
 	
 	/**
@@ -468,6 +480,21 @@ public class Configuration implements ConfigurationMBean {
 		return loggerPrefix;
 	}
 	
+	public MailStore getMailStore() {
+		if( mailStore == null )
+		{
+			try {
+				Class<?> storeClass = (Class<?>) Class.forName(storeClassName);
+				if( storeClass.getInterfaces()[0].equals(MailStore.class) )
+					mailStore = (MailStore)storeClass.newInstance();
+			} catch (Exception e) {
+				log.error(getClass().getSimpleName()+" Store class could not be instantiated. Class="+storeClassName, e);
+				mailStore = new SimpleMailStore();
+			}
+		}
+		return mailStore;
+	}
+	
 	@Override
 	public String getPostmasterEmail() {
 		return postmaster.toString();
@@ -526,6 +553,10 @@ public class Configuration implements ConfigurationMBean {
 		this.loggerPrefix = loggerPrefix;
 		notifyListeners(PARAM_LOGGER_PREFIX);
 	}
+	
+	public void setMailStore(MailStore mailStore) {
+		this.mailStore = mailStore;
+	}
 
 	@Override
 	public void setPostmasterEmail(String emailAddress) {
@@ -571,6 +602,16 @@ public class Configuration implements ConfigurationMBean {
 					listener.configChanged(changedParameterName);
 			}
 		}
+	}
+
+	@Override
+	public String getMailStoreClassName() {
+		return storeClassName;
+	}
+
+	@Override
+	public void setMailStoreClassName(String className) {
+		this.storeClassName = className;
 	}
 
 }

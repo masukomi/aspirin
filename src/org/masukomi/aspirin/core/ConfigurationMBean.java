@@ -1,8 +1,8 @@
 package org.masukomi.aspirin.core;
 
-import java.io.File;
-
 import javax.mail.Transport;
+
+import org.masukomi.aspirin.core.store.MailStore;
 
 /**
  * <p>This is the JMX bean of Aspirin configuration. Some configuration 
@@ -24,6 +24,7 @@ public interface ConfigurationMBean {
 	public static final String PARAM_LOGGER_NAME					= "aspirin.logger.name";
 	public static final String PARAM_LOGGER_PREFIX					= "aspirin.logger.prefix";
 	public static final String PARAM_POSTMASTER_EMAIL				= "aspirin.postmaster.email";
+	public static final String PARAM_MAILSTORE_CLASS				= "aspirin.mailstore.class";
 	
 	/**
 	 * @return The time between two delivery attempt of an email.
@@ -58,11 +59,12 @@ public interface ConfigurationMBean {
 	 * @return The prefix appended to the start of the log entries.
 	 */
 	public String getLoggerPrefix();
-//	/**
-//	 * @return The directory object where the mimemessage objects could be
-//	 * stored.
-//	 */
-//	public File getMailCacheDirectory();
+	/**
+	 * @return The directory object where the mimemessage objects could be
+	 * stored.
+	 */
+	public MailStore getMailStore();
+	public String getMailStoreClassName();
 	/**
 	 * @return The email address of the postmaster.
 	 */
@@ -125,11 +127,12 @@ public interface ConfigurationMBean {
 	 * @param loggerPrefix The prefix string.
 	 */
 	public void setLoggerPrefix(String loggerPrefix);
-//	/**
-//	 * 
-//	 * @param mailCacheDirectory
-//	 */
-//	public void setMailCacheDirectory(File mailCacheDirectory);
+	/**
+	 * 
+	 * @param mailCacheDirectory
+	 */
+	public void setMailStore(MailStore mailStore);
+	public void setMailStoreClassName(String className);
 	/**
 	 * Set the email address of postmaster. If delivery failed, you can get an 
 	 * email about the failure to this address.

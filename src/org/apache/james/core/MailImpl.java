@@ -63,6 +63,7 @@ package org.apache.james.core;
 import org.apache.james.util.RFC2822Headers;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
+import org.masukomi.aspirin.core.Configuration;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -104,10 +105,10 @@ public class MailImpl implements Mail {
 	 */
 	private String state;
 
-	/**
-	 * The MimeMessage that holds the mail data.
-	 */
-	private MimeMessage message;
+//	/**
+//	 * The MimeMessage that holds the mail data.
+//	 */
+//	private MimeMessage message;
 
 	/**
 	 * The sender of this mail.
@@ -306,7 +307,8 @@ public class MailImpl implements Mail {
 	 * @return the MimeMessage associated with this MailImpl
 	 */
 	public MimeMessage getMessage() throws MessagingException {
-		return message;
+		return Configuration.getInstance().getMailStore().get(this.name);
+//		return message;
 	}
 
 	/**
@@ -401,6 +403,7 @@ public class MailImpl implements Mail {
 	public long getMessageSize() throws MessagingException {
 		//If we have a MimeMessageWrapper, then we can ask it for just the
 		//  message size and skip calculating it
+		MimeMessage message = getMessage();
 		if (message instanceof MimeMessageWrapper) {
 			MimeMessageWrapper wrapper = (MimeMessageWrapper) message;
 			return wrapper.getMessageSize();
@@ -433,7 +436,8 @@ public class MailImpl implements Mail {
 	 *            the new MimeMessage associated with this MailImpl
 	 */
 	public void setMessage(MimeMessage message) {
-		this.message = message;
+		Configuration.getInstance().getMailStore().set(this.name, message);
+//		this.message = message;
 	}
 
 	/**
@@ -514,6 +518,7 @@ public class MailImpl implements Mail {
 	 */
 	public void writeMessageTo(OutputStream out) throws IOException,
 			MessagingException {
+		MimeMessage message = getMessage();
 		if (message != null) {
 			message.writeTo(out);
 		} else {
@@ -570,6 +575,7 @@ public class MailImpl implements Mail {
 			MessagingException {
 		String line;
 		BufferedReader br;
+		MimeMessage message = getMessage();
 		if (message != null) {
 			br = new BufferedReader(new InputStreamReader(message
 					.getInputStream()));
@@ -654,6 +660,10 @@ public class MailImpl implements Mail {
 		 * Disposable) { ((Disposable)wrapper).dispose(); } } catch
 		 * (MessagingException me) { // Ignored }
 		 */
+	}
+	
+	public void release() {
+		Configuration.getInstance().getMailStore().remove(this.name);
 	}
 
 }

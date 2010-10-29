@@ -46,7 +46,7 @@ import org.apache.james.core.MailImpl;
  * @version $Id$
  * 
  */
-public class MailQue {
+public class MailQue implements MailQueMBean {
 	private Log log = Configuration.getInstance().getLog();
 	protected QueManager qm;
 	protected Vector<QuedItem> que;
@@ -65,6 +65,8 @@ public class MailQue {
 		notificationCount = 0;
 	}
 	public void queMail(MimeMessage message) throws MessagingException {
+		if( log.isDebugEnabled() )
+			log.debug(getClass().getSimpleName()+".queMail(): Message added to queue. "+message);
 		service(message, getListeners());
 		notifyQueManager();
 	}
@@ -158,6 +160,8 @@ public class MailQue {
 			if( qi.isCompleted() )
 			{
 				itemsToRemove.add(qi);
+				// We have to release all resources bound to this Mail object
+				((MailImpl)qi.getMail()).release();
 				continue;
 			}else
 			if( qi.isReadyToSend() )
