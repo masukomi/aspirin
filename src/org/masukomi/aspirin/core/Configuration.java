@@ -72,6 +72,13 @@ import org.masukomi.aspirin.core.store.SimpleMailStore;
  *     applied immediately.</i></td>
  *   </tr>
  *   <tr>
+ *     <td>aspirin.delivery.bounce-on-failure</td>
+ *     <td></td>
+ *     <td>Boolean</td>
+ *     <td>If true, a bounce email will be send to postmaster on failure. 
+ *     <i>Change by JMX applied immediately.</i></td>
+ *   </tr>
+ *   <tr>
  *     <td>aspirin.delivery.debug</td>
  *     <td></td>
  *     <td>Boolean</td>
@@ -152,6 +159,7 @@ public class Configuration implements ConfigurationMBean {
 	private static Configuration instance;
 	private int maxAttempts = 3; // aspirin.delivery.attempt.count
 	private long retryInterval = 300000; // aspirin.delivery.attempt.delay
+	private boolean bounceOnFailure = true; //aspirin.delivery.bounce-on-failure
 	private boolean debugCommunication = false; // aspirin.delivery.debug
 	private String hostname = "localhost"; // aspirin.delivery.hostname
 	private int deliveryThreads = 3; // aspirin.delivery.threads.active.max
@@ -499,6 +507,11 @@ public class Configuration implements ConfigurationMBean {
 	public String getPostmasterEmail() {
 		return postmaster.toString();
 	}
+	
+	@Override
+	public boolean isDeliveryBounceOnFailure() {
+		return bounceOnFailure;
+	}
 
 	@Override
 	public boolean isDeliveryDebug() {
@@ -515,6 +528,12 @@ public class Configuration implements ConfigurationMBean {
 	public void setDeliveryAttemptDelay(int delay) {
 		this.retryInterval = delay;
 		notifyListeners(PARAM_DELIVERY_ATTEMPT_DELAY);
+	}
+	
+	@Override
+	public void setDeliveryBounceOnFailure(boolean bounce) {
+		this.bounceOnFailure = bounce;
+		notifyListeners(PARAM_DELIVERY_BOUNCE_ON_FAILURE);
 	}
 
 	@Override

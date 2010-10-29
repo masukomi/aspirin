@@ -68,6 +68,10 @@ public class Bouncer {
 	 */
 	static public void bounce(MailQue que, Mail mail, String message, MailAddress bouncer)
 			throws MessagingException {
+		
+		if ( !Configuration.getInstance().isDeliveryBounceOnFailure() )
+			return;
+		
 		if (bouncer != null) {
 			if (log.isDebugEnabled()){
 				log.debug("bouncing message to postmaster");

@@ -13,6 +13,8 @@ import javax.mail.internet.MimeMessage;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.masukomi.aspirin.core.store.FileMailStore;
+
 import junit.framework.TestCase;
 
 public class ModuleTest extends TestCase {
@@ -35,6 +37,10 @@ public class ModuleTest extends TestCase {
 		config.setLoggerName("MailService");
 		config.setLoggerPrefix("MailService");
 		config.setPostmasterEmail(null);
+		FileMailStore fms = new FileMailStore();
+		fms.setRootDir(new File("D:\\temp"));
+		fms.setSubDirCount(10);
+		config.setMailStore(fms);
 		
 		MBeanServer mbS = ManagementFactory.getPlatformMBeanServer();
 		mbS.registerMBean(Configuration.getInstance(), new ObjectName("org.masukomi.aspirin:type=Configuration"));
@@ -45,6 +51,7 @@ public class ModuleTest extends TestCase {
 		
 		// 2. Start Aspirin and send new message
 		MailQue mq = new MailQue();
+		mbS.registerMBean(mq, new ObjectName("org.masukomi.aspirin:type=MailQue"));
 		
 			// 2.A Add test mail watcher
 			mq.addWatcher(new TestMailWatcher());

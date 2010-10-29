@@ -15,6 +15,7 @@ public interface ConfigurationMBean {
 	
 	public static final String PARAM_DELIVERY_ATTEMPT_DELAY			= "aspirin.delivery.attempt.delay";
 	public static final String PARAM_DELIVERY_ATTEMPT_COUNT			= "aspirin.delivery.attempt.count";
+	public static final String PARAM_DELIVERY_BOUNCE_ON_FAILURE		= "aspirin.delivery.bounce-on-failure";
 	public static final String PARAM_DELIVERY_DEBUG					= "aspirin.delivery.debug";
 	public static final String PARAM_DELIVERY_THREADS_ACTIVE_MAX	= "aspirin.delivery.threads.active.max";
 	public static final String PARAM_DELIVERY_THREADS_IDLE_MAX		= "aspirin.delivery.threads.idle.max";
@@ -74,6 +75,11 @@ public interface ConfigurationMBean {
 	 */
 	public String getHostname();
 	/**
+	 * @return If true, then a bounce email will be send to postmaster on 
+	 * delivery failures.
+	 */
+	public boolean isDeliveryBounceOnFailure();
+	/**
 	 * @return If true, then the full SMTP communication will be logged. 
 	 */
 	public boolean isDeliveryDebug();
@@ -89,6 +95,12 @@ public interface ConfigurationMBean {
 	 * @param attemptCount The count of deliery attempts.
 	 */
 	public void setDeliveryAttemptCount(int attemptCount);
+	/**
+	 * Set the bounce email sending (on delivery failures).
+	 * @param bounce If true, then a bounce email will be send to postmaster 
+	 * on delivery failures.
+	 */
+	public void setDeliveryBounceOnFailure(boolean bounce);
 	/**
 	 * Set the debug of full SMTP communication. 
 	 * @param debug If true, then the full communication will be logged.
