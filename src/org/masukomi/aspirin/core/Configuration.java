@@ -156,6 +156,8 @@ import org.masukomi.aspirin.core.store.SimpleMailStore;
  */
 public class Configuration implements ConfigurationMBean {
 	
+	public static final String ASPIRIN_MAIL_ID_HEADER = "X-Aspirin-MailID";
+	
 	private static Configuration instance;
 	private int maxAttempts = 3; // aspirin.delivery.attempt.count
 	private long retryInterval = 300000; // aspirin.delivery.attempt.delay

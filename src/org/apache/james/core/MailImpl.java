@@ -318,7 +318,23 @@ public class MailImpl implements Mail {
 	 *            the name of this MailImpl
 	 */
 	public void setName(String name) {
+		String oldName = this.name;
 		this.name = name;
+		// We should replace message key
+		if( oldName != null )
+		{
+			try {
+				MimeMessage mMsg = Configuration.getInstance().getMailStore().get(oldName);
+				if( mMsg != null )
+				{
+					Configuration.getInstance().getMailStore().remove(oldName);
+					Configuration.getInstance().getMailStore().set(this.name, mMsg);
+				}
+			} catch (Exception e) {
+				Configuration.getInstance().getLog().error("Could not change message object in mail store."+oldName+"/"+this.name);
+			}
+		}
+
 	}
 
 	/**

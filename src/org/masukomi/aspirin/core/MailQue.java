@@ -56,6 +56,7 @@ public class MailQue implements MailQueMBean {
 	private Vector<MailWatcher> listenersToAdd;
 	private int notificationCount;
 	
+
 	public MailQue() {
 		qm = new QueManager(this);
 		que = new Vector<QuedItem>();
@@ -70,10 +71,24 @@ public class MailQue implements MailQueMBean {
 		service(message, getListeners());
 		notifyQueManager();
 	}
+	
+	private String getAspirinMailID(MimeMessage message) {
+		String[] headers;
+		try {
+			headers = message.getHeader(Configuration.ASPIRIN_MAIL_ID_HEADER);
+			if( headers != null && 0 < headers.length )
+				return headers[0];
+		} catch (MessagingException e) {
+			Configuration.getInstance().getLog().error("Header could not be get from MimeMessage.", e);
+		}
+		return message.toString();
+	}
+	
 	protected void service(MimeMessage mimeMessage, Collection<MailWatcher> watchers)
 			throws AddressException, MessagingException {
 		
 		MailImpl sourceMail = new MailImpl(mimeMessage);
+		sourceMail.setName(getAspirinMailID(mimeMessage));
 		// Do I want to give the internal key, or the message's Message ID
 		if (log.isDebugEnabled())
 			log.debug(getClass().getSimpleName()+".service(): Remotely delivering mail " + sourceMail.getName());
@@ -194,6 +209,7 @@ public class MailQue implements MailQueMBean {
 		return itemToSend;
 	}
 	
+	@Override
 	public int getQueueSize() {
 		return getQue().size();
 	}
