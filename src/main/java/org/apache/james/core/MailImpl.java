@@ -307,8 +307,10 @@ public class MailImpl implements Mail {
 	 * @return the MimeMessage associated with this MailImpl
 	 */
 	public MimeMessage getMessage() throws MessagingException {
-		return Configuration.getInstance().getMailStore().get(this.name);
-//		return message;
+		MimeMessage mMsg = Configuration.getInstance().getMailStore().get(this.name);
+		if( mMsg == null )
+			throw new MessagingException("No message found for this mail: "+this.name);
+		return mMsg;
 	}
 
 	/**
