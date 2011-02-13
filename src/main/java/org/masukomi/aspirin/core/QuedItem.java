@@ -90,6 +90,10 @@ public class QuedItem implements Comparable<QuedItem> {
 	public int getNumAttempts() {
 		return 0;
 	}
+	
+	public int getNumAttempts(MailAddress recipient) {
+		return recipientFailures.get(recipient)!=null?recipientFailures.get(recipient):-1;
+	}
 	/**
 	 * Used to sort items by their next attempt time
 	 * 
