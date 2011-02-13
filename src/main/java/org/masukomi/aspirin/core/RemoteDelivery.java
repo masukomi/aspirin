@@ -361,100 +361,103 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 //				log
 //						.error("unable to find recipient that handn't already been handled");
 //			}
-		} catch (SendFailedException sfe) {
-			log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): ",sfe);
-			boolean deleteMessage = false;
-			Collection<MailAddress> recipients = qi.getMail().getRecipients();
-			// Would like to log all the types of email addresses
-			if (log.isTraceEnabled()) {
-				log.trace(getClass().getSimpleName()+" ("+getName()+").deliver(): Recipients: " + recipients);
-			}
-			/*
-			 * The rest of the recipients failed for one reason or another.
-			 * 
-			 * SendFailedException actually handles this for us. For example, if
-			 * you send a message that has multiple invalid addresses, you'll
-			 * get a top-level SendFailedException that that has the valid,
-			 * valid-unsent, and invalid address lists, with all of the server
-			 * response messages will be contained within the nested exceptions.
-			 * [Note: the content of the nested exceptions is implementation
-			 * dependent.]
-			 * 
-			 * sfe.getInvalidAddresses() should be considered permanent.
-			 * sfe.getValidUnsentAddresses() should be considered temporary.
-			 * 
-			 * JavaMail v1.3 properly populates those collections based upon the
-			 * 4xx and 5xx response codes.
-			 * 
-			 */
-			if (sfe.getInvalidAddresses() != null) {
-				Address[] address = sfe.getInvalidAddresses();
-				if (address.length > 0) {
-					/*
-					 * This clear() call modify the original recipient object.  
-					 * After this clear the mail recipient cout is changed, and 
-					 * the isCompleted() method of QuedItem gives back wrong 
-					 * result, because it get not the original count of 
-					 * recipients. So I comment this clearing and replace 
-					 * collection with a new one.
-					 * 
-					 * TODO We need this part?
-					 */
-//					recipients.clear();
-					Collection<MailAddress> invalidRecipients = new HashSet<MailAddress>();
-					for (int i = 0; i < address.length; i++) {
-						try {
-							invalidRecipients.add(new MailAddress(address[i]
-									.toString()));
-						} catch (ParseException pe) {
-							// this should never happen ... we should have
-							// caught malformed addresses long before we
-							// got to this code.
-							if (log.isDebugEnabled()) {
-								log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Can't parse invalid address: "
-										+ pe.getMessage());
-							}
-						}
-					}
-					if (log.isDebugEnabled()) {
-						log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Invalid recipients: " + invalidRecipients);
-					}
-					deleteMessage = failMessage(qi, rcpt, sfe, true);
-				}
-			}
-			if (sfe.getValidUnsentAddresses() != null) {
-				Address[] address = sfe.getValidUnsentAddresses();
-				if (address.length > 0) {
-					/*
-					 * This clear() call modify the original recipient object.  
-					 * After this clear the mail recipient cout is changed, and 
-					 * the isCompleted() method of QuedItem gives back wrong 
-					 * result, because it get not the original count of 
-					 * recipients. So I comment this clearing and replace 
-					 * collection with a new one.
-					 * 
-					 * TODO We need this part?
-					 */
-//					recipients.clear();
-					Collection<MailAddress> validUnsentRecipients = new HashSet<MailAddress>();
-					for (int i = 0; i < address.length; i++) {
-						try {
-							validUnsentRecipients.add(new MailAddress(address[i]
-									.toString()));
-						} catch (ParseException pe) {
-							// this should never happen ... we should have
-							// caught malformed addresses long before we
-							// got to this code.
-							log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): Can't parse unsent address.", pe);
-						}
-					}
-					if (log.isDebugEnabled()) {
-						log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Unsent recipients: " + validUnsentRecipients);
-					}
-					deleteMessage = failMessage(qi, rcpt, sfe, false);
-				}
-			}
-			return deleteMessage;
+//		} catch (SendFailedException sfe) {
+//			log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): ",sfe);
+//			boolean deleteMessage = false;
+//			Collection<MailAddress> recipients = qi.getMail().getRecipients();
+//			// Would like to log all the types of email addresses
+//			if (log.isTraceEnabled()) {
+//				log.trace(getClass().getSimpleName()+" ("+getName()+").deliver(): Recipients: " + recipients);
+//			}
+//			/*
+//			 * The rest of the recipients failed for one reason or another.
+//			 * 
+//			 * SendFailedException actually handles this for us. For example, if
+//			 * you send a message that has multiple invalid addresses, you'll
+//			 * get a top-level SendFailedException that that has the valid,
+//			 * valid-unsent, and invalid address lists, with all of the server
+//			 * response messages will be contained within the nested exceptions.
+//			 * [Note: the content of the nested exceptions is implementation
+//			 * dependent.]
+//			 * 
+//			 * sfe.getInvalidAddresses() should be considered permanent.
+//			 * sfe.getValidUnsentAddresses() should be considered temporary.
+//			 * 
+//			 * JavaMail v1.3 properly populates those collections based upon the
+//			 * 4xx and 5xx response codes.
+//			 * 
+//			 */
+//			if (sfe.getInvalidAddresses() != null) {
+//				Address[] address = sfe.getInvalidAddresses();
+//				if (address.length > 0) {
+//					/*
+//					 * This clear() call modify the original recipient object.  
+//					 * After this clear the mail recipient cout is changed, and 
+//					 * the isCompleted() method of QuedItem gives back wrong 
+//					 * result, because it get not the original count of 
+//					 * recipients. So I comment this clearing and replace 
+//					 * collection with a new one.
+//					 * 
+//					 * TODO We need this part?
+//					 */
+////					recipients.clear();
+//					Collection<MailAddress> invalidRecipients = new HashSet<MailAddress>();
+//					for (int i = 0; i < address.length; i++) {
+//						try {
+//							invalidRecipients.add(new MailAddress(address[i]
+//									.toString()));
+//						} catch (ParseException pe) {
+//							// this should never happen ... we should have
+//							// caught malformed addresses long before we
+//							// got to this code.
+//							if (log.isDebugEnabled()) {
+//								log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Can't parse invalid address: "
+//										+ pe.getMessage());
+//							}
+//						}
+//					}
+//					if (log.isDebugEnabled()) {
+//						log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Invalid recipients: " + invalidRecipients);
+//					}
+//					deleteMessage = failMessage(qi, rcpt, sfe, true);
+//				}
+//			}
+//			if (sfe.getValidUnsentAddresses() != null) {
+//				Address[] address = sfe.getValidUnsentAddresses();
+//				if (address.length > 0) {
+//					/*
+//					 * This clear() call modify the original recipient object.  
+//					 * After this clear the mail recipient cout is changed, and 
+//					 * the isCompleted() method of QuedItem gives back wrong 
+//					 * result, because it get not the original count of 
+//					 * recipients. So I comment this clearing and replace 
+//					 * collection with a new one.
+//					 * 
+//					 * TODO We need this part?
+//					 */
+////					recipients.clear();
+//					Collection<MailAddress> validUnsentRecipients = new HashSet<MailAddress>();
+//					for (int i = 0; i < address.length; i++) {
+//						try {
+//							validUnsentRecipients.add(new MailAddress(address[i]
+//									.toString()));
+//						} catch (ParseException pe) {
+//							// this should never happen ... we should have
+//							// caught malformed addresses long before we
+//							// got to this code.
+//							log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): Can't parse unsent address.", pe);
+//						}
+//					}
+//					if (log.isDebugEnabled()) {
+//						log.debug(getClass().getSimpleName()+" ("+getName()+").deliver(): Unsent recipients: " + validUnsentRecipients);
+//					}
+//					
+//					log.debug(getClass().getSimpleName()+" Show sfe message: "+sfe.getMessage());
+//					
+//					deleteMessage = failMessage(qi, rcpt, sfe, false);
+//				}
+//			}
+//			return deleteMessage;
 		} catch (MessagingException ex) {
 			log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): ",ex);
 			// We should do a better job checking this... if the failure is a
@@ -538,7 +541,7 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 						.append("Storing message ")
 						.append(mail.getName())
 						.append(" into que after ")
-//						.append(qi.getNumAttempts())
+						.append(qi.getNumAttempts(recepient))
 						.append(" attempts")
 					;
 					log.debug(logBuffer.toString());
