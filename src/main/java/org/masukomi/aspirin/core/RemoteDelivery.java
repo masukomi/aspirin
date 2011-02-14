@@ -63,26 +63,23 @@
 //TODO make retries be based on recepients not QuedItems
 package org.masukomi.aspirin.core;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Vector;
 
-import javax.mail.Address;
 import javax.mail.MessagingException;
-import javax.mail.SendFailedException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.URLName;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.mail.internet.ParseException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.pool.ObjectPool;
@@ -323,8 +320,13 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 						.append(") - ")
 						.append(me.getMessage());
 					log.warn(exceptionBuffer.toString());
-					if ((me.getNextException() != null)
-							&& (me.getNextException() instanceof java.io.IOException)) {
+					if (	me.getNextException() != null &&
+							(
+								me.getNextException() instanceof IOException ||
+								me.getNextException() instanceof MessagingException
+							)
+						)
+					{
 						// This is more than likely a temporary failure
 						// If it's an IO exception with no nested exception,
 						// it's probably
