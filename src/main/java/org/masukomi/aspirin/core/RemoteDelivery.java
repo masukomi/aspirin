@@ -310,29 +310,37 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 					qi.succeededForRecipient(que, rcpt);
 					return true;
 				} catch (MessagingException me) {
-					log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): ", me);
 					// MessagingException are horribly difficult to figure
-					// out
-					// what actually happened.
+					// out what actually happened.
+					log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): ", me);
 					StringBuffer exceptionBuffer = new StringBuffer(256)
 						.append("Exception delivering message (")
 						.append(mail.getName())
 						.append(") - ")
 						.append(me.getMessage());
 					log.warn(exceptionBuffer.toString());
-					if (	me.getNextException() != null &&
-							(
-								me.getNextException() instanceof IOException ||
-								me.getNextException() instanceof MessagingException
-							)
-						)
+					
+					if ( me.getNextException() != null )
 					{
-						// This is more than likely a temporary failure
-						// If it's an IO exception with no nested exception,
-						// it's probably
-						// some socket or weird I/O related problem.
-						lastError = me;
-						continue;
+						if( me.getNextException() instanceof IOException )
+						{
+							/* This is more than likely a temporary failure.
+							 * If it's an IO exception with no nested exception,
+							 * it's probably some socket or weird I/O related problem.
+							 */
+							lastError = me;
+							continue;
+						}
+						else
+						if( me.getNextException() instanceof MessagingException )
+						{
+							/*
+							 * If there is a nested MessagingException,
+							 * then it could be give us the main cause of failure.
+							 * We throw this nested exception instead main one. 
+							 */
+							throw me.getNextException();
+						}
 					}
 					// This was not a connection or I/O error particular to
 					// one
