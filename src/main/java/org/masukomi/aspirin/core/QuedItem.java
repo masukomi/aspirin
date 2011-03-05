@@ -131,11 +131,11 @@ public class QuedItem implements Comparable<QuedItem> {
 		// tell anyone who cares
 		if (que.getListeners() != null) {
 			que.incrementNotifiersCount();
-			for (MailWatcher watcher : que.getListeners()){
+			for (AspirinListener watcher : que.getListeners()){
 				try {
-					watcher.deliveryFailure(que, getMail().getMessage(), recipient, mex);
+					watcher.deliveryFailure(getMail().getMessage(), recipient, mex);
 					if( isCompleted() )
-						watcher.deliveryFinished(que, getMail().getMessage());
+						watcher.deliveryFinished(getMail().getMessage());
 				} catch (MessagingException e) {
 					log.error(getClass().getSimpleName()+".failForRecipient(): ",e);
 				}
@@ -266,14 +266,14 @@ public class QuedItem implements Comparable<QuedItem> {
 		if (que.getListeners() != null
 				&& que.getListeners().size() > 0) {
 			que.incrementNotifiersCount();
-			Iterator<MailWatcher> it = que.getListeners().iterator();
+			Iterator<AspirinListener> it = que.getListeners().iterator();
 			while (it.hasNext()) {
-				MailWatcher watcher = it.next();
+				AspirinListener watcher = it.next();
 				try {
 					//watcher.deliverySuccess(getMail().getMessage(), recipients);
-					watcher.deliverySuccess(que, getMail().getMessage(), recipient);
+					watcher.deliverySuccess(getMail().getMessage(), recipient);
 					if( isCompleted() )
-						watcher.deliveryFinished(que, getMail().getMessage());
+						watcher.deliveryFinished(getMail().getMessage());
 				} catch (MessagingException e) {
 					log.error(getClass().getSimpleName()+"succeededForRecipient(): ",e);
 				}

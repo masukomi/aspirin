@@ -15,7 +15,7 @@ import org.apache.mailet.MailAddress;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-public class TestMailWatcher implements MailWatcher {
+public class TestMailWatcher implements AspirinListener {
 	boolean hasSucceeded = false;
 	boolean hasFailed = false;
 	/**
@@ -26,18 +26,18 @@ public class TestMailWatcher implements MailWatcher {
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliverySuccess(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
-	public void deliverySuccess(MailQue que, MimeMessage message, MailAddress recepient) {
+	public void deliverySuccess(MimeMessage message, MailAddress recepient) {
 		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliverySuccess(): recipient="+recepient+"; msg="+message);
 	}
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliveryFailure(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
-	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recepient, MessagingException mex) {
+	public void deliveryFailure(MimeMessage message, MailAddress recepient, MessagingException mex) {
 		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliveryFailure(): recipient="+recepient+"; msg="+message,mex);
 	}
 
 	@Override
-	public void deliveryFinished(MailQue que, MimeMessage message) {
+	public void deliveryFinished(MimeMessage message) {
 		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliveryFinished(): msg="+message);
 	}
 

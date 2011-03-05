@@ -18,7 +18,7 @@ import org.apache.mailet.MailAddress;
  * succeeded or failed. It is extremely simplistic and should not be used as a guage of what a 
  * sophisticated MailWatcher is capable of. 
  */
-public class SimpleMailWatcherImpl implements MailWatcher {
+public class SimpleMailWatcherImpl implements AspirinListener {
 	static private Log log = Configuration.getInstance().getLog();
 	boolean hasSucceeded = false;
 	boolean hasFailed = false;
@@ -75,34 +75,34 @@ public class SimpleMailWatcherImpl implements MailWatcher {
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliverySuccess(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
-	public void deliverySuccess(MailQue que, MimeMessage message, MailAddress recipient) {
+	public void deliverySuccess(MimeMessage message, MailAddress recipient) {
 		if (this.message == null){
 			hasSucceeded = true;
 			lastRecipient = recipient;
-			que.removeWatcher(this);
+//			que.removeWatcher(this);
 		} else if (this.message == message) {
 			hasSucceeded = true;
 			lastRecipient = recipient;
-			que.removeWatcher(this);
+//			que.removeWatcher(this);
 		}
 		
 	}
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliveryFailure(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
-	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recipient, MessagingException mex) {
+	public void deliveryFailure(MimeMessage message, MailAddress recipient, MessagingException mex) {
 		if (this.message == null){
 			hasFailed = true;
 			lastRecipient = recipient;
-			que.removeWatcher(this);
+//			que.removeWatcher(this);
 		} else if (this.message == message) {
 			hasFailed = true;
 			lastRecipient = recipient;
-			que.removeWatcher(this);
+//			que.removeWatcher(this);
 		}
 	}
 	@Override
-	public void deliveryFinished(MailQue que, MimeMessage message) {
+	public void deliveryFinished(MimeMessage message) {
 		// TODO Auto-generated method stub
 		
 	}

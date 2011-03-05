@@ -33,11 +33,9 @@ import org.apache.mailet.MailAddress;
  * 
  * @author kate rhodes,  masukomi at masukomi dot org
  * 
- * @version $Id$
- * 
  */
-public interface MailWatcher {
-	public void deliverySuccess(MailQue que, MimeMessage message, MailAddress recipient);
-	public void deliveryFailure(MailQue que, MimeMessage message, MailAddress recipient, MessagingException mex);
-	public void deliveryFinished(MailQue que, MimeMessage message);
+public interface AspirinListener {
+	public void deliverySuccess(MimeMessage message, MailAddress recipient);
+	public void deliveryFailure(MimeMessage message, MailAddress recipient, MessagingException mex);
+	public void deliveryFinished(MimeMessage message);
 }
