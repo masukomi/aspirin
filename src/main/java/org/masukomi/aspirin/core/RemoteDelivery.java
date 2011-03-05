@@ -193,12 +193,12 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 			}
 			InternetAddress[] addr = new InternetAddress[]{rcpt.toInternetAddress()};
 			
-			// If recipient is null, we could not handle this email
-			if (rcpt == null)
-			{
-				log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): Could not find unhandled recipient.");
-				return false;
-			}
+//			// If recipient is null, we could not handle this email
+//			if (rcpt == null)
+//			{
+//				log.error(getClass().getSimpleName()+" ("+getName()+").deliver(): Could not find unhandled recipient.");
+//				return false;
+//			}
 			String host = rcpt.getHost();
 			// Lookup the possible targets
 			// Figure out which servers to try to send to. This collection
