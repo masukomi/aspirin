@@ -38,8 +38,6 @@ import org.apache.mailet.MailAddress;
  * 
  * @author kate rhodes masukomi at masukomi dot org
  * 
- * @version $Id$
- * 
  */
 public class QuedItem implements Comparable<QuedItem> {
 	static private Log log = Configuration.getInstance().getLog();
@@ -67,7 +65,7 @@ public class QuedItem implements Comparable<QuedItem> {
 		//this.watchers = listeners;
 		nextAttempt = System.currentTimeMillis();
 		try {
-			expiry = Aspirin.getExpire(mail.getMessage());
+			expiry = Aspirin.getExpiry(mail.getMessage());
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

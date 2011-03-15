@@ -7,9 +7,40 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
+import org.masukomi.aspirin.core.queue.AbstractQueueInfo;
+import org.masukomi.aspirin.core.queue.QueueStore;
+import org.masukomi.aspirin.core.queue.SimpleQueueStore;
+import org.masukomi.aspirin.core.store.FileMailStore;
+import org.masukomi.aspirin.core.store.MailStore;
+import org.masukomi.aspirin.core.store.SimpleMailStore;
+
 /**
  * This is the facade class of the Aspirin package. You should to use this 
  * class to manage email sending.
+ * 
+ * <h2>How it works?</h2>
+ * 
+ * <p>All email is represented by two main object:</p>
+ * 
+ * <p>A {@link MimeMessage}, which contains the RAW content of an email, so it 
+ * could be very large. It is stored in a {@link MailStore} (there is two 
+ * different implementation in Aspirin - one for simple in-memory usage
+ * {@link SimpleMailStore} and one for heavy usage {@link FileMailStore}, this 
+ * stores all MimeMessage objects on filesystem.) If no one of these default 
+ * stores is good for you, you can implement the MailStore interface.</p>
+ * 
+ * <p>A QueueInfo {@link AbstractQueueInfo}, which represents an email and a 
+ * recipient together, so one email could associated to more QueueInfo objects. 
+ * This is an inside object, which contains all control informations of a mail 
+ * item. In Aspirin package there is a {@link QueueStore} for in-memory use 
+ * {@link SimpleQueueStore}, this is the default implementation to store 
+ * QueueInfo objects. You can find an additional package, which use SQLite 
+ * (based on <a href="http://sqljet.com">SQLJet</a>) to store QueueInfo 
+ * object.</p>
+ * 
+ * <p><b>Hint:</b> If you need a Quality-of-Service mail sending, use
+ * {@link FileMailStore} and additional <b>SqliteQueueStore</b>, they could 
+ * preserve emails in queue between runs or on Java failure.</p>
  * 
  * @author Laszlo Solova
  *
@@ -28,7 +59,7 @@ public class Aspirin {
 	 * expiration time is -1, unlimited. Expiration time is an epoch timestamp 
 	 * in milliseconds.
 	 */
-	public static final String HEADER_EXPIRE = "X-Aspirin-Expire";
+	public static final String HEADER_EXPIRY = "X-Aspirin-Expiry";
 	
 	/**
 	 * Formatter to set expiry header. Please, use this formatter to create or 
@@ -76,7 +107,12 @@ public class Aspirin {
 			String newId = nowTime+"."+Integer.toHexString(idCounter++);
 			try {
 				mMesg.setHeader(Aspirin.HEADER_MAIL_ID, newId);
-				mMesg.setHeader(Aspirin.HEADER_EXPIRE, expiryFormat.format(new Date(System.currentTimeMillis()+configuration.getExpiry())));
+//				Expiry set is not used - user should set it explicitly
+//				mMesg.setHeader(Aspirin.HEADER_EXPIRY, expiryFormat.format(
+//					(0 < configuration.getExpiry())
+//						? new Date(System.currentTimeMillis()+configuration.getExpiry()) // Default +expiry
+//						: new Date(System.currentTimeMillis()+8640000000L) // Default +100 days
+//				));
 			} catch (MessagingException msge) {
 				Configuration.getInstance().getLog().warn("Aspirin Mail ID could not be generated.", msge);
 				msge.printStackTrace();
@@ -104,10 +140,10 @@ public class Aspirin {
 		return message.toString();
 	}
 	
-	public static long getExpire(MimeMessage message) {
+	public static long getExpiry(MimeMessage message) {
 		String headers[];
 		try {
-			headers = message.getHeader(Aspirin.HEADER_EXPIRE);
+			headers = message.getHeader(Aspirin.HEADER_EXPIRY);
 			if( headers != null && 0 < headers.length )
 				return expiryFormat.parse(headers[0]).getTime();
 		} catch (Exception e) {
@@ -123,6 +159,10 @@ public class Aspirin {
 			configuration.getLog().error("Expiration calculation could not be based on message date.",e);
 		}
 		return System.currentTimeMillis()+configuration.getExpiry();
+	}
+	
+	public static String formatExpiry(Date date) {
+		return expiryFormat.format(date);
 	}
 	
 	//TODO
