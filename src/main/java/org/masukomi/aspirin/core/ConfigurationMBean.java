@@ -17,6 +17,7 @@ public interface ConfigurationMBean {
 	public static final String PARAM_DELIVERY_ATTEMPT_COUNT			= "aspirin.delivery.attempt.count";
 	public static final String PARAM_DELIVERY_BOUNCE_ON_FAILURE		= "aspirin.delivery.bounce-on-failure";
 	public static final String PARAM_DELIVERY_DEBUG					= "aspirin.delivery.debug";
+	public static final String PARAM_DELIVERY_EXPIRY				= "aspirin.delivery.expiry";
 	public static final String PARAM_DELIVERY_THREADS_ACTIVE_MAX	= "aspirin.delivery.threads.active.max";
 	public static final String PARAM_DELIVERY_THREADS_IDLE_MAX		= "aspirin.delivery.threads.idle.max";
 	public static final String PARAM_DELIVERY_TIMEOUT				= "aspirin.delivery.timeout";
@@ -26,6 +27,12 @@ public interface ConfigurationMBean {
 	public static final String PARAM_LOGGER_PREFIX					= "aspirin.logger.prefix";
 	public static final String PARAM_POSTMASTER_EMAIL				= "aspirin.postmaster.email";
 	public static final String PARAM_MAILSTORE_CLASS				= "aspirin.mailstore.class";
+	
+	/**
+	 * Value of never expiration. If an email expire is marked with this value, 
+	 * the email sending could be done everytime.
+	 */
+	public static final long NEVER_EXPIRES = -1L;
 	
 	/**
 	 * @return The time between two delivery attempt of an email.
@@ -52,6 +59,10 @@ public interface ConfigurationMBean {
 	 * @return The name of MIME encoding of emails.
 	 */
 	public String getEncoding();
+	/**
+	 * @return The value of default email expiry time.
+	 */
+	public long getExpiry();
 	/**
 	 * @return The name of the logger.
 	 */
@@ -127,6 +138,12 @@ public interface ConfigurationMBean {
 	 * @param encoding The MIME encoding.
 	 */
 	public void setEncoding(String encoding);
+	/**
+	 * Set the default expiry of MIME messages. Default value is -1, it means 
+	 * forever.
+	 * @param expiry The default expiry time. 
+	 */
+	public void setExpiry(long expiry);
 	/**
 	 * If you have got an own logger, you can set up a logger name, which is 
 	 * used in your system. 

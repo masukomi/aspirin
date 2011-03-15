@@ -1,5 +1,8 @@
 package org.masukomi.aspirin.core;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
@@ -27,12 +30,18 @@ public class Aspirin {
 	 */
 	public static final String HEADER_EXPIRE = "X-Aspirin-Expire";
 	
+	/**
+	 * Formatter to set expiry header. Please, use this formatter to create or 
+	 * change a current header.
+	 */
+	public static final SimpleDateFormat expiryFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+	
 	/** This session is used to generate new MimeMessage objects. */
 	private static Session defaultSession = null;
 	/** This counter is used to generate unique message ids. */
 	private static Integer idCounter = 0;
 	/** This is the configuration object of Aspirin. */
-	private static Configuration configuration = Configuration.getInstance();
+	private static Configuration configuration = new Configuration();
 	
 	/**
 	 * You can get configuration object, which could be changed to set up new 
@@ -66,7 +75,8 @@ public class Aspirin {
 			long nowTime = System.currentTimeMillis()/1000;
 			String newId = nowTime+"."+Integer.toHexString(idCounter++);
 			try {
-				mMesg.setHeader(Configuration.ASPIRIN_MAIL_ID_HEADER, newId);
+				mMesg.setHeader(Aspirin.HEADER_MAIL_ID, newId);
+				mMesg.setHeader(Aspirin.HEADER_EXPIRE, expiryFormat.format(new Date(System.currentTimeMillis()+configuration.getExpiry())));
 			} catch (MessagingException msge) {
 				Configuration.getInstance().getLog().warn("Aspirin Mail ID could not be generated.", msge);
 				msge.printStackTrace();
@@ -85,13 +95,34 @@ public class Aspirin {
 	public static String getMailID(MimeMessage message) {
 		String[] headers;
 		try {
-			headers = message.getHeader(Configuration.ASPIRIN_MAIL_ID_HEADER);
+			headers = message.getHeader(Aspirin.HEADER_MAIL_ID);
 			if( headers != null && 0 < headers.length )
 				return headers[0];
 		} catch (MessagingException e) {
-			Configuration.getInstance().getLog().error("Header could not be get from MimeMessage.", e);
+			configuration.getLog().error("MailID header could not be get from MimeMessage.", e);
 		}
 		return message.toString();
+	}
+	
+	public static long getExpire(MimeMessage message) {
+		String headers[];
+		try {
+			headers = message.getHeader(Aspirin.HEADER_EXPIRE);
+			if( headers != null && 0 < headers.length )
+				return expiryFormat.parse(headers[0]).getTime();
+		} catch (Exception e) {
+			configuration.getLog().error("Expiration header could not be get from MimeMessage.", e);
+		}
+		if( configuration.getExpiry() == Configuration.NEVER_EXPIRES )
+			return Long.MAX_VALUE;
+		try {
+			Date sentDate = message.getReceivedDate();
+			if( sentDate != null )
+				return sentDate.getTime()+configuration.getExpiry();
+		} catch (MessagingException e) {
+			configuration.getLog().error("Expiration calculation could not be based on message date.",e);
+		}
+		return System.currentTimeMillis()+configuration.getExpiry();
 	}
 	
 	//TODO

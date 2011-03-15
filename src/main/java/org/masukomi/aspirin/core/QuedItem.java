@@ -50,6 +50,7 @@ public class QuedItem implements Comparable<QuedItem> {
 
 	/** DOCUMENT ME! */
 	protected long nextAttempt;
+	protected long expiry;
 	private static final int IN_QUE = 0;
 	private static final int IN_PROCESS = 1;
 	private static final int COMPLETED = 3;
@@ -65,6 +66,12 @@ public class QuedItem implements Comparable<QuedItem> {
 		this.mail = mail;
 		//this.watchers = listeners;
 		nextAttempt = System.currentTimeMillis();
+		try {
+			expiry = Aspirin.getExpire(mail.getMessage());
+		} catch (MessagingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	/**
 	 * 
@@ -166,9 +173,6 @@ public class QuedItem implements Comparable<QuedItem> {
 			} else {
 				recipientFailures.put(recipient, new Integer(1));
 			}
-			
-			
-			
 			
 			nextAttempt = System.currentTimeMillis() + Configuration.getInstance().getDeliveryAttemptDelay();
 			// It will be released after processing
@@ -292,6 +296,12 @@ public class QuedItem implements Comparable<QuedItem> {
 		if( log != null && log.isTraceEnabled() )
 			log.trace(getClass().getSimpleName()+" ("+((MailImpl)getMail()).getName()+").isCompleted(): S"+numSuccesses+"+F"+numFailures+"/A"+recipientsCount);
 		if (numSuccesses + numFailures >= recipientsCount) {
+			return true;
+		}
+		// Expired message is marked as completed
+		if( 0 < expiry && expiry < System.currentTimeMillis() )
+		{
+			log.info(((MailImpl)getMail()).getName()+".isCompleted(): Delivery expired. Mail will be removed without delivering.");
 			return true;
 		}
 		return false;

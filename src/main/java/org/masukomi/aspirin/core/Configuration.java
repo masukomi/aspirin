@@ -86,6 +86,15 @@ import org.masukomi.aspirin.core.store.SimpleMailStore;
  *     applied immediately.</i></td>
  *   </tr>
  *   <tr>
+ *   	<td>aspirin.delivery.expiry</td>
+ *   	<td></td>
+ *   	<td>Long</td>
+ *   	<td>Time of sending expiry in milliseconds. The queue send an email 
+ *   	until current time = queueing time + expiry. Default value is -1, it 
+ *   	means forever (no expiration time). <i>Change by JMX applied 
+ *   	immediately.</i></td>
+ *   </tr>
+ *   <tr>
  *     <td>aspirin.delivery.threads.active.max</td>
  *     <td>aspirinDeliverThreads</td>
  *     <td>Integer</td>
@@ -156,6 +165,10 @@ import org.masukomi.aspirin.core.store.SimpleMailStore;
  */
 public class Configuration implements ConfigurationMBean {
 	
+	/**
+	 * @deprecated Use Aspirin.HEADER_MAIL_ID instead.
+	 */
+	@Deprecated
 	public static final String ASPIRIN_MAIL_ID_HEADER = "X-Aspirin-MailID";
 	
 	private static Configuration instance;
@@ -168,6 +181,7 @@ public class Configuration implements ConfigurationMBean {
 	private int idleDeliveryThreads = deliveryThreads; // aspirin.delivery.threads.idle.max
 	private int connectionTimeout = 30000; // in milliseconds, aspirin.delivery.timeout
 	private String encoding = "UTF-8"; // aspirin.encoding
+	private long expiry = -1; // aspirin.delivery.expiry
 	private static String loggerName = "Aspirin"; // aspirin.logger.name
 	private static Log log = LogFactory.getLog(loggerName); // inherited from aspirin.logger.name
 	private String loggerPrefix = "Aspirin "; // aspirin.logger.prefix
@@ -309,6 +323,11 @@ public class Configuration implements ConfigurationMBean {
 		);
 		
 		encoding = props.getProperty(PARAM_ENCODING, encoding);
+		
+		String expiryString = props.getProperty(PARAM_DELIVERY_EXPIRY);
+		if( expiryString != null )
+			expiry = Long.valueOf(expiryString);
+		
 		String loggerConfigName = props.getProperty(PARAM_LOGGER_NAME);
 		if( loggerConfigName != null && !loggerConfigName.equals(loggerName) )
 			log = LogFactory.getLog(loggerName);
@@ -320,7 +339,7 @@ public class Configuration implements ConfigurationMBean {
 	/**
 	 *  
 	 */
-	private Configuration() {
+	Configuration() {
 		init(new Properties());
 	}
 	/**
@@ -479,6 +498,11 @@ public class Configuration implements ConfigurationMBean {
 	public int getDeliveryTimeout() {
 		return connectionTimeout;
 	}
+	
+	@Override
+	public long getExpiry() {
+		return expiry;
+	}
 
 	@Override
 	public String getLoggerName() {
@@ -560,6 +584,12 @@ public class Configuration implements ConfigurationMBean {
 	public void setDeliveryTimeout(int timeout) {
 		this.connectionTimeout = timeout;
 		notifyListeners(PARAM_DELIVERY_TIMEOUT);
+	}
+	
+	@Override
+	public void setExpiry(long expiry) {
+		this.expiry = expiry;
+		notifyListeners(PARAM_DELIVERY_EXPIRY);
 	}
 
 	@Override
