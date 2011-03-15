@@ -32,10 +32,27 @@ import org.apache.mailet.MailAddress;
  * delivery result) and if an email is delivered to all recipients.</p>
  * 
  * @author kate rhodes,  masukomi at masukomi dot org
+ * @author Laszlo Solova
  * 
  */
 public interface AspirinListener {
+	/**
+	 * Called on success delivery to a recipient.
+	 * @param message
+	 * @param recipient
+	 */
 	public void deliverySuccess(MimeMessage message, MailAddress recipient);
+	/**
+	 * Called on delivery failure per recipient.
+	 * @param message
+	 * @param recipient
+	 * @param mex
+	 */
 	public void deliveryFailure(MimeMessage message, MailAddress recipient, MessagingException mex);
+	/**
+	 * Called on delivery finished to all recipients. Message is removed from 
+	 * Aspirin.
+	 * @param message
+	 */
 	public void deliveryFinished(MimeMessage message);
 }
