@@ -9,7 +9,7 @@ package org.masukomi.aspirin.core;
  * @version $Id$
  *
  */
-interface ConfigurationChangeListener {
+public interface ConfigurationChangeListener {
 	/**
 	 * This method is called when a configuration parameter is changed.
 	 * @param parameterName Name of changed parameter.

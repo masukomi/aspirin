@@ -4,11 +4,12 @@ import java.util.HashMap;
 
 import javax.mail.internet.MimeMessage;
 
+
 /**
  * This store implementation has a simple hashmap to 
  * store all MimeMessage objects. Please, be careful: 
- * if you has lot of object in memory it could cause 
- * OutOfMemoryException.
+ * if you has a lot of objects in memory it could cause 
+ * OutOfMemoryError.
  * 
  * @author Laszlo Solova
  *
