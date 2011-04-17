@@ -21,7 +21,7 @@ public class DefunctModuleTest extends TestCase {
 
 	public void testAspirin(String[] args) throws Exception {
 		// 1. Configure aspirin
-		Configuration config = Configuration.getInstance();
+		Configuration config = Aspirin.getConfiguration();
 		config.setDeliveryAttemptCount(3);
 		config.setDeliveryAttemptDelay(5);
 		config.setDeliveryDebug(true);
@@ -39,7 +39,7 @@ public class DefunctModuleTest extends TestCase {
 		config.setMailStore(fms);
 		
 		MBeanServer mbS = ManagementFactory.getPlatformMBeanServer();
-		mbS.registerMBean(Configuration.getInstance(), new ObjectName("org.masukomi.aspirin:type=Configuration"));
+		mbS.registerMBean(config, new ObjectName("org.masukomi.aspirin:type=Configuration"));
 
 //		@SuppressWarnings("unused")
 //		Logger logger = Logger.getLogger("MailService");

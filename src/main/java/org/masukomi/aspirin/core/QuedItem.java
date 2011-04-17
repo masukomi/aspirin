@@ -40,7 +40,7 @@ import org.apache.mailet.MailAddress;
  * 
  */
 public class QuedItem implements Comparable<QuedItem> {
-	static private Log log = Configuration.getInstance().getLog();
+	static private Log log = Aspirin.getConfiguration().getLog();
 	/** A Collection of MailWatchers */
 	//protected Collection watchers;
 	/** The mail to be sent */
@@ -132,7 +132,7 @@ public class QuedItem implements Comparable<QuedItem> {
 			recipientFailures = new HashMap<MailAddress, Integer>();
 		}
 		recipientFailures.put(recipient, 
-				new Integer(Configuration.getInstance().getDeliveryAttemptCount())); 
+				new Integer(Aspirin.getConfiguration().getDeliveryAttemptCount())); 
 		// tell anyone who cares
 		if (que.getListeners() != null) {
 			que.incrementNotifiersCount();
@@ -172,7 +172,7 @@ public class QuedItem implements Comparable<QuedItem> {
 				recipientFailures.put(recipient, new Integer(1));
 			}
 			
-			nextAttempt = System.currentTimeMillis() + Configuration.getInstance().getDeliveryAttemptDelay();
+			nextAttempt = System.currentTimeMillis() + Aspirin.getConfiguration().getDeliveryAttemptDelay();
 			// It will be released after processing
 //			release();
 //			setStatus(QuedItem.IN_QUE);
@@ -184,7 +184,7 @@ public class QuedItem implements Comparable<QuedItem> {
 			try {
 				failForRecipient(que, recipient, null);
 				Bouncer.bounce(que, getMail(), "Maxumum retries exceeded for " +recipient,
-						Configuration.getInstance().getPostmaster());
+						Aspirin.getConfiguration().getPostmaster());
 			} catch (MessagingException e) {
 				log.error(getClass().getSimpleName()+".retry(): ",e);
 			}
@@ -222,7 +222,7 @@ public class QuedItem implements Comparable<QuedItem> {
 		}
 		if (recipientFailures.containsKey(recipient)) {
 			Integer numFailures = (Integer) recipientFailures.get(recipient);
-			if ((numFailures.intValue() + 1) < Configuration.getInstance()
+			if ((numFailures.intValue() + 1) < Aspirin.getConfiguration()
 					.getDeliveryAttemptCount()) {
 				return true;
 			}

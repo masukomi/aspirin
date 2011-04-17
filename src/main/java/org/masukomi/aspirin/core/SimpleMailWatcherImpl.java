@@ -18,7 +18,7 @@ import org.apache.commons.logging.Log;
  * sophisticated MailWatcher is capable of. 
  */
 public class SimpleMailWatcherImpl implements AspirinListener {
-	static private Log log = Configuration.getInstance().getLog();
+	static private Log log = Aspirin.getConfiguration().getLog();
 	boolean hasSucceeded = false;
 	boolean hasFailed = false;
 	MimeMessage message;

@@ -47,7 +47,7 @@ import org.apache.mailet.MailAddress;
  *         Comments
  */
 public class Bouncer {
-	static private Log log = Configuration.getInstance().getLog();
+	static private Log log = Aspirin.getConfiguration().getLog();
 	/** An RFC822 date formatter used to format dates in mail headers */
 	private static RFC822DateFormat rfc822DateFormat = new RFC822DateFormat();
 	/**
@@ -69,7 +69,7 @@ public class Bouncer {
 	static public void bounce(MailQue que, Mail mail, String message, MailAddress bouncer)
 			throws MessagingException {
 		
-		if ( !Configuration.getInstance().isDeliveryBounceOnFailure() )
+		if ( !Aspirin.getConfiguration().isDeliveryBounceOnFailure() )
 			return;
 		
 		if (bouncer != null) {

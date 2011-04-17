@@ -14,7 +14,7 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
-import org.masukomi.aspirin.core.Configuration;
+import org.masukomi.aspirin.core.Aspirin;
 
 /**
  * This store implementation is designed to reduce memory 
@@ -54,11 +54,11 @@ public class FileMailStore implements MailStore {
 			if( !msgFile.exists() ) { msgFile.createNewFile(); }
 			msg.writeTo(new FileOutputStream(msgFile));
 		} catch (FileNotFoundException e) {
-			Configuration.getInstance().getLog().error(getClass().getSimpleName()+" No file representation found for name "+name,e);
+			Aspirin.getConfiguration().getLog().error(getClass().getSimpleName()+" No file representation found for name "+name,e);
 		} catch (IOException e) {
-			Configuration.getInstance().getLog().error(getClass().getSimpleName()+" Could not write file for name "+name,e);
+			Aspirin.getConfiguration().getLog().error(getClass().getSimpleName()+" Could not write file for name "+name,e);
 		} catch (MessagingException e) {
-			Configuration.getInstance().getLog().error(getClass().getSimpleName()+" There is a messaging exception with name "+name,e);
+			Aspirin.getConfiguration().getLog().error(getClass().getSimpleName()+" There is a messaging exception with name "+name,e);
 		}
 	}
 
@@ -75,9 +75,9 @@ public class FileMailStore implements MailStore {
 					msg = new MimeMessage(Session.getDefaultInstance(System.getProperties()),new FileInputStream(new File(messagePathMap.get(name))));
 					msgRef = new WeakReference<MimeMessage>(msg);
 				} catch (FileNotFoundException e) {
-					Configuration.getInstance().getLog().error(getClass().getSimpleName()+" No file representation found for name "+name,e);
+					Aspirin.getConfiguration().getLog().error(getClass().getSimpleName()+" No file representation found for name "+name,e);
 				} catch (MessagingException e) {
-					Configuration.getInstance().getLog().error(getClass().getSimpleName()+" There is a messaging exception with name "+name,e);
+					Aspirin.getConfiguration().getLog().error(getClass().getSimpleName()+" There is a messaging exception with name "+name,e);
 				}
 			}
 		}

@@ -25,18 +25,18 @@ public class TestMailWatcher implements AspirinListener {
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliverySuccess(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
 	public void deliverySuccess(MimeMessage message, String recepient) {
-		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliverySuccess(): recipient="+recepient+"; msg="+message);
+		Aspirin.getConfiguration().getLog().debug(getClass().getSimpleName()+".deliverySuccess(): recipient="+recepient+"; msg="+message);
 	}
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliveryFailure(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
 	public void deliveryFailure(MimeMessage message, String recepient, MessagingException mex) {
-		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliveryFailure(): recipient="+recepient+"; msg="+message,mex);
+		Aspirin.getConfiguration().getLog().debug(getClass().getSimpleName()+".deliveryFailure(): recipient="+recepient+"; msg="+message,mex);
 	}
 
 	@Override
 	public void deliveryFinished(MimeMessage message) {
-		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliveryFinished(): msg="+message);
+		Aspirin.getConfiguration().getLog().debug(getClass().getSimpleName()+".deliveryFinished(): msg="+message);
 	}
 
 }

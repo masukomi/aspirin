@@ -60,10 +60,17 @@ package org.apache.james.core;
 
 //import org.apache.avalon.framework.activity.Disposable;
 
-import org.apache.james.util.RFC2822Headers;
-import org.apache.mailet.Mail;
-import org.apache.mailet.MailAddress;
-import org.masukomi.aspirin.core.Configuration;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import javax.mail.Address;
 import javax.mail.Message;
@@ -71,13 +78,11 @@ import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.ParseException;
-import java.io.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
+
+import org.apache.james.util.RFC2822Headers;
+import org.apache.mailet.Mail;
+import org.apache.mailet.MailAddress;
+import org.masukomi.aspirin.core.Aspirin;
 
 /**
  * Wraps a MimeMessage adding routing information (from SMTP) and some simple
@@ -307,7 +312,7 @@ public class MailImpl implements Mail {
 	 * @return the MimeMessage associated with this MailImpl
 	 */
 	public MimeMessage getMessage() throws MessagingException {
-		MimeMessage mMsg = Configuration.getInstance().getMailStore().get(this.name);
+		MimeMessage mMsg = Aspirin.getConfiguration().getMailStore().get(this.name);
 		if( mMsg == null )
 			throw new MessagingException("No message found for this mail: "+this.name);
 		return mMsg;
@@ -326,14 +331,14 @@ public class MailImpl implements Mail {
 		if( oldName != null )
 		{
 			try {
-				MimeMessage mMsg = Configuration.getInstance().getMailStore().get(oldName);
+				MimeMessage mMsg = Aspirin.getConfiguration().getMailStore().get(oldName);
 				if( mMsg != null )
 				{
-					Configuration.getInstance().getMailStore().remove(oldName);
-					Configuration.getInstance().getMailStore().set(this.name, mMsg);
+					Aspirin.getConfiguration().getMailStore().remove(oldName);
+					Aspirin.getConfiguration().getMailStore().set(this.name, mMsg);
 				}
 			} catch (Exception e) {
-				Configuration.getInstance().getLog().error("Could not change message object in mail store."+oldName+"/"+this.name);
+				Aspirin.getConfiguration().getLog().error("Could not change message object in mail store."+oldName+"/"+this.name);
 			}
 		}
 
@@ -454,7 +459,7 @@ public class MailImpl implements Mail {
 	 *            the new MimeMessage associated with this MailImpl
 	 */
 	public void setMessage(MimeMessage message) {
-		Configuration.getInstance().getMailStore().set(this.name, message);
+		Aspirin.getConfiguration().getMailStore().set(this.name, message);
 //		this.message = message;
 	}
 
@@ -682,7 +687,7 @@ public class MailImpl implements Mail {
 	}
 	
 	public void release() {
-		Configuration.getInstance().getMailStore().remove(this.name);
+		Aspirin.getConfiguration().getMailStore().remove(this.name);
 	}
 
 }

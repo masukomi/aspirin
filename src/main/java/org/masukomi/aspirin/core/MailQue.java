@@ -47,7 +47,7 @@ import org.apache.james.core.MailImpl;
  *
  */
 public class MailQue implements MailQueMBean {
-	private Log log = Configuration.getInstance().getLog();
+	private Log log = Aspirin.getConfiguration().getLog();
 	protected QueManager qm;
 	protected Vector<QuedItem> que;
 	protected Vector<AspirinListener> listeners;
