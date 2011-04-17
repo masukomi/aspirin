@@ -7,8 +7,6 @@ package org.masukomi.aspirin.core;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-
-import org.apache.mailet.MailAddress;
 /**
  * @author masukomi
  *
@@ -26,13 +24,13 @@ public class TestMailWatcher implements AspirinListener {
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliverySuccess(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
-	public void deliverySuccess(MimeMessage message, MailAddress recepient) {
+	public void deliverySuccess(MimeMessage message, String recepient) {
 		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliverySuccess(): recipient="+recepient+"; msg="+message);
 	}
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliveryFailure(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
-	public void deliveryFailure(MimeMessage message, MailAddress recepient, MessagingException mex) {
+	public void deliveryFailure(MimeMessage message, String recepient, MessagingException mex) {
 		Configuration.getInstance().getLog().debug(getClass().getSimpleName()+".deliveryFailure(): recipient="+recepient+"; msg="+message,mex);
 	}
 
