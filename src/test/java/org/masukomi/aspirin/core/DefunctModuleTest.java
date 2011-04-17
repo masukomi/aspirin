@@ -13,7 +13,7 @@ import javax.mail.internet.MimeMessage;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
-import org.masukomi.aspirin.core.store.FileMailStore;
+import org.masukomi.aspirin.core.store.mail.FileMailStore;
 
 import junit.framework.TestCase;
 
