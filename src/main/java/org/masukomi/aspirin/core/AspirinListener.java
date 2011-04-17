@@ -24,8 +24,6 @@ package org.masukomi.aspirin.core;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
-
-import org.apache.mailet.MailAddress;
 /**
  * <p>This is a listener interface. This defines the mail delivery listeners, 
  * which could get messages if an email is delivered to a recipient (with the 
@@ -41,14 +39,14 @@ public interface AspirinListener {
 	 * @param message
 	 * @param recipient
 	 */
-	public void deliverySuccess(MimeMessage message, MailAddress recipient);
+	public void deliverySuccess(MimeMessage message, String recipient);
 	/**
 	 * Called on delivery failure per recipient.
 	 * @param message
 	 * @param recipient
 	 * @param mex
 	 */
-	public void deliveryFailure(MimeMessage message, MailAddress recipient, MessagingException mex);
+	public void deliveryFailure(MimeMessage message, String recipient, MessagingException mex);
 	/**
 	 * Called on delivery finished to all recipients. Message is removed from 
 	 * Aspirin.

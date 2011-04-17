@@ -9,7 +9,6 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.logging.Log;
-import org.apache.mailet.MailAddress;
 /**
  * @author masukomi
  *
@@ -25,7 +24,7 @@ public class SimpleMailWatcherImpl implements AspirinListener {
 	MimeMessage message;
 	/** a collection of import org.apache.mailet.MailAddress objects relating to the e-mail */
 //	Collection recipients;
-	MailAddress lastRecipient;
+	String lastRecipient;
 	/**
 	 * 
 	 */
@@ -75,7 +74,7 @@ public class SimpleMailWatcherImpl implements AspirinListener {
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliverySuccess(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
-	public void deliverySuccess(MimeMessage message, MailAddress recipient) {
+	public void deliverySuccess(MimeMessage message, String recipient) {
 		if (this.message == null){
 			hasSucceeded = true;
 			lastRecipient = recipient;
@@ -90,7 +89,7 @@ public class SimpleMailWatcherImpl implements AspirinListener {
 	/* (non-Javadoc)
 	 * @see org.masukomi.aspirin.core.MailWatcher#deliveryFailure(javax.mail.internet.MimeMessage, org.apache.mailet.MailAddress)
 	 */
-	public void deliveryFailure(MimeMessage message, MailAddress recipient, MessagingException mex) {
+	public void deliveryFailure(MimeMessage message, String recipient, MessagingException mex) {
 		if (this.message == null){
 			hasFailed = true;
 			lastRecipient = recipient;

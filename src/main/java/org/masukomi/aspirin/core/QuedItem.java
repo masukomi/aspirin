@@ -138,7 +138,7 @@ public class QuedItem implements Comparable<QuedItem> {
 			que.incrementNotifiersCount();
 			for (AspirinListener watcher : que.getListeners()){
 				try {
-					watcher.deliveryFailure(getMail().getMessage(), recipient, mex);
+					watcher.deliveryFailure(getMail().getMessage(), recipient.toString(), mex);
 					if( isCompleted() )
 						watcher.deliveryFinished(getMail().getMessage());
 				} catch (MessagingException e) {
@@ -273,7 +273,7 @@ public class QuedItem implements Comparable<QuedItem> {
 				AspirinListener watcher = it.next();
 				try {
 					//watcher.deliverySuccess(getMail().getMessage(), recipients);
-					watcher.deliverySuccess(getMail().getMessage(), recipient);
+					watcher.deliverySuccess(getMail().getMessage(), recipient.toString());
 					if( isCompleted() )
 						watcher.deliveryFinished(getMail().getMessage());
 				} catch (MessagingException e) {
