@@ -1,4 +1,4 @@
-package org.masukomi.aspirin.core;
+package org.masukomi.aspirin.core.config;
 
 /**
  * <p>This interface is part of configuration subsystem. If a configuration 

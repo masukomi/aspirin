@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package org.masukomi.aspirin.core;
+package org.masukomi.aspirin.core.config;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -402,7 +402,7 @@ public class Configuration implements ConfigurationMBean {
 	/**
 	 * @return The email address of the postmaster in a MailAddress object.
 	 */
-	MailAddress getPostmaster() {
+	public MailAddress getPostmaster() {
 		return postmaster;
 	}
 	/**

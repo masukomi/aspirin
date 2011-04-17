@@ -16,6 +16,7 @@ import javax.mail.internet.MimeMessage;
 import junit.framework.TestCase;
 
 import org.jvnet.mock_javamail.Mailbox;
+import org.masukomi.aspirin.core.config.Configuration;
 /**
  * @author masukomi masukomi at masukomi dot org
  * @author Sandeep Mukherjee (msandeep at technologist dot com ) who wrote the mail checking routines in his PopKorn

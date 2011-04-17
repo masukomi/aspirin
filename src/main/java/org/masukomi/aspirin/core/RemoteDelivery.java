@@ -84,6 +84,8 @@ import org.apache.commons.pool.ObjectPool;
 import org.apache.james.core.MailImpl;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
+import org.masukomi.aspirin.core.config.ConfigurationChangeListener;
+import org.masukomi.aspirin.core.config.ConfigurationMBean;
 import org.masukomi.aspirin.core.dns.DnsResolver;
 
 /**

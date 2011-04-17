@@ -27,6 +27,8 @@ package org.masukomi.aspirin.core;
 import org.apache.commons.logging.Log;
 import org.apache.commons.pool.ObjectPool;
 import org.apache.commons.pool.impl.GenericObjectPool;
+import org.masukomi.aspirin.core.config.ConfigurationChangeListener;
+import org.masukomi.aspirin.core.config.ConfigurationMBean;
 
 /**
  * <p>This object is the manager, the main class of mail delivering.</p>

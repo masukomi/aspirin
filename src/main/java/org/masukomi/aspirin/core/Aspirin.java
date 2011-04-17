@@ -13,6 +13,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
 
+import org.masukomi.aspirin.core.config.Configuration;
 import org.masukomi.aspirin.core.delivery.DeliveryManager;
 import org.masukomi.aspirin.core.listener.ListenerManager;
 import org.masukomi.aspirin.core.store.mail.FileMailStore;
@@ -82,7 +83,7 @@ public class Aspirin {
 	private static Integer idCounter = 0;
 	
 	/** Configuration object of Aspirin. */
-	private static Configuration configuration = new Configuration();
+	private static Configuration configuration = Configuration.getInstance();
 	/** AspirinListener management object. Create on first request. */
 	private static ListenerManager listenerManager = null;
 	/** Delivery and QoS service management. Create on first request. */

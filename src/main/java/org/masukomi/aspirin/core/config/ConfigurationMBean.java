@@ -1,4 +1,4 @@
-package org.masukomi.aspirin.core;
+package org.masukomi.aspirin.core.config;
 
 import javax.mail.Transport;
 
