@@ -8,7 +8,6 @@ import java.util.Vector;
 import javax.mail.URLName;
 
 import org.masukomi.aspirin.core.Aspirin;
-import org.masukomi.aspirin.core.RemoteDelivery;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.MXRecord;
 import org.xbill.DNS.Record;
