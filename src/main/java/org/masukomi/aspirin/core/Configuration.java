@@ -32,8 +32,10 @@ import javax.mail.internet.ParseException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.mailet.MailAddress;
-import org.masukomi.aspirin.core.store.MailStore;
-import org.masukomi.aspirin.core.store.SimpleMailStore;
+import org.masukomi.aspirin.core.store.mail.MailStore;
+import org.masukomi.aspirin.core.store.mail.SimpleMailStore;
+import org.masukomi.aspirin.core.store.queue.QueueStore;
+import org.masukomi.aspirin.core.store.queue.SimpleQueueStore;
 
 
 /**
@@ -156,12 +158,20 @@ import org.masukomi.aspirin.core.store.SimpleMailStore;
  *   	<td>aspirin.mailstore.class</td>
  *   	<td></td>
  *   	<td>String</td>
- *   	<td>The class name of mail store. Default class is SimpleMailStore in org.masukomi.aspirin.core.store package.</td>
+ *   	<td>The class name of mail store. Default class is SimpleMailStore in 
+ *   	org.masukomi.aspirin.core.store package.</td>
+ *   </tr>
+ *   <tr>
+ *   	<td>aspirin.queuestore.class</td>
+ *   	<td></td>
+ *   	<td>String</td>
+ *   	<td>The class name of queue store. Default class is SimpleQueueStore in 
+ *   	org.masukomi.aspirin.core.queue package.</td>
  *   </tr>
  * </table>
  * 
  * @author Kate Rhodes masukomi at masukomi dot org
- * @version $Id$
+ * @author Laszlo Solova
  */
 public class Configuration implements ConfigurationMBean {
 	
@@ -186,7 +196,9 @@ public class Configuration implements ConfigurationMBean {
 	private static Log log = LogFactory.getLog(loggerName); // inherited from aspirin.logger.name
 	private String loggerPrefix = "Aspirin "; // aspirin.logger.prefix
 	private MailStore mailStore = null;
-	private String storeClassName = SimpleMailStore.class.getCanonicalName();
+	private String mailStoreClassName = SimpleMailStore.class.getCanonicalName(); // aspirin.mailstore.class
+	private QueueStore queueStore = null;
+	private String queueStoreClassName = SimpleQueueStore.class.getCanonicalName(); // aspirin.queuestore.class
 	protected MailAddress postmaster = null; // inherited from aspirin.postmaster.email
 	
 	private List<ConfigurationChangeListener> listeners;
@@ -333,7 +345,9 @@ public class Configuration implements ConfigurationMBean {
 			log = LogFactory.getLog(loggerName);
 		loggerPrefix = props.getProperty(PARAM_LOGGER_PREFIX, loggerPrefix);
 		
-		storeClassName = props.getProperty(PARAM_MAILSTORE_CLASS, storeClassName);
+		mailStoreClassName = props.getProperty(PARAM_MAILSTORE_CLASS, mailStoreClassName);
+		
+		queueStoreClassName = props.getProperty(PARAM_QUEUESTORE_CLASS, queueStoreClassName);
 	}
 	
 	/**
@@ -518,11 +532,11 @@ public class Configuration implements ConfigurationMBean {
 		if( mailStore == null )
 		{
 			try {
-				Class<?> storeClass = (Class<?>) Class.forName(storeClassName);
+				Class<?> storeClass = (Class<?>) Class.forName(mailStoreClassName);
 				if( storeClass.getInterfaces()[0].equals(MailStore.class) )
 					mailStore = (MailStore)storeClass.newInstance();
 			} catch (Exception e) {
-				log.error(getClass().getSimpleName()+" Store class could not be instantiated. Class="+storeClassName, e);
+				log.error(getClass().getSimpleName()+" Mail store class could not be instantiated. Class="+mailStoreClassName, e);
 				mailStore = new SimpleMailStore();
 			}
 		}
@@ -532,6 +546,21 @@ public class Configuration implements ConfigurationMBean {
 	@Override
 	public String getPostmasterEmail() {
 		return postmaster.toString();
+	}
+	
+	public QueueStore getQueueStore() {
+		if( queueStore == null )
+		{
+			try {
+				Class<?> storeClass = (Class<?>) Class.forName(queueStoreClassName);
+				if( storeClass.getInterfaces()[0].equals(QueueStore.class) )
+					queueStore = (QueueStore)storeClass.newInstance();
+			} catch (Exception e) {
+				log.error(getClass().getSimpleName()+" Queue store class could not be instantiated. Class="+queueStoreClassName, e);
+				queueStore = new SimpleQueueStore();
+			}
+		}
+		return queueStore;
 	}
 	
 	@Override
@@ -626,6 +655,10 @@ public class Configuration implements ConfigurationMBean {
 		}
 	}
 	
+	public void setQueueStore(QueueStore queueStore) {
+		this.queueStore = queueStore;
+	}
+	
 	public void addListener(ConfigurationChangeListener listener) {
 		if( listeners == null )
 			listeners = new ArrayList<ConfigurationChangeListener>();
@@ -657,12 +690,22 @@ public class Configuration implements ConfigurationMBean {
 
 	@Override
 	public String getMailStoreClassName() {
-		return storeClassName;
+		return mailStoreClassName;
 	}
 
 	@Override
 	public void setMailStoreClassName(String className) {
-		this.storeClassName = className;
+		this.mailStoreClassName = className;
+	}
+	
+	@Override
+	public String getQueueStoreClassName() {
+		return queueStoreClassName;
+	}
+	
+	@Override
+	public void setQueueStoreClassName(String className) {
+		this.queueStoreClassName = className;
 	}
 
 }

@@ -2,13 +2,15 @@ package org.masukomi.aspirin.core;
 
 import javax.mail.Transport;
 
-import org.masukomi.aspirin.core.store.MailStore;
+import org.masukomi.aspirin.core.store.mail.FileMailStore;
+import org.masukomi.aspirin.core.store.mail.SimpleMailStore;
+import org.masukomi.aspirin.core.store.queue.SimpleQueueStore;
 
 /**
  * <p>This is the JMX bean of Aspirin configuration. Some configuration 
  * parameter could be applied immediately.</p>
  *
- * @version $Id$
+ * @author Laszlo Solova
  *
  */
 public interface ConfigurationMBean {
@@ -27,6 +29,7 @@ public interface ConfigurationMBean {
 	public static final String PARAM_LOGGER_PREFIX					= "aspirin.logger.prefix";
 	public static final String PARAM_POSTMASTER_EMAIL				= "aspirin.postmaster.email";
 	public static final String PARAM_MAILSTORE_CLASS				= "aspirin.mailstore.class";
+	public static final String PARAM_QUEUESTORE_CLASS				= "aspirin.queuestore.class";
 	
 	/**
 	 * Value of never expiration. If an email expire is marked with this value, 
@@ -72,15 +75,19 @@ public interface ConfigurationMBean {
 	 */
 	public String getLoggerPrefix();
 	/**
-	 * @return The directory object where the mimemessage objects could be
-	 * stored.
+	 * @return The directory object's class name where the mimemessage objects 
+	 * could be stored.
 	 */
-	public MailStore getMailStore();
 	public String getMailStoreClassName();
 	/**
 	 * @return The email address of the postmaster.
 	 */
 	public String getPostmasterEmail();
+	/**
+	 * @return The directory object's class name where the email informations 
+	 * could be stored.
+	 */
+	public String getQueueStoreClassName();
 	/**
 	 * @return The hostname of this server. It is used in HELO SMTP command.
 	 */
@@ -157,10 +164,10 @@ public interface ConfigurationMBean {
 	 */
 	public void setLoggerPrefix(String loggerPrefix);
 	/**
-	 * 
-	 * @param mailCacheDirectory
+	 * Set the mail store class name, where MimeMessages will be stored. 
+	 * Built-in stores are {@link SimpleMailStore} and {@link FileMailStore}.
+	 * @param className
 	 */
-	public void setMailStore(MailStore mailStore);
 	public void setMailStoreClassName(String className);
 	/**
 	 * Set the email address of postmaster. If delivery failed, you can get an 
@@ -168,6 +175,12 @@ public interface ConfigurationMBean {
 	 * @param emailAddress The email address of postmaster.
 	 */
 	public void setPostmasterEmail(String emailAddress);
+	/**
+	 * Set the queue store class name, where queue informations are placed in. 
+	 * Built-in store is the {@link SimpleQueueStore}.
+	 * @param className
+	 */
+	public void setQueueStoreClassName(String className);
 	/**
 	 * Set the hostname, which is used in HELO command of SMTP communication. 
 	 * This hostname identifies us for other hosts. If the hostname is invalid 
