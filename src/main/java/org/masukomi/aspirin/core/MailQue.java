@@ -38,6 +38,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.logging.Log;
 import org.apache.james.core.MailImpl;
+import org.masukomi.aspirin.core.listener.AspirinListener;
 
 /**
  * <p>This class represents the mailing queue of the Aspirin.</p>

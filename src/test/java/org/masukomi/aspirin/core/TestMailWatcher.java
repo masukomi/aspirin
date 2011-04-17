@@ -7,6 +7,8 @@ package org.masukomi.aspirin.core;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+
+import org.masukomi.aspirin.core.listener.AspirinListener;
 /**
  * @author masukomi
  *

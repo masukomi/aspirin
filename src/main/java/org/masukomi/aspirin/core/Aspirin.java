@@ -15,6 +15,7 @@ import javax.mail.internet.MimeMessage.RecipientType;
 
 import org.masukomi.aspirin.core.config.Configuration;
 import org.masukomi.aspirin.core.delivery.DeliveryManager;
+import org.masukomi.aspirin.core.listener.AspirinListener;
 import org.masukomi.aspirin.core.listener.ListenerManager;
 import org.masukomi.aspirin.core.store.mail.FileMailStore;
 import org.masukomi.aspirin.core.store.mail.MailStore;

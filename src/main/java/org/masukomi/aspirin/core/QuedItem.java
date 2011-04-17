@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.james.core.MailImpl;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
+import org.masukomi.aspirin.core.listener.AspirinListener;
 /**
  * A QuedItem contains a Mail object, a list of MailWatchers, and assorted
  * variables to manage it's place in the que and retries.

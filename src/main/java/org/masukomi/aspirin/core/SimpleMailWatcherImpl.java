@@ -9,6 +9,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.logging.Log;
+import org.masukomi.aspirin.core.listener.AspirinListener;
 /**
  * @author masukomi
  *
