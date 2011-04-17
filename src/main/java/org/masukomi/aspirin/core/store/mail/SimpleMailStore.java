@@ -1,8 +1,9 @@
-package org.masukomi.aspirin.core.store;
+package org.masukomi.aspirin.core.store.mail;
 
 import java.util.HashMap;
 
 import javax.mail.internet.MimeMessage;
+
 
 
 /**

@@ -1,4 +1,4 @@
-package org.masukomi.aspirin.core.store;
+package org.masukomi.aspirin.core.store.mail;
 
 import java.io.File;
 import java.io.FileInputStream;
