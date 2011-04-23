@@ -27,15 +27,17 @@ import java.util.List;
 import java.util.Properties;
 
 import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.ParseException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.mailet.MailAddress;
 import org.masukomi.aspirin.core.store.mail.MailStore;
 import org.masukomi.aspirin.core.store.mail.SimpleMailStore;
 import org.masukomi.aspirin.core.store.queue.QueueStore;
 import org.masukomi.aspirin.core.store.queue.SimpleQueueStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -175,12 +177,6 @@ import org.masukomi.aspirin.core.store.queue.SimpleQueueStore;
  */
 public class Configuration implements ConfigurationMBean {
 	
-	/**
-	 * @deprecated Use Aspirin.HEADER_MAIL_ID instead.
-	 */
-	@Deprecated
-	public static final String ASPIRIN_MAIL_ID_HEADER = "X-Aspirin-MailID";
-	
 	private static Configuration instance;
 	private int maxAttempts = 3; // aspirin.delivery.attempt.count
 	private long retryInterval = 300000; // aspirin.delivery.attempt.delay
@@ -193,13 +189,13 @@ public class Configuration implements ConfigurationMBean {
 	private String encoding = "UTF-8"; // aspirin.encoding
 	private long expiry = -1; // aspirin.delivery.expiry
 	private static String loggerName = "Aspirin"; // aspirin.logger.name
-	private static Log log = LogFactory.getLog(loggerName); // inherited from aspirin.logger.name
+	private static Logger log = LoggerFactory.getLogger(loggerName); // inherited from aspirin.logger.name
 	private String loggerPrefix = "Aspirin "; // aspirin.logger.prefix
 	private MailStore mailStore = null;
 	private String mailStoreClassName = SimpleMailStore.class.getCanonicalName(); // aspirin.mailstore.class
 	private QueueStore queueStore = null;
 	private String queueStoreClassName = SimpleQueueStore.class.getCanonicalName(); // aspirin.queuestore.class
-	protected MailAddress postmaster = null; // inherited from aspirin.postmaster.email
+	protected InternetAddress postmaster = null; // inherited from aspirin.postmaster.email
 	
 	private List<ConfigurationChangeListener> listeners;
 
@@ -342,7 +338,7 @@ public class Configuration implements ConfigurationMBean {
 		
 		String loggerConfigName = props.getProperty(PARAM_LOGGER_NAME);
 		if( loggerConfigName != null && !loggerConfigName.equals(loggerName) )
-			log = LogFactory.getLog(loggerName);
+			log = LoggerFactory.getLogger(loggerName);
 		loggerPrefix = props.getProperty(PARAM_LOGGER_PREFIX, loggerPrefix);
 		
 		mailStoreClassName = props.getProperty(PARAM_MAILSTORE_CLASS, mailStoreClassName);
@@ -402,7 +398,7 @@ public class Configuration implements ConfigurationMBean {
 	/**
 	 * @return The email address of the postmaster in a MailAddress object.
 	 */
-	public MailAddress getPostmaster() {
+	public InternetAddress getPostmaster() {
 		return postmaster;
 	}
 	/**
@@ -427,8 +423,9 @@ public class Configuration implements ConfigurationMBean {
 	public void setMaxAttempts(int maxAttempts) {
 		setDeliveryAttemptCount(maxAttempts);
 	}
+	@Deprecated
 	public Log getLog() {
-		return log;
+		return LogFactory.getLog(loggerName);
 	}
 	
 	public String getHostname() {
@@ -624,7 +621,7 @@ public class Configuration implements ConfigurationMBean {
 	@Override
 	public void setLoggerName(String loggerName) {
 		Configuration.loggerName = loggerName;
-		log = LogFactory.getLog(loggerName);
+		log = LoggerFactory.getLogger(loggerName);
 		notifyListeners(PARAM_LOGGER_NAME);
 	}
 
@@ -647,7 +644,7 @@ public class Configuration implements ConfigurationMBean {
 		}
 		try
 		{
-			this.postmaster = new MailAddress(emailAddress);
+			this.postmaster = new InternetAddress(emailAddress);
 			notifyListeners(PARAM_POSTMASTER_EMAIL);
 		}catch (ParseException e)
 		{
@@ -706,6 +703,10 @@ public class Configuration implements ConfigurationMBean {
 	@Override
 	public void setQueueStoreClassName(String className) {
 		this.queueStoreClassName = className;
+	}
+	
+	public Logger getLogger() {
+		return LoggerFactory.getLogger(loggerName);
 	}
 
 }

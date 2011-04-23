@@ -66,7 +66,7 @@ public class Bouncer {
 	 * @throws MessagingException
 	 *             DOCUMENT ME!
 	 */
-	static public void bounce(MailQue que, Mail mail, String message, MailAddress bouncer)
+	static public void bounce(MailQue que, Mail mail, String message, InternetAddress bouncer)
 			throws MessagingException {
 		
 		if ( !Aspirin.getConfiguration().isDeliveryBounceOnFailure() )
@@ -94,7 +94,7 @@ public class Bouncer {
 				recipients.add(new MailAddress((InternetAddress) addresses[i]));
 			}
 			//Change the sender...
-			reply.setFrom(bouncer.toInternetAddress());
+			reply.setFrom(bouncer);
 			try {
 				//Create the message body
 				MimeMultipart multipart = new MimeMultipart();
