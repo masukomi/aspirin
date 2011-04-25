@@ -13,6 +13,8 @@ import java.util.Map;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
 
+import org.masukomi.aspirin.core.AspirinInternal;
+
 
 /**
  * 
@@ -149,11 +151,14 @@ public class SimpleQueueStore implements QueueStore {
 	}
 
 	@Override
-	public void setSendingResult(String mailid, String recipient, DeliveryState state) {
+	public void setSendingResult(QueueInfo qi) {
 		synchronized (lock) {
-			SimpleQueueInfo uniqueQueueInfo = queueInfoByMailidAndRecipient.get(createSearchKey(mailid, recipient));
+			SimpleQueueInfo uniqueQueueInfo = queueInfoByMailidAndRecipient.get(createSearchKey(qi.getMailid(), qi.getRecipient()));
 			if( uniqueQueueInfo != null )
-				uniqueQueueInfo.setState(state);
+			{
+				uniqueQueueInfo.setState(qi.getState());
+				uniqueQueueInfo.setAttempt(System.currentTimeMillis()+AspirinInternal.getConfiguration().getDeliveryAttemptDelay());
+			}
 		}
 	}
 	

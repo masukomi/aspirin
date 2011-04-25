@@ -22,6 +22,6 @@ public interface QueueStore {
 	public QueueInfo next();
 	public void remove(String mailid);
 	public void removeRecipient(String recipient);
-	public void setSendingResult(String mailid, String recipient, DeliveryState state);
+	public void setSendingResult(QueueInfo qi);
 	public int size();
 }

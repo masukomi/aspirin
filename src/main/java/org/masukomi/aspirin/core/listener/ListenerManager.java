@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.masukomi.aspirin.core.store.queue.QueueInfo;
-import org.masukomi.aspirin.core.store.queue.DeliveryState;
 
 /**
  * 
@@ -25,7 +24,7 @@ public class ListenerManager {
 		}
 	}
 	
-	public void notifyListeners(QueueInfo qi, String reason, DeliveryState state) {
+	public void notifyListeners(QueueInfo qi) {
 	}
 
 }

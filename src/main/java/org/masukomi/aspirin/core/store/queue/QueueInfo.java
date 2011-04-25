@@ -9,6 +9,7 @@ package org.masukomi.aspirin.core.store.queue;
 public abstract class QueueInfo {
 	private String mailid;
 	private String recipient;
+	private String resultInfo;
 	private long attempt = 0;
 	private int attemptCount = 0;
 	private long expiry = -1L;
@@ -34,6 +35,12 @@ public abstract class QueueInfo {
 	public void setRecipient(String recipient) {
 		this.recipient = recipient;
 	}
+	public String getResultInfo() {
+		return resultInfo;
+	}
+	public void setResultInfo(String resultInfo) {
+		this.resultInfo = resultInfo;
+	}
 	public long getAttempt() {
 		return attempt;
 	}
@@ -55,7 +62,7 @@ public abstract class QueueInfo {
 	public DeliveryState getState() {
 		return state;
 	}
-	void setState(DeliveryState state) {
+	public void setState(DeliveryState state) {
 		this.state = state;
 	}
 	
