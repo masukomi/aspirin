@@ -38,6 +38,7 @@ import org.masukomi.aspirin.core.listener.AspirinListener;
  * variables to manage it's place in the que and retries.
  * 
  * @author kate rhodes masukomi at masukomi dot org
+ * @deprecated
  * 
  */
 public class QuedItem implements Comparable<QuedItem> {

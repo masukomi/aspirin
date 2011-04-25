@@ -17,6 +17,8 @@ import javax.mail.internet.MimeMessage;
  * A simple convenience class that generates a MimeMessage for you to fill in
  * without you having to remember / worry about Sessions or Properties or any of that. 
  * No properties are set in the creation of this MimeMessage. 
+ * 
+ * @deprecated
  */
 public class SimpleMimeMessageGenerator {
 

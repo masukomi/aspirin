@@ -8,6 +8,7 @@ import org.apache.commons.pool.ObjectPool;
  * </p>
  *
  * @version $Id$
+ * @deprecated
  *
  */
 public class GenericPoolableRemoteDeliveryFactory extends BasePoolableObjectFactory {

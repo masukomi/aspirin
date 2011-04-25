@@ -92,6 +92,7 @@ import org.masukomi.aspirin.core.dns.DnsResolver;
  * <p>This thread </p>
  * 
  * Heavily leverages the RemoteDelivery class from James
+ * @deprecated
  */
 public class RemoteDelivery extends Thread implements ConfigurationChangeListener {
 	

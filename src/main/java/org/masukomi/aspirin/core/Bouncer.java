@@ -45,6 +45,8 @@ import org.apache.mailet.MailAddress;
  * @author Administrator To change the template for this generated type comment
  *         go to Window - Preferences - Java - Code Generation - Code and
  *         Comments
+ * 
+ * @deprecated
  */
 public class Bouncer {
 	static private Log log = AspirinInternal.getConfiguration().getLog();

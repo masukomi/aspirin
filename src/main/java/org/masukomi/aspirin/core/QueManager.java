@@ -44,6 +44,7 @@ import org.masukomi.aspirin.core.config.ConfigurationMBean;
  * @author masukomi
  * 
  * @version $Id$
+ * @deprecated
  * 
  */
 class QueManager extends Thread implements ConfigurationChangeListener {

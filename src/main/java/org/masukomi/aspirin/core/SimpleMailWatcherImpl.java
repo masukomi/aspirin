@@ -17,6 +17,7 @@ import org.masukomi.aspirin.core.listener.AspirinListener;
  * or fails but doesn't take the recipients into account and it doesn't care *what* message has
  * succeeded or failed. It is extremely simplistic and should not be used as a guage of what a 
  * sophisticated MailWatcher is capable of. 
+ * @deprecated
  */
 public class SimpleMailWatcherImpl implements AspirinListener {
 	static private Log log = AspirinInternal.getConfiguration().getLog();

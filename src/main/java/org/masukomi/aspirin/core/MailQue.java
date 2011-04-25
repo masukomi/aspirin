@@ -45,7 +45,8 @@ import org.masukomi.aspirin.core.listener.AspirinListener;
  *
  * @author masukomi
  * @version $Id$
- *
+ * 
+ * @deprecated
  */
 public class MailQue implements MailQueMBean {
 	private Log log = AspirinInternal.getConfiguration().getLog();
