@@ -58,7 +58,7 @@ import org.slf4j.Logger;
  * @author Laszlo Solova
  *
  */
-public class Aspirin {
+public class AspirinInternal {
 	
 	/**
 	 * Name of ID header placed in MimeMessage object. If no such header is 
@@ -168,7 +168,7 @@ public class Aspirin {
 			long nowTime = System.currentTimeMillis()/1000;
 			String newId = nowTime+"."+Integer.toHexString(idCounter++);
 			try {
-				mMesg.setHeader(Aspirin.HEADER_MAIL_ID, newId);
+				mMesg.setHeader(AspirinInternal.HEADER_MAIL_ID, newId);
 			} catch (MessagingException msge) {
 				getLogger().warn("Aspirin Mail ID could not be generated.", msge);
 				msge.printStackTrace();
@@ -224,7 +224,7 @@ public class Aspirin {
 	public static String getMailID(MimeMessage message) {
 		String[] headers;
 		try {
-			headers = message.getHeader(Aspirin.HEADER_MAIL_ID);
+			headers = message.getHeader(AspirinInternal.HEADER_MAIL_ID);
 			if( headers != null && 0 < headers.length )
 				return headers[0];
 		} catch (MessagingException e) {
@@ -241,7 +241,7 @@ public class Aspirin {
 	public static long getExpiry(MimeMessage message) {
 		String headers[];
 		try {
-			headers = message.getHeader(Aspirin.HEADER_EXPIRY);
+			headers = message.getHeader(AspirinInternal.HEADER_EXPIRY);
 			if( headers != null && 0 < headers.length )
 				return expiryFormat.parse(headers[0]).getTime();
 		} catch (Exception e) {
@@ -261,7 +261,7 @@ public class Aspirin {
 	
 	public static void setExpiry(MimeMessage message, long expiry) {
 		try {
-			message.setHeader(Aspirin.HEADER_EXPIRY, expiryFormat.format(new Date(System.currentTimeMillis()+expiry)));
+			message.setHeader(AspirinInternal.HEADER_EXPIRY, expiryFormat.format(new Date(System.currentTimeMillis()+expiry)));
 		} catch (MessagingException e) {
 			getLogger().error("Could not set Expiry of the MimeMessage: {}.",getMailID(message), e);
 		}

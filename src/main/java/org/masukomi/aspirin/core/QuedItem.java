@@ -41,7 +41,7 @@ import org.masukomi.aspirin.core.listener.AspirinListener;
  * 
  */
 public class QuedItem implements Comparable<QuedItem> {
-	static private Log log = Aspirin.getConfiguration().getLog();
+	static private Log log = AspirinInternal.getConfiguration().getLog();
 	/** A Collection of MailWatchers */
 	//protected Collection watchers;
 	/** The mail to be sent */
@@ -66,7 +66,7 @@ public class QuedItem implements Comparable<QuedItem> {
 		//this.watchers = listeners;
 		nextAttempt = System.currentTimeMillis();
 		try {
-			expiry = Aspirin.getExpiry(mail.getMessage());
+			expiry = AspirinInternal.getExpiry(mail.getMessage());
 		} catch (MessagingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -133,7 +133,7 @@ public class QuedItem implements Comparable<QuedItem> {
 			recipientFailures = new HashMap<MailAddress, Integer>();
 		}
 		recipientFailures.put(recipient, 
-				new Integer(Aspirin.getConfiguration().getDeliveryAttemptCount())); 
+				new Integer(AspirinInternal.getConfiguration().getDeliveryAttemptCount())); 
 		// tell anyone who cares
 		if (que.getListeners() != null) {
 			que.incrementNotifiersCount();
@@ -173,7 +173,7 @@ public class QuedItem implements Comparable<QuedItem> {
 				recipientFailures.put(recipient, new Integer(1));
 			}
 			
-			nextAttempt = System.currentTimeMillis() + Aspirin.getConfiguration().getDeliveryAttemptDelay();
+			nextAttempt = System.currentTimeMillis() + AspirinInternal.getConfiguration().getDeliveryAttemptDelay();
 			// It will be released after processing
 //			release();
 //			setStatus(QuedItem.IN_QUE);
@@ -185,7 +185,7 @@ public class QuedItem implements Comparable<QuedItem> {
 			try {
 				failForRecipient(que, recipient, null);
 				Bouncer.bounce(que, getMail(), "Maxumum retries exceeded for " +recipient,
-						Aspirin.getConfiguration().getPostmaster());
+						AspirinInternal.getConfiguration().getPostmaster());
 			} catch (MessagingException e) {
 				log.error(getClass().getSimpleName()+".retry(): ",e);
 			}
@@ -223,7 +223,7 @@ public class QuedItem implements Comparable<QuedItem> {
 		}
 		if (recipientFailures.containsKey(recipient)) {
 			Integer numFailures = (Integer) recipientFailures.get(recipient);
-			if ((numFailures.intValue() + 1) < Aspirin.getConfiguration()
+			if ((numFailures.intValue() + 1) < AspirinInternal.getConfiguration()
 					.getDeliveryAttemptCount()) {
 				return true;
 			}

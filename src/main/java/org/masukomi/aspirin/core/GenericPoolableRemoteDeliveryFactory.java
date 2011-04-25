@@ -46,13 +46,13 @@ public class GenericPoolableRemoteDeliveryFactory extends BasePoolableObjectFact
 			rd.setName(RemoteDelivery.class.getSimpleName()+"-"+rdCount);
 		}
 		rd.setParentPool(myParentPool);
-		Aspirin.getConfiguration().getLog().trace(getClass().getSimpleName()+".makeObject(): New RemoteDelivery object created: "+rd.getName());
+		AspirinInternal.getConfiguration().getLog().trace(getClass().getSimpleName()+".makeObject(): New RemoteDelivery object created: "+rd.getName());
 		/*
 		 * This will be started after first borrow of this object, because the 
 		 * first item to process will be set after first borrow too.
 		 */
 //		rd.start();
-		Aspirin.getConfiguration().addListener(rd);
+		AspirinInternal.getConfiguration().addListener(rd);
 		return rd;
 	}
 
@@ -61,9 +61,9 @@ public class GenericPoolableRemoteDeliveryFactory extends BasePoolableObjectFact
 		if( obj instanceof RemoteDelivery )
 		{
 			RemoteDelivery rd = (RemoteDelivery)obj;
-			Aspirin.getConfiguration().getLog().trace(getClass().getSimpleName()+".destroyObject(): destroy thread "+rd.getName());
+			AspirinInternal.getConfiguration().getLog().trace(getClass().getSimpleName()+".destroyObject(): destroy thread "+rd.getName());
 			rd.shutdown();
-			Aspirin.getConfiguration().removeListener(rd);
+			AspirinInternal.getConfiguration().removeListener(rd);
 		}
 	}
 

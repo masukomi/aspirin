@@ -48,7 +48,7 @@ import org.masukomi.aspirin.core.listener.AspirinListener;
  *
  */
 public class MailQue implements MailQueMBean {
-	private Log log = Aspirin.getConfiguration().getLog();
+	private Log log = AspirinInternal.getConfiguration().getLog();
 	protected QueManager qm;
 	protected Vector<QuedItem> que;
 	protected Vector<AspirinListener> listeners;
@@ -76,7 +76,7 @@ public class MailQue implements MailQueMBean {
 			throws AddressException, MessagingException {
 
 		MailImpl sourceMail = new MailImpl(mimeMessage);
-		sourceMail.setName(Aspirin.getMailID(mimeMessage));
+		sourceMail.setName(AspirinInternal.getMailID(mimeMessage));
 		// Do I want to give the internal key, or the message's Message ID
 		if (log.isDebugEnabled())
 			log.debug(getClass().getSimpleName()+".service(): Remotely delivering mail " + sourceMail.getName());

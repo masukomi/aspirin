@@ -7,7 +7,7 @@ import java.util.Vector;
 
 import javax.mail.URLName;
 
-import org.masukomi.aspirin.core.Aspirin;
+import org.masukomi.aspirin.core.AspirinInternal;
 import org.xbill.DNS.Lookup;
 import org.xbill.DNS.MXRecord;
 import org.xbill.DNS.Record;
@@ -124,7 +124,7 @@ public class DnsResolver {
 			}
 
 		} catch (TextParseException e) {
-			Aspirin.getConfiguration().getLog().warn("DnsResolver.getMXRecordsForHost(): Failed get MX record for host '"+hostName+"'.",e);
+			AspirinInternal.getConfiguration().getLog().warn("DnsResolver.getMXRecordsForHost(): Failed get MX record for host '"+hostName+"'.",e);
 		}
 
 		return recordsColl;

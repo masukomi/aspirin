@@ -19,7 +19,7 @@ import org.masukomi.aspirin.core.listener.AspirinListener;
  * sophisticated MailWatcher is capable of. 
  */
 public class SimpleMailWatcherImpl implements AspirinListener {
-	static private Log log = Aspirin.getConfiguration().getLog();
+	static private Log log = AspirinInternal.getConfiguration().getLog();
 	boolean hasSucceeded = false;
 	boolean hasFailed = false;
 	MimeMessage message;

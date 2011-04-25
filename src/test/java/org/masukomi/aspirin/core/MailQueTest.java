@@ -34,7 +34,7 @@ public class MailQueTest extends TestCase {
 	final String testFrom = "jUnit-aspirin-test@masukomi.org";
 
 	public void testQueMail() throws Exception {
-		final Configuration config = Aspirin.getConfiguration();
+		final Configuration config = AspirinInternal.getConfiguration();
 
 		config.setDeliveryAttemptCount(1);
 		config.setPostmasterEmail("root@localhost");

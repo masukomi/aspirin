@@ -105,7 +105,7 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 	private static final String MAIL_SMTP_LOCALHOST = "mail.smtp.localhost";
 	private static final String MAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
 	
-	static private Log log = Aspirin.getConfiguration().getLog();
+	static private Log log = AspirinInternal.getConfiguration().getLog();
 
 	protected QuedItem qi;
 	protected MailQue que;
@@ -118,14 +118,14 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 		
 		// Set up default session
 		Properties mailSessionProps = System.getProperties();
-		mailSessionProps.put(MAIL_SMTP_HOST, Aspirin.getConfiguration().getHostname()); //The SMTP server to connect to.
-		mailSessionProps.put(MAIL_SMTP_LOCALHOST, Aspirin.getConfiguration().getHostname()); //Local host name. Defaults to InetAddress.getLocalHost().getHostName(). Should not normally need to be set if your JDK and your name service are configured properly.
-		mailSessionProps.put(MAIL_MIME_CHARSET, Aspirin.getConfiguration().getEncoding()); //The mail.mime.charset System property can be used to specify the default MIME charset to use for encoded words and text parts that don't otherwise specify a charset. Normally, the default MIME charset is derived from the default Java charset, as specified in the file.encoding System property. Most applications will have no need to explicitly set the default MIME charset. In cases where the default MIME charset to be used for mail messages is different than the charset used for files stored on the system, this property should be set.
-		mailSessionProps.put(MAIL_SMTP_CONNECTIONTIMEOUT, Aspirin.getConfiguration().getDeliveryTimeout()); //Socket connection timeout value in milliseconds. Default is infinite timeout.
-		mailSessionProps.put(MAIL_SMTP_TIMEOUT, Aspirin.getConfiguration().getDeliveryTimeout()); //Socket I/O timeout value in milliseconds. Default is infinite timeout.
+		mailSessionProps.put(MAIL_SMTP_HOST, AspirinInternal.getConfiguration().getHostname()); //The SMTP server to connect to.
+		mailSessionProps.put(MAIL_SMTP_LOCALHOST, AspirinInternal.getConfiguration().getHostname()); //Local host name. Defaults to InetAddress.getLocalHost().getHostName(). Should not normally need to be set if your JDK and your name service are configured properly.
+		mailSessionProps.put(MAIL_MIME_CHARSET, AspirinInternal.getConfiguration().getEncoding()); //The mail.mime.charset System property can be used to specify the default MIME charset to use for encoded words and text parts that don't otherwise specify a charset. Normally, the default MIME charset is derived from the default Java charset, as specified in the file.encoding System property. Most applications will have no need to explicitly set the default MIME charset. In cases where the default MIME charset to be used for mail messages is different than the charset used for files stored on the system, this property should be set.
+		mailSessionProps.put(MAIL_SMTP_CONNECTIONTIMEOUT, AspirinInternal.getConfiguration().getDeliveryTimeout()); //Socket connection timeout value in milliseconds. Default is infinite timeout.
+		mailSessionProps.put(MAIL_SMTP_TIMEOUT, AspirinInternal.getConfiguration().getDeliveryTimeout()); //Socket I/O timeout value in milliseconds. Default is infinite timeout.
 		mailSession = Session.getInstance(mailSessionProps);
 		// Set communication debug
-		if( log.isDebugEnabled() && Aspirin.getConfiguration().isDeliveryDebug() )
+		if( log.isDebugEnabled() && AspirinInternal.getConfiguration().isDeliveryDebug() )
 			mailSession.setDebug(true);
 	}
 	
@@ -575,7 +575,7 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 		}
 		try
 		{
-			Bouncer.bounce(que, mail, ex.toString(), Aspirin.getConfiguration().getPostmaster());
+			Bouncer.bounce(que, mail, ex.toString(), AspirinInternal.getConfiguration().getPostmaster());
 		}catch (MessagingException me)
 		{
 			log.error(getClass().getSimpleName()+" ("+getName()+").failMessage(): failed to bounce",me);
@@ -825,25 +825,25 @@ public class RemoteDelivery extends Thread implements ConfigurationChangeListene
 		if( ConfigurationMBean.PARAM_DELIVERY_TIMEOUT.equals(parameterName) )
 		{
 			Properties sessProps = mailSession.getProperties();
-			sessProps.setProperty(MAIL_SMTP_CONNECTIONTIMEOUT, String.valueOf(Aspirin.getConfiguration().getDeliveryTimeout()));
-			sessProps.setProperty(MAIL_SMTP_TIMEOUT, String.valueOf(Aspirin.getConfiguration().getDeliveryTimeout()));
+			sessProps.setProperty(MAIL_SMTP_CONNECTIONTIMEOUT, String.valueOf(AspirinInternal.getConfiguration().getDeliveryTimeout()));
+			sessProps.setProperty(MAIL_SMTP_TIMEOUT, String.valueOf(AspirinInternal.getConfiguration().getDeliveryTimeout()));
 		}else
 		if( ConfigurationMBean.PARAM_ENCODING.equals(parameterName) )
 		{
 			Properties sessProps = mailSession.getProperties();
-			sessProps.setProperty(MAIL_MIME_CHARSET, Aspirin.getConfiguration().getEncoding());
+			sessProps.setProperty(MAIL_MIME_CHARSET, AspirinInternal.getConfiguration().getEncoding());
 		}else
 		if( ConfigurationMBean.PARAM_HOSTNAME.equals(parameterName) )
 		{
 			Properties sessProps = mailSession.getProperties();
-			sessProps.setProperty(MAIL_SMTP_HOST, Aspirin.getConfiguration().getHostname());
-			sessProps.setProperty(MAIL_SMTP_LOCALHOST, Aspirin.getConfiguration().getHostname());
+			sessProps.setProperty(MAIL_SMTP_HOST, AspirinInternal.getConfiguration().getHostname());
+			sessProps.setProperty(MAIL_SMTP_LOCALHOST, AspirinInternal.getConfiguration().getHostname());
 		}else
 		if( ConfigurationMBean.PARAM_DELIVERY_DEBUG.equals(parameterName) )
 		{
 			mailSession.setDebug(
 				log.isDebugEnabled() &&
-				Aspirin.getConfiguration().isDeliveryDebug()
+				AspirinInternal.getConfiguration().isDeliveryDebug()
 			);
 		}
 	}

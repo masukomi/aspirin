@@ -52,7 +52,7 @@ class QueManager extends Thread implements ConfigurationChangeListener {
 	private ObjectPool remoteDeliveryObjectPool = null;
 	protected MailQue que;
 	
-	static private Log log = Aspirin.getConfiguration().getLog();
+	static private Log log = AspirinInternal.getConfiguration().getLog();
 	protected boolean pauseNewSends = false;
 	
 	/**
@@ -68,8 +68,8 @@ class QueManager extends Thread implements ConfigurationChangeListener {
 		// Configure pool of RemoteDelivery threads
 		GenericObjectPool.Config gopConf = new GenericObjectPool.Config();
 		gopConf.lifo = false;
-		gopConf.maxActive = Aspirin.getConfiguration().getDeliveryThreadsActiveMax();
-		gopConf.maxIdle = Aspirin.getConfiguration().getDeliveryThreadsIdleMax();
+		gopConf.maxActive = AspirinInternal.getConfiguration().getDeliveryThreadsActiveMax();
+		gopConf.maxIdle = AspirinInternal.getConfiguration().getDeliveryThreadsIdleMax();
 		gopConf.maxWait = 5000;
 		gopConf.testOnReturn = true;
 		gopConf.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_BLOCK;
@@ -89,7 +89,7 @@ class QueManager extends Thread implements ConfigurationChangeListener {
 				remoteDeliveryObjectPool
 		);
 		
-		Aspirin.getConfiguration().addListener(this);
+		AspirinInternal.getConfiguration().addListener(this);
 		
 	}
 	
@@ -235,17 +235,17 @@ class QueManager extends Thread implements ConfigurationChangeListener {
 	public void configChanged(String parameterName) {
 		if( ConfigurationMBean.PARAM_DELIVERY_THREADS_ACTIVE_MAX.equals(parameterName) )
 		{
-			((GenericObjectPool)remoteDeliveryObjectPool).setMaxActive(Aspirin.getConfiguration().getDeliveryThreadsActiveMax());
+			((GenericObjectPool)remoteDeliveryObjectPool).setMaxActive(AspirinInternal.getConfiguration().getDeliveryThreadsActiveMax());
 		}else
 		if( ConfigurationMBean.PARAM_DELIVERY_THREADS_IDLE_MAX.equals(parameterName) )
 		{
-			((GenericObjectPool)remoteDeliveryObjectPool).setMaxIdle(Aspirin.getConfiguration().getDeliveryThreadsIdleMax());
+			((GenericObjectPool)remoteDeliveryObjectPool).setMaxIdle(AspirinInternal.getConfiguration().getDeliveryThreadsIdleMax());
 		}
 	}
 	
 	@Override
 	protected void finalize() throws Throwable {
-		Aspirin.getConfiguration().removeListener(this);
+		AspirinInternal.getConfiguration().removeListener(this);
 		super.finalize();
 	}
 

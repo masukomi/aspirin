@@ -82,7 +82,7 @@ import javax.mail.internet.ParseException;
 import org.apache.james.util.RFC2822Headers;
 import org.apache.mailet.Mail;
 import org.apache.mailet.MailAddress;
-import org.masukomi.aspirin.core.Aspirin;
+import org.masukomi.aspirin.core.AspirinInternal;
 
 /**
  * Wraps a MimeMessage adding routing information (from SMTP) and some simple
@@ -312,7 +312,7 @@ public class MailImpl implements Mail {
 	 * @return the MimeMessage associated with this MailImpl
 	 */
 	public MimeMessage getMessage() throws MessagingException {
-		MimeMessage mMsg = Aspirin.getConfiguration().getMailStore().get(this.name);
+		MimeMessage mMsg = AspirinInternal.getConfiguration().getMailStore().get(this.name);
 		if( mMsg == null )
 			throw new MessagingException("No message found for this mail: "+this.name);
 		return mMsg;
@@ -331,14 +331,14 @@ public class MailImpl implements Mail {
 		if( oldName != null )
 		{
 			try {
-				MimeMessage mMsg = Aspirin.getConfiguration().getMailStore().get(oldName);
+				MimeMessage mMsg = AspirinInternal.getConfiguration().getMailStore().get(oldName);
 				if( mMsg != null )
 				{
-					Aspirin.getConfiguration().getMailStore().remove(oldName);
-					Aspirin.getConfiguration().getMailStore().set(this.name, mMsg);
+					AspirinInternal.getConfiguration().getMailStore().remove(oldName);
+					AspirinInternal.getConfiguration().getMailStore().set(this.name, mMsg);
 				}
 			} catch (Exception e) {
-				Aspirin.getConfiguration().getLog().error("Could not change message object in mail store."+oldName+"/"+this.name);
+				AspirinInternal.getConfiguration().getLog().error("Could not change message object in mail store."+oldName+"/"+this.name);
 			}
 		}
 
@@ -459,7 +459,7 @@ public class MailImpl implements Mail {
 	 *            the new MimeMessage associated with this MailImpl
 	 */
 	public void setMessage(MimeMessage message) {
-		Aspirin.getConfiguration().getMailStore().set(this.name, message);
+		AspirinInternal.getConfiguration().getMailStore().set(this.name, message);
 //		this.message = message;
 	}
 
@@ -687,7 +687,7 @@ public class MailImpl implements Mail {
 	}
 	
 	public void release() {
-		Aspirin.getConfiguration().getMailStore().remove(this.name);
+		AspirinInternal.getConfiguration().getMailStore().remove(this.name);
 	}
 
 }

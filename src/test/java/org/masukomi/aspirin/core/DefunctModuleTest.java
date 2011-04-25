@@ -22,7 +22,7 @@ public class DefunctModuleTest extends TestCase {
 
 	public void testAspirin(String[] args) throws Exception {
 		// 1. Configure aspirin
-		Configuration config = Aspirin.getConfiguration();
+		Configuration config = AspirinInternal.getConfiguration();
 		config.setDeliveryAttemptCount(3);
 		config.setDeliveryAttemptDelay(5);
 		config.setDeliveryDebug(true);
