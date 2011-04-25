@@ -23,6 +23,7 @@ import org.masukomi.aspirin.core.store.mail.SimpleMailStore;
 import org.masukomi.aspirin.core.store.queue.QueueInfo;
 import org.masukomi.aspirin.core.store.queue.QueueStore;
 import org.masukomi.aspirin.core.store.queue.SimpleQueueStore;
+import org.slf4j.Logger;
 
 /**
  * This is the facade class of the Aspirin package. You should to use this 
@@ -51,6 +52,8 @@ import org.masukomi.aspirin.core.store.queue.SimpleQueueStore;
  * <p><b>Hint:</b> If you need a Quality-of-Service mail sending, use
  * {@link FileMailStore} and additional <b>SqliteQueueStore</b>, they could 
  * preserve emails in queue between runs or on Java failure.</p>
+ * 
+ * TODO Separate inside used methods and facade methods
  * 
  * @author Laszlo Solova
  *
@@ -107,6 +110,8 @@ public class Aspirin {
 	 * @throws MessagingException If delivery add failed.
 	 */
 	public static void add(MimeMessage msg) throws MessagingException {
+		if( !deliveryManager.isAlive() )
+			deliveryManager.start();
 		deliveryManager.add(msg);
 	}
 	
@@ -165,7 +170,7 @@ public class Aspirin {
 			try {
 				mMesg.setHeader(Aspirin.HEADER_MAIL_ID, newId);
 			} catch (MessagingException msge) {
-				configuration.getLog().warn("Aspirin Mail ID could not be generated.", msge);
+				getLogger().warn("Aspirin Mail ID could not be generated.", msge);
 				msge.printStackTrace();
 			}
 		}
@@ -191,7 +196,7 @@ public class Aspirin {
 					try {
 						recipients.add((InternetAddress)addr);
 					} catch (Exception e) {
-						configuration.getLog().warn("Recipient parsing failed.", e);
+						getLogger().warn("Recipient parsing failed.", e);
 					}
 				}
 			}
@@ -223,7 +228,7 @@ public class Aspirin {
 			if( headers != null && 0 < headers.length )
 				return headers[0];
 		} catch (MessagingException e) {
-			configuration.getLog().error("MailID header could not be get from MimeMessage.", e);
+			getLogger().error("MailID header could not be get from MimeMessage.", e);
 		}
 		return message.toString();
 	}
@@ -234,14 +239,13 @@ public class Aspirin {
 	 * @return Expiry in milliseconds.
 	 */
 	public static long getExpiry(MimeMessage message) {
-		// FIXME
 		String headers[];
 		try {
 			headers = message.getHeader(Aspirin.HEADER_EXPIRY);
 			if( headers != null && 0 < headers.length )
 				return expiryFormat.parse(headers[0]).getTime();
 		} catch (Exception e) {
-			configuration.getLog().error("Expiration header could not be get from MimeMessage.", e);
+			getLogger().error("Expiration header could not be get from MimeMessage.", e);
 		}
 		if( configuration.getExpiry() == Configuration.NEVER_EXPIRES )
 			return Long.MAX_VALUE;
@@ -250,7 +254,7 @@ public class Aspirin {
 			if( sentDate != null )
 				return sentDate.getTime()+configuration.getExpiry();
 		} catch (MessagingException e) {
-			configuration.getLog().error("Expiration calculation could not be based on message date.",e);
+			getLogger().error("Expiration calculation could not be based on message date.",e);
 		}
 		return System.currentTimeMillis()+configuration.getExpiry();
 	}
@@ -259,8 +263,24 @@ public class Aspirin {
 		try {
 			message.setHeader(Aspirin.HEADER_EXPIRY, expiryFormat.format(new Date(System.currentTimeMillis()+expiry)));
 		} catch (MessagingException e) {
-			configuration.getLog().error("Could not set Expiry of the MimeMessage: "+getMailID(message), e);
+			getLogger().error("Could not set Expiry of the MimeMessage: {}.",getMailID(message), e);
 		}
+	}
+	
+	public static Logger getLogger() {
+		return configuration.getLogger();
+	}
+	
+	public static DeliveryManager getDeliveryManager() {
+		return deliveryManager;
+	}
+	
+	public static ListenerManager getListenerManager() {
+		return listenerManager;
+	}
+	
+	public static void shutdown() {
+		deliveryManager.shutdown();
 	}
 
 }

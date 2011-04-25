@@ -3,10 +3,8 @@ package org.masukomi.aspirin.core.listener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
-import org.masukomi.aspirin.core.store.queue.State;
+import org.masukomi.aspirin.core.store.queue.QueueInfo;
+import org.masukomi.aspirin.core.store.queue.DeliveryState;
 
 /**
  * 
@@ -27,7 +25,7 @@ public class ListenerManager {
 		}
 	}
 	
-	public void notifyListeners(MimeMessage message, String recipient, MessagingException mex, State state) {
+	public void notifyListeners(QueueInfo qi, String reason, DeliveryState state) {
 	}
 
 }

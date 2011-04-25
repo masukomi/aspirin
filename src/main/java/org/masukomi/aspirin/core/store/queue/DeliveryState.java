@@ -6,15 +6,14 @@ package org.masukomi.aspirin.core.store.queue;
  * @author Laszlo Solova
  *
  */
-public enum State {
+public enum DeliveryState {
 	SENT(0), // Email sent
-	TEMP_FAILED(1), // Email sending temporary failed
-	PERS_FAILED(2), // Email sending failed
-	QUEUED(3), // Email is queued
-	IN_PROCESS(4) // Email is currently in processing
+	FAILED(1), // Email sending failed
+	QUEUED(2), // Email is queued
+	IN_PROGRESS(3) // Email is currently in processing
 	;
 	private int stateId = 0;
-	private State(int stateId) {
+	private DeliveryState(int stateId) {
 		this.stateId = stateId;
 	}
 	public int getStateId() {
