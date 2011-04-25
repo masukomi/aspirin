@@ -136,5 +136,13 @@ public class Aspirin {
 	public static void removeListener(AspirinListener listener) {
 		AspirinInternal.removeListener(listener);
 	}
+	
+	/**
+	 * Call on shutting down your system. All aspirin processes will be 
+	 * shutdown as recommended.
+	 */
+	public static void shutdown() {
+		AspirinInternal.shutdown();
+	}
 
 }
