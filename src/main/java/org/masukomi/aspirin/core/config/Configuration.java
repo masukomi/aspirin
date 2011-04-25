@@ -26,12 +26,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.ParseException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.masukomi.aspirin.core.AspirinInternal;
 import org.masukomi.aspirin.core.store.mail.MailStore;
 import org.masukomi.aspirin.core.store.mail.SimpleMailStore;
 import org.masukomi.aspirin.core.store.queue.QueueStore;
@@ -196,6 +198,7 @@ public class Configuration implements ConfigurationMBean {
 	private QueueStore queueStore = null;
 	private String queueStoreClassName = SimpleQueueStore.class.getCanonicalName(); // aspirin.queuestore.class
 	protected InternetAddress postmaster = null; // inherited from aspirin.postmaster.email
+	private Session mailSession = null;
 	
 	private List<ConfigurationChangeListener> listeners;
 
@@ -344,6 +347,8 @@ public class Configuration implements ConfigurationMBean {
 		mailStoreClassName = props.getProperty(PARAM_MAILSTORE_CLASS, mailStoreClassName);
 		
 		queueStoreClassName = props.getProperty(PARAM_QUEUESTORE_CLASS, queueStoreClassName);
+		
+		updateMailSession();
 	}
 	
 	/**
@@ -433,6 +438,7 @@ public class Configuration implements ConfigurationMBean {
 	}
 	public void setHostname(String hostname) {
 		this.hostname = hostname;
+		updateMailSession();
 		notifyListeners(PARAM_HOSTNAME);
 	}
 	/**
@@ -454,6 +460,7 @@ public class Configuration implements ConfigurationMBean {
 	}
 	public void setEncoding(String encoding) {
 		this.encoding = encoding;
+		updateMailSession();
 		notifyListeners(PARAM_ENCODING);
 	}
 	/**
@@ -591,6 +598,7 @@ public class Configuration implements ConfigurationMBean {
 	@Override
 	public void setDeliveryDebug(boolean debug) {
 		this.debugCommunication = debug;
+		updateMailSession();
 		notifyListeners(PARAM_DELIVERY_DEBUG);
 	}
 
@@ -609,6 +617,7 @@ public class Configuration implements ConfigurationMBean {
 	@Override
 	public void setDeliveryTimeout(int timeout) {
 		this.connectionTimeout = timeout;
+		updateMailSession();
 		notifyListeners(PARAM_DELIVERY_TIMEOUT);
 	}
 	
@@ -707,6 +716,36 @@ public class Configuration implements ConfigurationMBean {
 	
 	public Logger getLogger() {
 		return LoggerFactory.getLogger(loggerName);
+	}
+	
+	public Session getMailSession() {
+		/**
+		 * TODO check thread safe mode
+		 */
+		return mailSession;
+	}
+	
+	private static final String MAIL_MIME_CHARSET = "mail.mime.charset";
+	private static final String MAIL_SMTP_CONNECTIONTIMEOUT = "mail.smtp.connectiontimeout";
+	private static final String MAIL_SMTP_HOST = "mail.smtp.host";
+	private static final String MAIL_SMTP_LOCALHOST = "mail.smtp.localhost";
+	private static final String MAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
+	
+	private void updateMailSession() {
+		// Set up default session
+		Properties mailSessionProps = System.getProperties();
+		mailSessionProps.put(MAIL_SMTP_HOST, getHostname()); //The SMTP server to connect to.
+		mailSessionProps.put(MAIL_SMTP_LOCALHOST, getHostname()); //Local host name. Defaults to InetAddress.getLocalHost().getHostName(). Should not normally need to be set if your JDK and your name service are configured properly.
+		mailSessionProps.put(MAIL_MIME_CHARSET, getEncoding()); //The mail.mime.charset System property can be used to specify the default MIME charset to use for encoded words and text parts that don't otherwise specify a charset. Normally, the default MIME charset is derived from the default Java charset, as specified in the file.encoding System property. Most applications will have no need to explicitly set the default MIME charset. In cases where the default MIME charset to be used for mail messages is different than the charset used for files stored on the system, this property should be set.
+		mailSessionProps.put(MAIL_SMTP_CONNECTIONTIMEOUT, getDeliveryTimeout()); //Socket connection timeout value in milliseconds. Default is infinite timeout.
+		mailSessionProps.put(MAIL_SMTP_TIMEOUT, getDeliveryTimeout()); //Socket I/O timeout value in milliseconds. Default is infinite timeout.
+		Session newSession = Session.getInstance(mailSessionProps);
+		
+		// Set communication debug
+		if( ( AspirinInternal.getLogger() == null || AspirinInternal.getLogger().isDebugEnabled() ) && isDeliveryDebug() )
+			newSession.setDebug(true);
+		
+		mailSession = newSession;
 	}
 
 }

@@ -224,6 +224,7 @@ public class AspirinInternal {
 	}
 	
 	public static Logger getLogger() {
+		if( configuration == null ) { return null; }
 		return configuration.getLogger();
 	}
 	
