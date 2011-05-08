@@ -91,7 +91,7 @@ public class SendMessage implements DeliveryHandler {
 		while( (nextException = me.getNextException()) != null )
 		{
 			lastException = nextException;
-			if( MessagingException.class.equals(nextException.getClass()) )
+			if( MessagingException.class.getCanonicalName().equals(nextException.getClass().getCanonicalName()) )
 				me = (MessagingException)nextException;
 			else
 				break;
