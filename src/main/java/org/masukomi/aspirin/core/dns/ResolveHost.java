@@ -42,6 +42,8 @@ public class ResolveHost implements DeliveryHandler {
             }
            	AspirinInternal.getLogger().trace("ResolveHost.handle(): {} servers found for '{}'.",new Object[]{targetServers.size(),host});
            	dCtx.addContextVariable("targetservers", targetServers);
+		} catch( DeliveryException de ) {
+			throw de;
 		} catch (Exception e) {
 			AspirinInternal.getLogger().error("ResolveHost.handle(): Could not get MX for host '{}' defined by recipient '{}'.",new Object[]{host, currentRecipient},e);
 			throw new DeliveryException("No MX record found. Temporary failure, trying again.", false);
