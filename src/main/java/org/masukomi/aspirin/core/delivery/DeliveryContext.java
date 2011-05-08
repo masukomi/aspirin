@@ -54,5 +54,19 @@ public class DeliveryContext {
 			return (T)contextVariables.get(name);
 		return null;
 	}
+	
+	private transient String ctxToString;
+	@Override
+	public String toString() {
+		if( ctxToString == null )
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.append(getClass().getSimpleName()).append(" [");
+			sb.append("qi=").append(queueInfo);
+			sb.append("]; ");
+			ctxToString = sb.toString();
+		}
+		return ctxToString;
+	}
 
 }
