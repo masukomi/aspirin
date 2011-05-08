@@ -1,5 +1,6 @@
 package org.masukomi.aspirin.core.delivery;
 
+import java.net.ConnectException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Properties;
@@ -49,8 +50,16 @@ public class SendMessage implements DeliveryHandler {
 					try {
 						transport.connect();
 					} catch (MessagingException me) {
-						AspirinInternal.getLogger().error("SendMessage.handle(): Connection failed.",me);
-						continue;
+						/* Catch on connection error only. */
+						if( resolveException(me) instanceof ConnectException )
+						{
+							AspirinInternal.getLogger().error("SendMessage.handle(): Connection failed.",me);
+							continue;
+						}
+						else
+						{
+							throw me;
+						}
 					}
 					InternetAddress[] addr = new InternetAddress[]{new InternetAddress(dCtx.getQueueInfo().getRecipient())};
 					transport.sendMessage(message, addr);
@@ -64,26 +73,30 @@ public class SendMessage implements DeliveryHandler {
 					}
 				}
 			} catch (MessagingException me) {
-				String exMessage = resolveException(me);
+				String exMessage = resolveException(me).getMessage();
 				if( '5' == exMessage.charAt(0) )
 					throw new DeliveryException(exMessage, true);
 				else
 					throw new DeliveryException(exMessage, false);
 			} // end catch
 		} // end while
+		if( !sentSuccessfully )
+			throw new DeliveryException("SendMessage.handle(): Mail '{}' sending failed, try later.", false);
 	}
 
-	private String resolveException(MessagingException msgExc) {
+	private Exception resolveException(MessagingException msgExc) {
 		MessagingException me = msgExc;
 		Exception nextException = null;
 		Exception lastException = msgExc;
 		while( (nextException = me.getNextException()) != null )
 		{
 			lastException = nextException;
-			if( nextException instanceof MessagingException )
+			if( MessagingException.class.equals(nextException.getClass()) )
 				me = (MessagingException)nextException;
+			else
+				break;
 		}
-		return lastException.getMessage();
+		return lastException;
 	}
 
 }

@@ -51,6 +51,7 @@ public class DeliveryThread extends Thread {
 				{
 					AspirinInternal.getLogger().trace("DeliveryThread ({}).run(): Call delivering... dCtx={}",new Object[]{getName(),dCtx});
 					deliver(dCtx, AspirinInternal.getConfiguration().getMailSession());
+					AspirinInternal.getDeliveryManager().release(dCtx.getQueueInfo());
 					dCtx = null;
 				}
 			}catch (Exception e)
@@ -66,7 +67,6 @@ public class DeliveryThread extends Thread {
 				if( dCtx != null && !dCtx.getQueueInfo().isSendable() )
 				{
 					AspirinInternal.getDeliveryManager().release(dCtx.getQueueInfo());
-					AspirinInternal.getLogger().trace("DeliveryThread ({}).run(): Release item. dCtx={}",new Object[]{getName(),dCtx});
 					dCtx = null;
 				}
 			}
@@ -155,9 +155,13 @@ public class DeliveryThread extends Thread {
 				if( de.isPermanent() )
 				{
 					if( de.isPermanent() )
+					{
 						qInfo.setState(DeliveryState.FAILED);
+					}
 					else
+					{
 						qInfo.setState(DeliveryState.QUEUED);
+					}
 					return;
 				}
 			}

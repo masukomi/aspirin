@@ -176,10 +176,12 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 	}
 	public void release(QueueInfo qi) {
 		if(		System.currentTimeMillis() < qi.getExpiry() &&
-				qi.getAttemptCount() < AspirinInternal.getConfiguration().getDeliveryAttemptCount()
+				qi.getAttemptCount() < AspirinInternal.getConfiguration().getDeliveryAttemptCount() &&
+				qi.hasState(DeliveryState.IN_PROGRESS, DeliveryState.QUEUED)
 			)
 		{
 			qi.setState(DeliveryState.QUEUED);
+			qi.setAttempt(System.currentTimeMillis()+AspirinInternal.getConfiguration().getDeliveryAttemptDelay());
 			queueStore.setSendingResult(qi);
 		}
 		else
@@ -187,6 +189,7 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 			qi.setState(DeliveryState.FAILED);
 			queueStore.setSendingResult(qi);
 		}
+		AspirinInternal.getLogger().trace("DeliveryManager.release(): Release item '{}'.",qi.getMailid());
 	}
 	
 	public void sent(QueueInfo qi) {
