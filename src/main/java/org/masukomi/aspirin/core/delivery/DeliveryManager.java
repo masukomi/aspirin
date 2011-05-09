@@ -13,6 +13,7 @@ import org.apache.commons.pool.impl.GenericObjectPool;
 import org.masukomi.aspirin.core.AspirinInternal;
 import org.masukomi.aspirin.core.config.Configuration;
 import org.masukomi.aspirin.core.config.ConfigurationChangeListener;
+import org.masukomi.aspirin.core.config.ConfigurationMBean;
 import org.masukomi.aspirin.core.dns.ResolveHost;
 import org.masukomi.aspirin.core.listener.NotifyListeners;
 import org.masukomi.aspirin.core.store.mail.MailStore;
@@ -30,7 +31,7 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 	private MailStore mailStore;
 	private QueueStore queueStore;
 	private Object mailingLock = new Object();
-	private ObjectPool remoteDeliveryObjectPool = null;
+	private ObjectPool deliveryThreadObjectPool = null;
 	private boolean running = false;
 	private GenericPoolableDeliveryThreadFactory deliveryThreadObjectFactory = null;
 	private Map<String, DeliveryHandler> deliveryHandlers = new HashMap<String, DeliveryHandler>();
@@ -52,10 +53,10 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		deliveryThreadObjectFactory = new GenericPoolableDeliveryThreadFactory();
 		
 		// Create pool
-		remoteDeliveryObjectPool = new GenericObjectPool(deliveryThreadObjectFactory,gopConf);
+		deliveryThreadObjectPool = new GenericObjectPool(deliveryThreadObjectFactory,gopConf);
 		
 		// Initialize object factory of pool
-		deliveryThreadObjectFactory.init(new ThreadGroup("RemoteDeliveryThreadGroup"),remoteDeliveryObjectPool);
+		deliveryThreadObjectFactory.init(new ThreadGroup("RemoteDeliveryThreadGroup"),deliveryThreadObjectPool);
 		
 		// Set up stores and configuration listener 
 		queueStore = AspirinInternal.getConfiguration().getQueueStore();
@@ -103,14 +104,14 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 				qi = queueStore.next();
 				if( qi != null )
 				{
-					AspirinInternal.getLogger().trace("DeliveryManager.run(): Pool state. A{}/I{}",new Object[]{remoteDeliveryObjectPool.getNumActive(),remoteDeliveryObjectPool.getNumIdle()});
+					AspirinInternal.getLogger().trace("DeliveryManager.run(): Pool state. A{}/I{}",new Object[]{deliveryThreadObjectPool.getNumActive(),deliveryThreadObjectPool.getNumIdle()});
 					DeliveryContext dCtx = new DeliveryContext()
 						.setQueueInfo(qi)
 						.setMessage(get(qi));
 					try 
 					{
 						AspirinInternal.getLogger().debug("DeliveryManager.run(): Start delivery. qi={}",qi);
-						DeliveryThread dThread = (DeliveryThread)remoteDeliveryObjectPool.borrowObject();
+						DeliveryThread dThread = (DeliveryThread)deliveryThreadObjectPool.borrowObject();
 						AspirinInternal.getLogger().trace("DeliveryManager.run(): Borrow DeliveryThread object. dt={}",dThread.getName());
 						dThread.setContext(dCtx);
 						/*
@@ -206,6 +207,11 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 			else
 			if( parameterName.equals(Configuration.PARAM_QUEUESTORE_CLASS) )
 				queueStore = AspirinInternal.getConfiguration().getQueueStore();
+			if( ConfigurationMBean.PARAM_DELIVERY_THREADS_ACTIVE_MAX.equals(parameterName) )
+				((GenericObjectPool)deliveryThreadObjectPool).setMaxActive(AspirinInternal.getConfiguration().getDeliveryThreadsActiveMax());
+			else
+			if( ConfigurationMBean.PARAM_DELIVERY_THREADS_IDLE_MAX.equals(parameterName) )
+				((GenericObjectPool)deliveryThreadObjectPool).setMaxIdle(AspirinInternal.getConfiguration().getDeliveryThreadsIdleMax());
 		}
 	}
 	
@@ -216,8 +222,8 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 	public void shutdown() {
 		this.running = false;
 		try {
-			remoteDeliveryObjectPool.close();
-			remoteDeliveryObjectPool.clear();
+			deliveryThreadObjectPool.close();
+			deliveryThreadObjectPool.clear();
 		} catch (Exception e) {
 			AspirinInternal.getLogger().error("DeliveryManager.shutdown() failed.",e);
 		}
