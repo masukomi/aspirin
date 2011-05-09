@@ -207,10 +207,10 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 			else
 			if( parameterName.equals(Configuration.PARAM_QUEUESTORE_CLASS) )
 				queueStore = AspirinInternal.getConfiguration().getQueueStore();
-			if( ConfigurationMBean.PARAM_DELIVERY_THREADS_ACTIVE_MAX.equals(parameterName) )
+			if( parameterName.equals(ConfigurationMBean.PARAM_DELIVERY_THREADS_ACTIVE_MAX) )
 				((GenericObjectPool)deliveryThreadObjectPool).setMaxActive(AspirinInternal.getConfiguration().getDeliveryThreadsActiveMax());
 			else
-			if( ConfigurationMBean.PARAM_DELIVERY_THREADS_IDLE_MAX.equals(parameterName) )
+			if( parameterName.equals(ConfigurationMBean.PARAM_DELIVERY_THREADS_IDLE_MAX) )
 				((GenericObjectPool)deliveryThreadObjectPool).setMaxIdle(AspirinInternal.getConfiguration().getDeliveryThreadsIdleMax());
 		}
 	}
