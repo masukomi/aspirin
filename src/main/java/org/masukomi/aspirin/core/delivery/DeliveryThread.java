@@ -56,7 +56,7 @@ public class DeliveryThread extends Thread {
 				}
 			}catch (Exception e)
 			{
-				AspirinInternal.getLogger().error("DeliveryThread ({}).run(): Could not deliver message. dCtx={}", new Object[]{getName(),dCtx}, e);
+				AspirinInternal.getLogger().error("DeliveryThread ("+getName()+").run(): Could not deliver message. dCtx={"+dCtx+"}", e);
 			}finally
 			/*
 			 * Sometimes QueueInfo's status could be IN_PROCESS. This QueueInfo 
@@ -79,7 +79,7 @@ public class DeliveryThread extends Thread {
 						parentObjectPool.returnObject(this);
 					}catch (Exception e)
 					{
-						AspirinInternal.getLogger().error("DeliveryThread ({}).run(): The object could not be returned into the pool.",getName(),e);
+						AspirinInternal.getLogger().error("DeliveryThread ("+getName()+").run(): The object could not be returned into the pool.",e);
 						this.shutdown();
 					}
 					// Wait for next QueueInfo to deliver 

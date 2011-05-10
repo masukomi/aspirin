@@ -219,7 +219,7 @@ public class AspirinInternal {
 		try {
 			message.setHeader(Aspirin.HEADER_EXPIRY, expiryFormat.format(new Date(System.currentTimeMillis()+expiry)));
 		} catch (MessagingException e) {
-			getLogger().error("Could not set Expiry of the MimeMessage: {}.",getMailID(message), e);
+			getLogger().error("Could not set Expiry of the MimeMessage: "+getMailID(message)+".", e);
 		}
 	}
 	
