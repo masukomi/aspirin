@@ -6,7 +6,6 @@ import javax.mail.Session;
 import org.apache.commons.pool.ObjectPool;
 import org.masukomi.aspirin.core.AspirinInternal;
 import org.masukomi.aspirin.core.dns.ResolveHost;
-import org.masukomi.aspirin.core.listener.NotifyListeners;
 import org.masukomi.aspirin.core.store.queue.DeliveryState;
 import org.masukomi.aspirin.core.store.queue.QueueInfo;
 
@@ -139,11 +138,10 @@ public class DeliveryThread extends Thread {
 	}
 	
 	private void deliver(DeliveryContext dCtx, Session session) {
-		AspirinInternal.getLogger().debug("DeliveryThread ({}).deliver(): Starting mail delivery. qi={}", new Object[]{getName(),dCtx});
+		AspirinInternal.getLogger().info("DeliveryThread ({}).deliver(): Starting mail delivery. qi={}", new Object[]{getName(),dCtx});
 		String[] handlerList = new String[]{
 				ResolveHost.class.getCanonicalName(),
-				SendMessage.class.getCanonicalName(),
-				NotifyListeners.class.getCanonicalName()
+				SendMessage.class.getCanonicalName()
 		};
 		QueueInfo qInfo = dCtx.getQueueInfo();
 		for( String handlerName : handlerList )
@@ -152,22 +150,22 @@ public class DeliveryThread extends Thread {
 				AspirinInternal.getDeliveryManager().getDeliveryHandler(handlerName).handle(dCtx);
 			} catch (DeliveryException de) {
 				qInfo.setResultInfo(de.getMessage());
+				AspirinInternal.getLogger().info("DeliveryThread ({}).deliver(): Mail delivery failed: {}. qi={}", new Object[]{getName(),qInfo.getResultInfo(),dCtx});
 				if( de.isPermanent() )
-				{
-					if( de.isPermanent() )
-					{
-						qInfo.setState(DeliveryState.FAILED);
-					}
-					else
-					{
-						qInfo.setState(DeliveryState.QUEUED);
-					}
-					return;
-				}
+					qInfo.setState(DeliveryState.FAILED);
+				else
+					qInfo.setState(DeliveryState.QUEUED);
+				return;
 			}
 		}
 		if( qInfo.hasState(DeliveryState.IN_PROGRESS) )
+		{
+			if( qInfo.getResultInfo() == null )
+				// TODO Get message ok info from communication
+				qInfo.setResultInfo("250 OK");
+			AspirinInternal.getLogger().info("DeliveryThread ({}).deliver(): Mail delivery success: {}. qi={}", new Object[]{getName(),qInfo.getResultInfo(),dCtx});
 			qInfo.setState(DeliveryState.SENT);
+		}
 	}
 
 }

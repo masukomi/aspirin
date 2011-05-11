@@ -171,32 +171,21 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		running = false;
 	}
 	
-	public void fail(QueueInfo qi) {
-		qi.setState(DeliveryState.FAILED);
-		queueStore.setSendingResult(qi);
-	}
 	public void release(QueueInfo qi) {
-		if(		System.currentTimeMillis() < qi.getExpiry() &&
-				qi.getAttemptCount() < AspirinInternal.getConfiguration().getDeliveryAttemptCount() &&
+		if(		qi.isInTimeBounds() &&
 				qi.hasState(DeliveryState.IN_PROGRESS, DeliveryState.QUEUED)
 			)
 		{
 			qi.setState(DeliveryState.QUEUED);
-			qi.setAttempt(System.currentTimeMillis()+AspirinInternal.getConfiguration().getDeliveryAttemptDelay());
-			queueStore.setSendingResult(qi);
 		}
 		else
 		{
 			qi.setState(DeliveryState.FAILED);
-			queueStore.setSendingResult(qi);
 		}
-		AspirinInternal.getLogger().trace("DeliveryManager.release(): Release item '{}'.",qi.getMailid());
-	}
-	
-	public void sent(QueueInfo qi) {
-		qi.setResultInfo("250 OK");
 		queueStore.setSendingResult(qi);
-		AspirinInternal.getListenerManager().notifyListeners(qi);
+		if( !qi.hasState(DeliveryState.QUEUED) )
+			AspirinInternal.getListenerManager().notifyListeners(qi);
+		AspirinInternal.getLogger().trace("DeliveryManager.release(): Release item '{}'.",qi.getMailid());
 	}
 	
 	@Override

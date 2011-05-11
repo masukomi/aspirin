@@ -9,6 +9,7 @@ import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.URLName;
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -31,6 +32,12 @@ public class SendMessage implements DeliveryHandler {
 		
 		// Prepare and send
 		Iterator<URLName> urlnIt = targetServers.iterator();
+		InternetAddress[] addr;
+		try {
+			addr = new InternetAddress[]{new InternetAddress(dCtx.getQueueInfo().getRecipient())};
+		} catch (AddressException e) {
+			throw new DeliveryException("Recipient could not be parsed:"+dCtx.getQueueInfo().getRecipient(), true, e);
+		}
 		boolean sentSuccessfully = false;
 		while ( !sentSuccessfully && urlnIt.hasNext() )
 		{
@@ -45,24 +52,26 @@ public class SendMessage implements DeliveryHandler {
 					props.put("mail.smtp.from", sender);
 				}
 				Transport transport = null;
-				try {
+ 				try {
 					transport = session.getTransport(outgoingMailServer);
 					try {
 						transport.connect();
+						transport.sendMessage(message, addr);
 					} catch (MessagingException me) {
 						/* Catch on connection error only. */
 						if( resolveException(me) instanceof ConnectException )
 						{
 							AspirinInternal.getLogger().error("SendMessage.handle(): Connection failed.",me);
-							continue;
+							if( !urlnIt.hasNext() )
+								throw me;
+							else
+								continue;
 						}
 						else
 						{
 							throw me;
 						}
 					}
-					InternetAddress[] addr = new InternetAddress[]{new InternetAddress(dCtx.getQueueInfo().getRecipient())};
-					transport.sendMessage(message, addr);
 					AspirinInternal.getLogger().debug("SendMessage.handle(): Mail '{}' sent successfully to '{}'.",new Object[]{dCtx.getQueueInfo().getMailid(),outgoingMailServer});
 					sentSuccessfully = true;
 					dCtx.addContextVariable("newstate", DeliveryState.SENT);

@@ -1,5 +1,7 @@
 package org.masukomi.aspirin.core.store.queue;
 
+import org.masukomi.aspirin.core.AspirinInternal;
+
 
 /**
  * 
@@ -76,7 +78,17 @@ public abstract class QueueInfo {
 	}
 	
 	public boolean isSendable() {
-		return (hasState(DeliveryState.QUEUED) && getAttempt() < System.currentTimeMillis());
+		return (
+				hasState(DeliveryState.QUEUED) &&
+				getAttempt() < System.currentTimeMillis()
+		);
+	}
+	
+	public boolean isInTimeBounds() {
+		return (
+				(getExpiry() == -1 || System.currentTimeMillis() < getExpiry()) &&
+				getAttemptCount() < AspirinInternal.getConfiguration().getDeliveryAttemptCount()
+		);
 	}
 	
 	public abstract void save();

@@ -108,11 +108,19 @@ public class SimpleQueueStore implements QueueStore {
 			while( queueInfoIt.hasNext() )
 			{
 				QueueInfo qi = queueInfoIt.next();
-				if( qi.hasState(DeliveryState.QUEUED) )
-				{
+				if( qi.isSendable() ) {
 					synchronized (lock) {
-						qi.setState(DeliveryState.IN_PROGRESS);
-						return qi;
+						if( !qi.isInTimeBounds() )
+						{
+							qi.setResultInfo("Delivery is out of time or attempt.");
+							qi.setState(DeliveryState.FAILED);
+							qi.save();
+						}
+						else
+						{	
+							qi.setState(DeliveryState.IN_PROGRESS);
+							return qi;
+						}
 					}
 				}
 			}
@@ -156,8 +164,9 @@ public class SimpleQueueStore implements QueueStore {
 			SimpleQueueInfo uniqueQueueInfo = queueInfoByMailidAndRecipient.get(createSearchKey(qi.getMailid(), qi.getRecipient()));
 			if( uniqueQueueInfo != null )
 			{
-				uniqueQueueInfo.setState(qi.getState());
 				uniqueQueueInfo.setAttempt(System.currentTimeMillis()+AspirinInternal.getConfiguration().getDeliveryAttemptDelay());
+				uniqueQueueInfo.incAttemptCount();
+				uniqueQueueInfo.setState(qi.getState());
 			}
 		}
 	}
