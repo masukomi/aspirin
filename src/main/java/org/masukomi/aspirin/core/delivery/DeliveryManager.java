@@ -110,7 +110,7 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 					{
 						AspirinInternal.getLogger().debug("DeliveryManager.run(): Start delivery. qi={}",qi);
 						DeliveryThread dThread = (DeliveryThread)deliveryThreadObjectPool.borrowObject();
-						AspirinInternal.getLogger().trace("DeliveryManager.run(): Borrow DeliveryThread object. dt={}",dThread.getName());
+						AspirinInternal.getLogger().trace("DeliveryManager.run(): Borrow DeliveryThread object. dt={}: state '{}/{}'",new Object[]{dThread.getName(), dThread.getState().name(), dThread.isAlive()});
 						dThread.setContext(dCtx);
 						/*
 						 * On first borrow the DeliveryThread is created and 
@@ -170,15 +170,18 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 	}
 	
 	public void release(QueueInfo qi) {
-		if(		qi.isInTimeBounds() &&
-				qi.hasState(DeliveryState.IN_PROGRESS, DeliveryState.QUEUED)
-			)
+		if( qi.hasState(DeliveryState.IN_PROGRESS) )
 		{
-			qi.setState(DeliveryState.QUEUED);
-		}
-		else
-		{
-			qi.setState(DeliveryState.FAILED);
+			if( qi.isInTimeBounds() )
+			{
+				qi.setState(DeliveryState.QUEUED);
+				AspirinInternal.getLogger().trace("DeliveryManager.release(): Releasing: QUEUED.");
+			}
+			else
+			{
+				qi.setState(DeliveryState.FAILED);
+				AspirinInternal.getLogger().trace("DeliveryManager.release(): Releasing: QUEUED.");
+			}
 		}
 		queueStore.setSendingResult(qi);
 		if( AspirinInternal.getListenerManager() != null && !qi.hasState(DeliveryState.QUEUED) )
