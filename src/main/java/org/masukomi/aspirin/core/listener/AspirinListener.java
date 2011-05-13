@@ -39,6 +39,7 @@ public interface AspirinListener {
 	 * @param message
 	 * @param recipient
 	 */
+	@Deprecated
 	public void deliverySuccess(MimeMessage message, String recipient);
 	/**
 	 * Called on delivery failure per recipient.
@@ -46,11 +47,14 @@ public interface AspirinListener {
 	 * @param recipient
 	 * @param mex
 	 */
+	@Deprecated
 	public void deliveryFailure(MimeMessage message, String recipient, MessagingException mex);
 	/**
 	 * Called on delivery finished to all recipients. Message is removed from 
 	 * Aspirin.
 	 * @param message
 	 */
+	@Deprecated
 	public void deliveryFinished(MimeMessage message);
+	public void delivered(String mailId, String recipient, ResultState state, String resultContent);
 }
