@@ -15,7 +15,6 @@ import org.masukomi.aspirin.core.config.Configuration;
 import org.masukomi.aspirin.core.config.ConfigurationChangeListener;
 import org.masukomi.aspirin.core.config.ConfigurationMBean;
 import org.masukomi.aspirin.core.dns.ResolveHost;
-import org.masukomi.aspirin.core.listener.NotifyListeners;
 import org.masukomi.aspirin.core.store.mail.MailStore;
 import org.masukomi.aspirin.core.store.queue.DeliveryState;
 import org.masukomi.aspirin.core.store.queue.QueueInfo;
@@ -66,7 +65,6 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		// TODO create by configuration
 		deliveryHandlers.put(SendMessage.class.getCanonicalName(), new SendMessage());
 		deliveryHandlers.put(ResolveHost.class.getCanonicalName(), new ResolveHost());
-		deliveryHandlers.put(NotifyListeners.class.getCanonicalName(), new NotifyListeners());
 		
 		AspirinInternal.getConfiguration().addListener(this);
 	}
@@ -186,6 +184,10 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		if( !qi.hasState(DeliveryState.QUEUED) )
 			AspirinInternal.getListenerManager().notifyListeners(qi);
 		AspirinInternal.getLogger().trace("DeliveryManager.release(): Release item '{}'.",qi.getMailid());
+	}
+	
+	public boolean isCompleted(QueueInfo qi) {
+		return queueStore.isCompleted(qi.getMailid());
 	}
 	
 	@Override
