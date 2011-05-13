@@ -43,6 +43,44 @@ public class DeliveryThread extends Thread {
 	@Override
 	public void run() {
 		while (running) {
+			synchronized (this) {
+				if( dCtx == null )
+				{
+					// Wait for next QueueInfo to deliver 
+					try
+					{
+						if( running )
+						{
+							AspirinInternal.getLogger().trace("DeliveryThread ({}).run(): Wait for next sendable item.",getName());
+							wait(60000);
+							continue;
+						}
+					} catch (InterruptedException ie)
+					/*
+					 * On interrupt we shutdown this thread and remove from 
+					 * pool. It could be a QueueInfo in the qi variable, so we 
+					 * try to release it before finish the work.
+					 */
+					{
+						if( dCtx != null )
+						{
+							AspirinInternal.getLogger().trace("DeliveryThread ({}).run(): Release item after interruption. qi={}", new Object[]{getName(),dCtx});
+							AspirinInternal.getDeliveryManager().release(dCtx.getQueueInfo());
+							dCtx = null;
+						}
+						running = false;
+						try
+						{
+							AspirinInternal.getLogger().info("DeliveryThread ({}).run(): Invalidate RemoteDelivery object in the pool.",getName());
+							parentObjectPool.invalidateObject(this);
+						}catch (Exception e)
+						{
+							throw new RuntimeException("The object could not be invalidated in the pool.",e);
+						}
+					}
+
+				}
+			}
 			// Try to deliver the QueueInfo
 			try
 			{
@@ -69,49 +107,16 @@ public class DeliveryThread extends Thread {
 					dCtx = null;
 				}
 			}
-			synchronized (this) {
-				if( dCtx == null )
+			if( dCtx == null )
+			{
+				try
 				{
-					try
-					{
-						AspirinInternal.getLogger().info("DeliveryThread ({}).run(): Try to give back RemoteDelivery object into the pool.",getName());
-						parentObjectPool.returnObject(this);
-					}catch (Exception e)
-					{
-						AspirinInternal.getLogger().error("DeliveryThread ("+getName()+").run(): The object could not be returned into the pool.",e);
-						this.shutdown();
-					}
-					// Wait for next QueueInfo to deliver 
-					try
-					{
-						if( running )
-						{
-							AspirinInternal.getLogger().trace("DeliveryThread ({}).run(): Wait for next sendable item.",getName());
-							wait(60000);
-						}
-					} catch (InterruptedException ie)
-					/*
-					 * On interrupt we shutdown this thread and remove from 
-					 * pool. It could be a QueueInfo in the qi variable, so we 
-					 * try to release it before finish the work.
-					 */
-					{
-						if( dCtx != null )
-						{
-							AspirinInternal.getLogger().trace("DeliveryThread ({}).run(): Release item after interruption. qi={}", new Object[]{getName(),dCtx});
-							AspirinInternal.getDeliveryManager().release(dCtx.getQueueInfo());
-							dCtx = null;
-						}
-						running = false;
-						try
-						{
-							AspirinInternal.getLogger().info("DeliveryThread ({}).run(): Invalidate RemoteDelivery object in the pool.",getName());
-							parentObjectPool.invalidateObject(this);
-						}catch (Exception e)
-						{
-							throw new RuntimeException("The object could not be invalidated in the pool.",e);
-						}
-					}
+					AspirinInternal.getLogger().info("DeliveryThread ({}).run(): Try to give back RemoteDelivery object into the pool.",getName());
+					parentObjectPool.returnObject(this);
+				}catch (Exception e)
+				{
+					AspirinInternal.getLogger().error("DeliveryThread ("+getName()+").run(): The object could not be returned into the pool.",e);
+					this.shutdown();
 				}
 			}
 		}

@@ -1,5 +1,7 @@
 package org.masukomi.aspirin.core.delivery;
 
+import java.lang.Thread.State;
+
 import org.apache.commons.pool.BasePoolableObjectFactory;
 import org.apache.commons.pool.ObjectPool;
 import org.masukomi.aspirin.core.AspirinInternal;
@@ -47,10 +49,10 @@ public class GenericPoolableDeliveryThreadFactory extends BasePoolableObjectFact
 			dThread.setName(DeliveryThread.class.getSimpleName()+"-"+rdCount);
 		}
 		dThread.setParentObjectPool(myParentPool);
-		AspirinInternal.getConfiguration().getLogger().trace("GenericPoolableDeliveryThreadFactory.makeObject(): New RemoteDelivery object created: {}.",dThread.getName());
+		AspirinInternal.getConfiguration().getLogger().trace("GenericPoolableDeliveryThreadFactory.makeObject(): New DeliveryThread object created: {}.",dThread.getName());
 		return dThread;
 	}
-
+	
 	@Override
 	public void destroyObject(Object obj) throws Exception {
 		if( obj instanceof DeliveryThread )
@@ -66,7 +68,15 @@ public class GenericPoolableDeliveryThreadFactory extends BasePoolableObjectFact
 		if( obj instanceof DeliveryThread )
 		{
 			DeliveryThread dThread = (DeliveryThread)obj;
-			return dThread.isAlive();
+			return
+				dThread.isAlive() &&
+				(
+					dThread.getState().equals(State.NEW) ||
+					dThread.getState().equals(State.RUNNABLE) ||
+					dThread.getState().equals(State.TIMED_WAITING) ||
+					dThread.getState().equals(State.WAITING)
+				)
+			;
 		}
 		return false;
 	}
