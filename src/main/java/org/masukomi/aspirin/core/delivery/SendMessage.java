@@ -16,6 +16,8 @@ import javax.mail.internet.MimeMessage;
 import org.masukomi.aspirin.core.AspirinInternal;
 import org.masukomi.aspirin.core.store.queue.DeliveryState;
 
+import com.sun.mail.smtp.SMTPTransport;
+
 /**
  * 
  * @author Laszlo Solova
@@ -57,6 +59,15 @@ public class SendMessage implements DeliveryHandler {
 					try {
 						transport.connect();
 						transport.sendMessage(message, addr);
+						if( transport instanceof SMTPTransport )
+						{
+							String response = ((SMTPTransport)transport).getLastServerResponse();
+							if( response != null )
+							{
+								AspirinInternal.getLogger().error("SendMessage.handle(): Last server response: {}.",response);
+								dCtx.getQueueInfo().setResultInfo(response);
+							}
+						}
 					} catch (MessagingException me) {
 						/* Catch on connection error only. */
 						if( resolveException(me) instanceof ConnectException )
