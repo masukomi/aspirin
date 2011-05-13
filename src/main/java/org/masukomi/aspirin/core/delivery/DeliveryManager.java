@@ -181,9 +181,9 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 			qi.setState(DeliveryState.FAILED);
 		}
 		queueStore.setSendingResult(qi);
-		if( !qi.hasState(DeliveryState.QUEUED) )
+		if( AspirinInternal.getListenerManager() != null && !qi.hasState(DeliveryState.QUEUED) )
 			AspirinInternal.getListenerManager().notifyListeners(qi);
-		AspirinInternal.getLogger().trace("DeliveryManager.release(): Release item '{}'.",qi.getMailid());
+		AspirinInternal.getLogger().trace("DeliveryManager.release(): Release item '{}' with state: '{}'.",new Object[]{qi.getMailid(),qi.getState().name()});
 	}
 	
 	public boolean isCompleted(QueueInfo qi) {
