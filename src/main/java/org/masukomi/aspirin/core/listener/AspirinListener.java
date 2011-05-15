@@ -56,5 +56,17 @@ public interface AspirinListener {
 	 */
 	@Deprecated
 	public void deliveryFinished(MimeMessage message);
+	
+	/**
+	 * Called on delivery comes back with a persistent delivery result.
+	 * @param mailId Unique mail ID extracted from mail header.
+	 * @param recipient Recipient email address. It could be null - if state is 
+	 * finished and there were more recipients, then it is allowed to be null.
+	 * @param state Delivery result state: SENT, FAILED, FINISHED. FINISHED 
+	 * state is associated to a unique mail id - we get this state when all 
+	 * recipients has a persistent, final delivery state. 
+	 * @param resultContent Content of delivery result. On FINISHED state it 
+	 * could be null or empty.
+	 */
 	public void delivered(String mailId, String recipient, ResultState state, String resultContent);
 }
