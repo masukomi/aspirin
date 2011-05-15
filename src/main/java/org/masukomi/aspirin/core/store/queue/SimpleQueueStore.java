@@ -23,14 +23,14 @@ import org.masukomi.aspirin.core.AspirinInternal;
  */
 public class SimpleQueueStore implements QueueStore {
 	
-	private List<SimpleQueueInfo> queueInfoList = new LinkedList<SimpleQueueInfo>();
-	private Map<String, SimpleQueueInfo> queueInfoByMailidAndRecipient = new HashMap<String, SimpleQueueInfo>();
-	private Map<String, List<SimpleQueueInfo>> queueInfoByMailid = new HashMap<String, List<SimpleQueueInfo>>();
-	private Map<String, List<SimpleQueueInfo>> queueInfoByRecipient = new HashMap<String, List<SimpleQueueInfo>>();
+	private List<QueueInfo> queueInfoList = new LinkedList<QueueInfo>();
+	private Map<String, QueueInfo> queueInfoByMailidAndRecipient = new HashMap<String, QueueInfo>();
+	private Map<String, List<QueueInfo>> queueInfoByMailid = new HashMap<String, List<QueueInfo>>();
+	private Map<String, List<QueueInfo>> queueInfoByRecipient = new HashMap<String, List<QueueInfo>>();
 	private Object lock = new Object();
-	private Comparator<SimpleQueueInfo> queueInfoComparator = new Comparator<SimpleQueueInfo>() {
+	private Comparator<QueueInfo> queueInfoComparator = new Comparator<QueueInfo>() {
 		@Override
-		public int compare(SimpleQueueInfo o1, SimpleQueueInfo o2) {
+		public int compare(QueueInfo o1, QueueInfo o2) {
 			return (int)(o2.getAttempt()-o1.getAttempt());
 		}
 	};
@@ -40,7 +40,7 @@ public class SimpleQueueStore implements QueueStore {
 		try {
 			for( InternetAddress recipient : recipients )
 			{
-				SimpleQueueInfo queueInfo = new SimpleQueueInfo();
+				QueueInfo queueInfo = new QueueInfo();
 				queueInfo.setExpiry(expiry);
 				queueInfo.setMailid(mailid);
 				queueInfo.setRecipient(recipient.getAddress());
@@ -51,11 +51,11 @@ public class SimpleQueueStore implements QueueStore {
 					queueInfoByMailidAndRecipient.put(createSearchKey(queueInfo.getMailid(),queueInfo.getRecipient()), queueInfo);
 					
 					if( !queueInfoByMailid.containsKey(queueInfo.getMailid()) )
-						queueInfoByMailid.put(queueInfo.getMailid(), new ArrayList<SimpleQueueInfo>());
+						queueInfoByMailid.put(queueInfo.getMailid(), new ArrayList<QueueInfo>());
 					queueInfoByMailid.get(queueInfo.getMailid()).add(queueInfo);
 					
 					if( !queueInfoByRecipient.containsKey(queueInfo.getRecipient()) )
-						queueInfoByRecipient.put(queueInfo.getRecipient(), new ArrayList<SimpleQueueInfo>());
+						queueInfoByRecipient.put(queueInfo.getRecipient(), new ArrayList<QueueInfo>());
 					queueInfoByRecipient.get(queueInfo.getRecipient()).add(queueInfo);
 					
 				}
@@ -68,7 +68,7 @@ public class SimpleQueueStore implements QueueStore {
 	
 	@Override
 	public QueueInfo createQueueInfo() {
-		return new SimpleQueueInfo();
+		return new QueueInfo();
 	}
 	
 	@Override
@@ -87,10 +87,10 @@ public class SimpleQueueStore implements QueueStore {
 
 	@Override
 	public boolean isCompleted(String mailid) {
-		List<SimpleQueueInfo> qibmList = queueInfoByMailid.get(mailid);
+		List<QueueInfo> qibmList = queueInfoByMailid.get(mailid);
 		if( qibmList != null )
 		{
-			for( SimpleQueueInfo sqi : qibmList )
+			for( QueueInfo sqi : qibmList )
 			{
 				if( sqi.hasState(DeliveryState.IN_PROGRESS, DeliveryState.QUEUED) )
 					return false;
@@ -104,7 +104,7 @@ public class SimpleQueueStore implements QueueStore {
 		Collections.sort(queueInfoList, queueInfoComparator);
 		if( !queueInfoList.isEmpty() )
 		{
-			ListIterator<SimpleQueueInfo> queueInfoIt = queueInfoList.listIterator();
+			ListIterator<QueueInfo> queueInfoIt = queueInfoList.listIterator();
 			while( queueInfoIt.hasNext() )
 			{
 				QueueInfo qi = queueInfoIt.next();
@@ -114,7 +114,7 @@ public class SimpleQueueStore implements QueueStore {
 						{
 							qi.setResultInfo("Delivery is out of time or attempt.");
 							qi.setState(DeliveryState.FAILED);
-							qi.save();
+							setSendingResult(qi);
 						}
 						else
 						{	
@@ -131,10 +131,10 @@ public class SimpleQueueStore implements QueueStore {
 	@Override
 	public void remove(String mailid) {
 		synchronized (lock) {
-			List<SimpleQueueInfo> removeableQueueInfos = queueInfoByMailid.remove(mailid);
+			List<QueueInfo> removeableQueueInfos = queueInfoByMailid.remove(mailid);
 			if( removeableQueueInfos != null )
 			{
-				for( SimpleQueueInfo sqi : removeableQueueInfos )
+				for( QueueInfo sqi : removeableQueueInfos )
 				{
 					queueInfoByMailidAndRecipient.remove(createSearchKey(sqi.getMailid(), sqi.getRecipient()));
 					queueInfoByRecipient.get(sqi.getRecipient()).remove(sqi);
@@ -146,10 +146,10 @@ public class SimpleQueueStore implements QueueStore {
 	@Override
 	public void removeRecipient(String recipient) {
 		synchronized (lock) {
-			List<SimpleQueueInfo> removeableQueueInfos = queueInfoByRecipient.remove(recipient);
+			List<QueueInfo> removeableQueueInfos = queueInfoByRecipient.remove(recipient);
 			if( removeableQueueInfos != null )
 			{
-				for( SimpleQueueInfo sqi : removeableQueueInfos )
+				for( QueueInfo sqi : removeableQueueInfos )
 				{
 					queueInfoByMailidAndRecipient.remove(createSearchKey(sqi.getMailid(), sqi.getRecipient()));
 					queueInfoByMailid.get(sqi.getMailid()).remove(sqi);
@@ -161,7 +161,7 @@ public class SimpleQueueStore implements QueueStore {
 	@Override
 	public void setSendingResult(QueueInfo qi) {
 		synchronized (lock) {
-			SimpleQueueInfo uniqueQueueInfo = queueInfoByMailidAndRecipient.get(createSearchKey(qi.getMailid(), qi.getRecipient()));
+			QueueInfo uniqueQueueInfo = queueInfoByMailidAndRecipient.get(createSearchKey(qi.getMailid(), qi.getRecipient()));
 			if( uniqueQueueInfo != null )
 			{
 				uniqueQueueInfo.setAttempt(System.currentTimeMillis()+AspirinInternal.getConfiguration().getDeliveryAttemptDelay());

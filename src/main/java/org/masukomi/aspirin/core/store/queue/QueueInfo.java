@@ -8,7 +8,7 @@ import org.masukomi.aspirin.core.AspirinInternal;
  * @author Laszlo Solova
  *
  */
-public abstract class QueueInfo {
+public class QueueInfo {
 	private String mailid;
 	private String recipient;
 	private String resultInfo;
@@ -91,8 +91,8 @@ public abstract class QueueInfo {
 		);
 	}
 	
-	public abstract void save();
-	public abstract void load();
+//	public abstract void save();
+//	public abstract void load();
 	
 	private transient String qiToString = null;
 	@Override
