@@ -13,6 +13,7 @@ import javax.mail.internet.MimeMessage;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.masukomi.aspirin.Aspirin;
 import org.masukomi.aspirin.core.config.Configuration;
 import org.masukomi.aspirin.core.store.mail.FileMailStore;
 
@@ -47,8 +48,8 @@ public class DefunctModuleTest extends TestCase {
 //		PropertyConfigurator.configure(args[2]);
 
 		// 2. Start Aspirin and send new message
-		MailQue mq = new MailQue();
-		mbS.registerMBean(mq, new ObjectName("org.masukomi.aspirin:type=MailQue"));
+//		MailQue mq = new MailQue();
+//		mbS.registerMBean(mq, new ObjectName("org.masukomi.aspirin:type=MailQue"));
 		
 		// 3.A Add test mail watcher
 //		mq.addWatcher(new TestMailWatcher());
@@ -59,7 +60,7 @@ public class DefunctModuleTest extends TestCase {
 		{
 			MimeMessage mMsg = new MimeMessage(Session.getDefaultInstance(props),new FileInputStream(f));
 			mMsg.addRecipients(RecipientType.TO, new Address[]{(Address)new InternetAddress("test"+i+"@mailinator.com"),(Address)new InternetAddress("test"+(i+1)+"@mailinator.com")});
-			mq.queMail(mMsg);
+			Aspirin.add(mMsg);
 		}
 	}
 
