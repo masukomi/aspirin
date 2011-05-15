@@ -124,7 +124,7 @@ public class DnsResolver {
 			}
 
 		} catch (TextParseException e) {
-			AspirinInternal.getConfiguration().getLog().warn("DnsResolver.getMXRecordsForHost(): Failed get MX record for host '"+hostName+"'.",e);
+			AspirinInternal.getConfiguration().getLogger().warn("DnsResolver.getMXRecordsForHost(): Failed get MX record for host '"+hostName+"'.",e);
 		}
 
 		return recordsColl;

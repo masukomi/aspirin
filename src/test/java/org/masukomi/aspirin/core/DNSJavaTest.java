@@ -9,40 +9,38 @@ import java.util.Collection;
 
 import javax.mail.URLName;
 
-import junit.framework.TestCase;
-
+import org.junit.Assert;
+import org.junit.Test;
 import org.masukomi.aspirin.core.dns.DnsResolver;
 /**
  * <p>Test of DNS resolving.</p>
  *
  * @author masukomi (masukomi at masukomi dot org)
- * @deprecated
  *
  */
-public class DNSJavaTest extends TestCase {
-
-	public static void main(String[] args) {}
+public class DNSJavaTest {
 
 	/**
 	 * DNS test with three problematic domains.
 	 */
+	@Test
 	public void testDNSLookup() {
-		System.out.println("three problematic domains for MX Record retreival");
+		System.out.println("Three domains with problematic MX records.");
 
 		System.out.println("testing gmx.net");
 		final Collection<URLName> mxRecords1 = DnsResolver.getMXRecordsForHost("gmx.net");
-		assertNotNull(mxRecords1);
-		assertTrue(mxRecords1.size() > 0);
+		Assert.assertNotNull(mxRecords1);
+		Assert.assertTrue(mxRecords1.size() > 0);
 
 		System.out.println("testing green.ch");
 		final Collection<URLName> mxRecords2 = DnsResolver.getMXRecordsForHost("green.ch");
-		assertNotNull(mxRecords2);
-		assertTrue(mxRecords2.size() > 0);
+		Assert.assertNotNull(mxRecords2);
+		Assert.assertTrue(mxRecords2.size() > 0);
 
 		System.out.println("testing tschannen.cc");
 		final Collection<URLName> mxRecords3 = DnsResolver.getMXRecordsForHost("tschannen.cc");
-		assertNotNull(mxRecords3);
-		assertTrue(mxRecords3.size() > 0);
+		Assert.assertNotNull(mxRecords3);
+		Assert.assertTrue(mxRecords3.size() > 0);
 	}
 
 }

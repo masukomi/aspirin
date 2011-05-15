@@ -54,11 +54,11 @@ public class FileMailStore implements MailStore {
 			if( !msgFile.exists() ) { msgFile.createNewFile(); }
 			msg.writeTo(new FileOutputStream(msgFile));
 		} catch (FileNotFoundException e) {
-			AspirinInternal.getConfiguration().getLog().error(getClass().getSimpleName()+" No file representation found for name "+name,e);
+			AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" No file representation found for name "+name,e);
 		} catch (IOException e) {
-			AspirinInternal.getConfiguration().getLog().error(getClass().getSimpleName()+" Could not write file for name "+name,e);
+			AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" Could not write file for name "+name,e);
 		} catch (MessagingException e) {
-			AspirinInternal.getConfiguration().getLog().error(getClass().getSimpleName()+" There is a messaging exception with name "+name,e);
+			AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" There is a messaging exception with name "+name,e);
 		}
 	}
 
@@ -75,9 +75,9 @@ public class FileMailStore implements MailStore {
 					msg = new MimeMessage(Session.getDefaultInstance(System.getProperties()),new FileInputStream(new File(messagePathMap.get(name))));
 					msgRef = new WeakReference<MimeMessage>(msg);
 				} catch (FileNotFoundException e) {
-					AspirinInternal.getConfiguration().getLog().error(getClass().getSimpleName()+" No file representation found for name "+name,e);
+					AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" No file representation found for name "+name,e);
 				} catch (MessagingException e) {
-					AspirinInternal.getConfiguration().getLog().error(getClass().getSimpleName()+" There is a messaging exception with name "+name,e);
+					AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" There is a messaging exception with name "+name,e);
 				}
 			}
 		}

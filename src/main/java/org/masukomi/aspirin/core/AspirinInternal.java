@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 
 /**
  * Inside factory and part provider class.
- * TODO Separate inside used methods and facade methods
  * 
  * @author Laszlo Solova
  *

@@ -22,8 +22,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.masukomi.aspirin.core.listener;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 /**
  * <p>This is a listener interface. This defines the mail delivery listeners, 
  * which could get messages if an email is delivered to a recipient (with the 
@@ -34,29 +32,6 @@ import javax.mail.internet.MimeMessage;
  * 
  */
 public interface AspirinListener {
-	/**
-	 * Called on success delivery to a recipient.
-	 * @param message
-	 * @param recipient
-	 */
-	@Deprecated
-	public void deliverySuccess(MimeMessage message, String recipient);
-	/**
-	 * Called on delivery failure per recipient.
-	 * @param message
-	 * @param recipient
-	 * @param mex
-	 */
-	@Deprecated
-	public void deliveryFailure(MimeMessage message, String recipient, MessagingException mex);
-	/**
-	 * Called on delivery finished to all recipients. Message is removed from 
-	 * Aspirin.
-	 * @param message
-	 */
-	@Deprecated
-	public void deliveryFinished(MimeMessage message);
-	
 	/**
 	 * Called on delivery comes back with a persistent delivery result.
 	 * @param mailId Unique mail ID extracted from mail header.

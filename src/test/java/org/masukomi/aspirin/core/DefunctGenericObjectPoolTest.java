@@ -2,8 +2,6 @@ package org.masukomi.aspirin.core;
 
 import junit.framework.TestCase;
 
-import org.masukomi.aspirin.core.delivery.DeliveryManager;
-
 /**
  * <p>Test of RemoteDelivery object pool in QueueManager.</p>
  *
@@ -14,7 +12,7 @@ public class DefunctGenericObjectPoolTest extends TestCase {
 	}
 
 	public void testPoolObject() throws Exception {
-		DeliveryManager dM = AspirinInternal.getDeliveryManager();
+//		DeliveryManager dM = AspirinInternal.getDeliveryManager();
 		
 //		
 //		QueManager qm = new QueManager(new MailQue());

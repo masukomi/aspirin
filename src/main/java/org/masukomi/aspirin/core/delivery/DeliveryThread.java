@@ -166,7 +166,6 @@ public class DeliveryThread extends Thread {
 		if( qInfo.hasState(DeliveryState.IN_PROGRESS) )
 		{
 			if( qInfo.getResultInfo() == null )
-				// TODO Get message ok info from communication
 				qInfo.setResultInfo("250 OK");
 			AspirinInternal.getLogger().info("DeliveryThread ({}).deliver(): Mail delivery success: {}. qi={}", new Object[]{getName(),qInfo.getResultInfo(),dCtx});
 			qInfo.setState(DeliveryState.SENT);

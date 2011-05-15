@@ -31,8 +31,6 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.ParseException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.masukomi.aspirin.core.AspirinInternal;
 import org.masukomi.aspirin.core.store.mail.MailStore;
 import org.masukomi.aspirin.core.store.mail.SimpleMailStore;
@@ -55,6 +53,9 @@ import org.slf4j.LoggerFactory;
  * JMX to change configuration parameters. In the parameters list we marked the 
  * parameters which are applied immediately. For more informations view 
  * {@link ConfigurationMBean}.</p>
+ * 
+ * TODO Use map to store configuration items and values, this will help us to 
+ * store special settings for QoS implementations.
  * 
  * <table border="1">
  *   <tr>
@@ -358,81 +359,11 @@ public class Configuration implements ConfigurationMBean {
 		init(new Properties());
 	}
 	/**
-	 * @return the number of milliseconds the system will wait before trying to
-	 *         resend an e-mail. This defaults to 5 minutes. A normail mail
-	 *         server would wait a few hours at least but Aspirin can't assume
-	 *         that an appilication will be open for a few hours.
-	 *         
-	 * @deprecated Use getDeliveryAttemptDelay() instead.
-	 */
-	public long getRetryInterval() {
-		return getDeliveryAttemptDelay();
-	}
-	/**
-	 * @param retryInterval
-	 *            The retryInterval to set.
-	 * 
-	 * @deprecated Use setDeliveryAttemptDelay() instead.
-	 */
-	public void setRetryInterval(long retryInterval) {
-		setDeliveryAttemptDelay((int)retryInterval);
-	}
-	/**
-	 * @return the number of threads in the thread pool available for mail
-	 *         delivery. This defaults to three.
-	 * 
-	 * @deprecated Use getDeliveryThreadsActiveMax() instead.
-	 */
-	public int getDeliveryThreads() {
-		return getDeliveryThreadsActiveMax();
-	}
-	/**
-	 * Sets the number of threads in the thread pool available for mail
-	 * delivery. Currently this does not take effect until the next time the
-	 * system is started and the prefs file is read in.
-	 * 
-	 * @param threadCount
-	 *            the new number of threads to have available for mail delivery.
-	 * 
-	 * @deprecated Use setDeliveryThreadsActiveMax() instead.
-	 * 
-	 */
-	public void setDeliveryThreads(int threadCount) {
-		setDeliveryThreadsActiveMax(threadCount);
-	}
-	/**
 	 * @return The email address of the postmaster in a MailAddress object.
 	 */
 	public InternetAddress getPostmaster() {
 		return postmaster;
 	}
-	/**
-	 * @deprecated Use setPostmasterEmail() instead.
-	 * @param postmasterAddress
-	 */
-	public void setPostmaster(String postmasterAddress) {
-		setPostmasterEmail(postmasterAddress); 
-	}
-	/**
-	 * @return int representing the number of times the system will attempt to
-	 *         send an e-mail before giving up.
-	 * @deprecated Use getDeliveryAttemptCount() instead.
-	 */
-	public int getMaxAttempts() {
-		return getDeliveryAttemptCount();
-	}
-	/**
-	 * @deprecated Use setDeliveryAttemptCount() instead.
-	 * @param maxAttempts
-	 */
-	public void setMaxAttempts(int maxAttempts) {
-		setDeliveryAttemptCount(maxAttempts);
-	}
-	@Deprecated
-	public Log getLog() {
-		return LogFactory.getLog(loggerName);
-	}
-	
 	public String getHostname() {
 		return hostname;
 	}
@@ -441,20 +372,6 @@ public class Configuration implements ConfigurationMBean {
 		updateMailSession();
 		notifyListeners(PARAM_HOSTNAME);
 	}
-	/**
-	 * @deprecated Use isDeliveryDebug() instead.
-	 * @return
-	 */
-	public boolean isDebugCommunication() {
-		return isDeliveryDebug();
-	}
-	/**
-	 * @deprecated Use setDeliveryDebug() instead.
-	 * @param debugCommunication
-	 */
-	public void setDebugCommunication(boolean debugCommunication) {
-		setDeliveryDebug(debugCommunication);
-	}
 	public String getEncoding() {
 		return encoding;
 	}
@@ -462,34 +379,6 @@ public class Configuration implements ConfigurationMBean {
 		this.encoding = encoding;
 		updateMailSession();
 		notifyListeners(PARAM_ENCODING);
-	}
-	/**
-	 * @deprecated Use getLoggerPrefix() instead.
-	 * @return
-	 */
-	public String getLogPrefix() {
-		return getLoggerPrefix();
-	}
-	/**
-	 * @deprecated Use setLoggerPrefix() instead.
-	 * @param logPrefix
-	 */
-	public void setLogPrefix(String logPrefix) {
-		setLoggerPrefix(logPrefix);
-	}
-	/**
-	 * @deprecated Use getDeliveryTimeout() instead.
-	 * @return
-	 */
-	public int getConnectionTimeout() {
-		return getDeliveryTimeout();
-	}
-	/**
-	 * @deprecated Use setDeliveryTimeout() instead.
-	 * @param connectionTimeout
-	 */
-	public void setConnectionTimeout(int connectionTimeout) {
-		setDeliveryTimeout(connectionTimeout);
 	}
 
 	@Override
