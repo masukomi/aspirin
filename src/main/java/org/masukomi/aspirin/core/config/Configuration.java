@@ -23,7 +23,9 @@
  */
 package org.masukomi.aspirin.core.config;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.mail.Session;
@@ -54,47 +56,38 @@ import org.slf4j.LoggerFactory;
  * parameters which are applied immediately. For more informations view 
  * {@link ConfigurationMBean}.</p>
  * 
- * TODO Use map to store configuration items and values, this will help us to 
- * store special settings for QoS implementations.
- * 
  * <table border="1">
  *   <tr>
  *     <th>Name</th>
- *     <th>Deprecated name</th>
  *     <th>Type</th>
  *     <th>Description</th>
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.attempt.delay</td>
- *     <td>aspirinRetryInterval</td>
  *     <td>Integer</td>
  *     <td>The delay of next attempt to delivery in milliseconds. <i>Change by 
  *     JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.attempt.count</td>
- *     <td>aspirinMaxAttempts</td>
  *     <td>Integer</td>
  *     <td>Maximal number of delivery attempts of an email. <i>Change by JMX 
  *     applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.bounce-on-failure</td>
- *     <td></td>
  *     <td>Boolean</td>
  *     <td>If true, a bounce email will be send to postmaster on failure. 
  *     <i>Change by JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.debug</td>
- *     <td></td>
  *     <td>Boolean</td>
  *     <td>If true, full SMTP communication will be logged. <i>Change by JMX 
  *     applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *   	<td>aspirin.delivery.expiry</td>
- *   	<td></td>
  *   	<td>Long</td>
  *   	<td>Time of sending expiry in milliseconds. The queue send an email 
  *   	until current time = queueing time + expiry. Default value is -1, it 
@@ -103,14 +96,12 @@ import org.slf4j.LoggerFactory;
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.threads.active.max</td>
- *     <td>aspirinDeliverThreads</td>
  *     <td>Integer</td>
  *     <td>Maximum number of active delivery threads in the pool. <i>Change by 
  *     JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.threads.idle.max</td>
- *     <td>aspirinDeliverThreads</td>
  *     <td>Integer</td>
  *     <td>Maximum number of idle delivery threads in the pool (the deilvery 
  *     threads over this limit will be shutdown). <i>Change by JMX applied 
@@ -118,26 +109,22 @@ import org.slf4j.LoggerFactory;
  *   </tr>
  *   <tr>
  *     <td>aspirin.delivery.timeout</td>
- *     <td></td>
  *     <td>Integer</td>
  *     <td>Socket and {@link Transport} timeout in milliseconds. <i>Change by 
  *     JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.encoding</td>
- *     <td></td>
  *     <td>String</td>
  *     <td>The MIME encoding. <i>Change by JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.hostname</td>
- *     <td>aspirinHostname</td>
  *     <td>String</td>
  *     <td>The hostname. <i>Change by JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.logger.name</td>
- *     <td></td>
  *     <td>String</td>
  *     <td>
  *       The name of the logger. <i>Change by JMX applied immediately.</i>
@@ -147,28 +134,24 @@ import org.slf4j.LoggerFactory;
  *   </tr>
  *   <tr>
  *     <td>aspirin.logger.prefix</td>
- *     <td></td>
  *     <td>String</td>
  *     <td>The prefix of the logger. This will be put in the logs at the first 
  *     position. <i>Change by JMX applied immediately.</i></td>
  *   </tr>
  *   <tr>
  *     <td>aspirin.postmaster.email</td>
- *     <td>aspirinPostmaster</td>
  *     <td>String</td>
  *     <td>The email address of the postmaster. <i>Change by JMX applied 
  *     immediately.</i></td>
  *   </tr>
  *   <tr>
  *   	<td>aspirin.mailstore.class</td>
- *   	<td></td>
  *   	<td>String</td>
  *   	<td>The class name of mail store. Default class is SimpleMailStore in 
  *   	org.masukomi.aspirin.core.store package.</td>
  *   </tr>
  *   <tr>
  *   	<td>aspirin.queuestore.class</td>
- *   	<td></td>
  *   	<td>String</td>
  *   	<td>The class name of queue store. Default class is SimpleQueueStore in 
  *   	org.masukomi.aspirin.core.queue package.</td>
@@ -181,23 +164,10 @@ import org.slf4j.LoggerFactory;
 public class Configuration implements ConfigurationMBean {
 	
 	private static Configuration instance;
-	private int maxAttempts = 3; // aspirin.delivery.attempt.count
-	private long retryInterval = 300000; // aspirin.delivery.attempt.delay
-	private boolean bounceOnFailure = true; //aspirin.delivery.bounce-on-failure
-	private boolean debugCommunication = false; // aspirin.delivery.debug
-	private String hostname = "localhost"; // aspirin.delivery.hostname
-	private int deliveryThreads = 3; // aspirin.delivery.threads.active.max
-	private int idleDeliveryThreads = deliveryThreads; // aspirin.delivery.threads.idle.max
-	private int connectionTimeout = 30000; // in milliseconds, aspirin.delivery.timeout
-	private String encoding = "UTF-8"; // aspirin.encoding
-	private long expiry = -1; // aspirin.delivery.expiry
-	private static String loggerName = "Aspirin"; // aspirin.logger.name
-	private static Logger log = LoggerFactory.getLogger(loggerName); // inherited from aspirin.logger.name
-	private String loggerPrefix = "Aspirin "; // aspirin.logger.prefix
+	private Map<String, Object> configParameters = new HashMap<String, Object>();
+	private static Logger log = null; // inherited from aspirin.logger.name
 	private MailStore mailStore = null;
-	private String mailStoreClassName = SimpleMailStore.class.getCanonicalName(); // aspirin.mailstore.class
 	private QueueStore queueStore = null;
-	private String queueStoreClassName = SimpleQueueStore.class.getCanonicalName(); // aspirin.queuestore.class
 	protected InternetAddress postmaster = null; // inherited from aspirin.postmaster.email
 	private Session mailSession = null;
 	
@@ -211,144 +181,33 @@ public class Configuration implements ConfigurationMBean {
 	}
 	
 	public void init(Properties props) {
-		String tempString = null;
 		
-		tempString = props.getProperty(PARAM_DELIVERY_ATTEMPT_DELAY);
-		if( tempString != null )
+		List<Parameter> parameterList = new ArrayList<Configuration.Parameter>();
+		parameterList.add(new Parameter(PARAM_DELIVERY_ATTEMPT_COUNT,		3,				Parameter.TYPE_INTEGER));
+		parameterList.add(new Parameter(PARAM_DELIVERY_ATTEMPT_DELAY,		300000,			Parameter.TYPE_INTEGER));
+		parameterList.add(new Parameter(PARAM_DELIVERY_BOUNCE_ON_FAILURE,	true,			Parameter.TYPE_BOOLEAN));
+		parameterList.add(new Parameter(PARAM_DELIVERY_DEBUG,				false,			Parameter.TYPE_BOOLEAN));
+		parameterList.add(new Parameter(PARAM_DELIVERY_EXPIRY,				-1L,			Parameter.TYPE_LONG));
+		parameterList.add(new Parameter(PARAM_DELIVERY_THREADS_ACTIVE_MAX,	3,				Parameter.TYPE_INTEGER));
+		parameterList.add(new Parameter(PARAM_DELIVERY_THREADS_IDLE_MAX,	3,				Parameter.TYPE_INTEGER));
+		parameterList.add(new Parameter(PARAM_DELIVERY_TIMEOUT,				30000,			Parameter.TYPE_INTEGER));
+		parameterList.add(new Parameter(PARAM_ENCODING,						"UTF-8",		Parameter.TYPE_STRING));
+		parameterList.add(new Parameter(PARAM_HOSTNAME,						"localhost",	Parameter.TYPE_STRING));
+		parameterList.add(new Parameter(PARAM_LOGGER_NAME,					"Aspirin",		Parameter.TYPE_STRING));
+		parameterList.add(new Parameter(PARAM_LOGGER_PREFIX,				"Aspirin ",		Parameter.TYPE_STRING));
+		parameterList.add(new Parameter(PARAM_MAILSTORE_CLASS,				SimpleMailStore.class.getCanonicalName(),	Parameter.TYPE_STRING));
+		parameterList.add(new Parameter(PARAM_POSTMASTER_EMAIL,				null,			Parameter.TYPE_STRING));
+		parameterList.add(new Parameter(PARAM_QUEUESTORE_CLASS,				SimpleQueueStore.class.getCanonicalName(),	Parameter.TYPE_STRING));
+		
+		for( Parameter param : parameterList )
 		{
-			retryInterval = Long.valueOf(tempString);
-		}else
-		{
-			// We need this to support backward compatibility
-			tempString = System.getProperty("aspirinRetryInterval");
-			if( tempString != null )
-			{
-				retryInterval = Long.valueOf(tempString);
-			}else
-			{
-				tempString = System.getProperty(PARAM_DELIVERY_ATTEMPT_DELAY);
-				if( tempString != null )
-				{
-					retryInterval = Long.valueOf(tempString);
-				}
-			}
+			Object o = param.extractValue(props);
+			if( o != null )
+				configParameters.put(param.getName(), o);
 		}
 		
-		tempString = props.getProperty(PARAM_DELIVERY_ATTEMPT_COUNT);
-		if( tempString != null )
-		{
-			maxAttempts = Integer.valueOf(tempString);
-		}else
-		{
-			// We need this to support backward compatibility
-			tempString = System.getProperty("aspirinMaxAttempts");
-			if( tempString != null )
-			{
-				maxAttempts = Integer.valueOf(tempString);
-			}else
-			{
-				tempString = System.getProperty(PARAM_DELIVERY_ATTEMPT_COUNT);
-				if( tempString != null )
-				{
-					maxAttempts = Integer.valueOf(tempString);
-				}
-			}
-		}
-		
-		tempString = props.getProperty(PARAM_DELIVERY_DEBUG);
-		if( tempString != null )
-			debugCommunication = ("true".equalsIgnoreCase(tempString) ) ? true : false;
-		
-		tempString = props.getProperty(PARAM_DELIVERY_THREADS_ACTIVE_MAX);
-		if( tempString != null )
-		{
-			deliveryThreads = Integer.valueOf(tempString);
-		}else
-		{
-			// We need this to support backward compatibility
-			tempString = System.getProperty("aspirinDeliverThreads");
-			if( tempString != null )
-			{
-				deliveryThreads = Integer.valueOf(tempString);
-			}else
-			{
-				tempString = System.getProperty(PARAM_DELIVERY_THREADS_ACTIVE_MAX);
-				if( tempString != null )
-				{
-					deliveryThreads = Integer.valueOf(tempString);
-				}
-			}
-		}
-		
-		tempString = props.getProperty(PARAM_DELIVERY_THREADS_IDLE_MAX);
-		if( tempString != null )
-		{
-			idleDeliveryThreads = Integer.valueOf(tempString);
-		}else
-		{
-			// We need this to support backward compatibility
-			tempString = System.getProperty("aspirinDeliverThreads");
-			if( tempString != null )
-			{
-				idleDeliveryThreads = Integer.valueOf(tempString);
-			}else
-			{
-				tempString = System.getProperty(PARAM_DELIVERY_THREADS_IDLE_MAX);
-				if( tempString != null )
-				{
-					idleDeliveryThreads = Integer.valueOf(tempString);
-				}
-			}
-		}
-		
-		tempString = props.getProperty(PARAM_DELIVERY_TIMEOUT);
-		if( tempString != null )
-			connectionTimeout = Integer.valueOf(tempString);
-		
-		tempString = props.getProperty(PARAM_POSTMASTER_EMAIL);
-		if( tempString != null )
-		{
-			setPostmasterEmail(tempString);
-		}else
-		{
-			tempString = System.getProperty("aspirinPostmaster");
-			if( tempString != null )
-			{
-				setPostmasterEmail(tempString);
-			}else
-			{
-				tempString = System.getProperty(PARAM_POSTMASTER_EMAIL);
-				if( tempString != null )
-				{
-					setPostmasterEmail(tempString);
-				}
-			}
-		}
-		
-		hostname = props.getProperty(
-				PARAM_HOSTNAME, 
-				System.getProperty("aspirinHostname", 
-						System.getProperty("mail.smtp.host",
-								System.getProperty(PARAM_HOSTNAME, hostname)
-						)
-				)
-		);
-		
-		encoding = props.getProperty(PARAM_ENCODING, encoding);
-		
-		String expiryString = props.getProperty(PARAM_DELIVERY_EXPIRY);
-		if( expiryString != null )
-			expiry = Long.valueOf(expiryString);
-		
-		String loggerConfigName = props.getProperty(PARAM_LOGGER_NAME);
-		if( loggerConfigName != null && !loggerConfigName.equals(loggerName) )
-			log = LoggerFactory.getLogger(loggerName);
-		loggerPrefix = props.getProperty(PARAM_LOGGER_PREFIX, loggerPrefix);
-		
-		mailStoreClassName = props.getProperty(PARAM_MAILSTORE_CLASS, mailStoreClassName);
-		
-		queueStoreClassName = props.getProperty(PARAM_QUEUESTORE_CLASS, queueStoreClassName);
-		
+		log = LoggerFactory.getLogger((String)configParameters.get(PARAM_LOGGER_NAME));
+		setPostmasterEmail((String)configParameters.get(PARAM_POSTMASTER_EMAIL));
 		updateMailSession();
 	}
 	
@@ -365,65 +224,69 @@ public class Configuration implements ConfigurationMBean {
 		return postmaster;
 	}
 	public String getHostname() {
-		return hostname;
+		return (String)configParameters.get(PARAM_HOSTNAME);
 	}
 	public void setHostname(String hostname) {
-		this.hostname = hostname;
+		configParameters.put(PARAM_HOSTNAME, hostname);
 		updateMailSession();
 		notifyListeners(PARAM_HOSTNAME);
 	}
 	public String getEncoding() {
-		return encoding;
+		return (String)configParameters.get(PARAM_ENCODING);
 	}
 	public void setEncoding(String encoding) {
-		this.encoding = encoding;
+		configParameters.put(PARAM_ENCODING, encoding);
+//		this.encoding = encoding;
 		updateMailSession();
 		notifyListeners(PARAM_ENCODING);
 	}
 
 	@Override
 	public int getDeliveryAttemptCount() {
-		return maxAttempts;
+		return (Integer)configParameters.get(PARAM_DELIVERY_ATTEMPT_COUNT);
+//		return maxAttempts;
 	}
 
 	@Override
 	public int getDeliveryAttemptDelay() {
-		return (int)retryInterval;
+		return (Integer)configParameters.get(PARAM_DELIVERY_ATTEMPT_DELAY);
+//		return (int)retryInterval;
 	}
 
 	@Override
 	public int getDeliveryThreadsActiveMax() {
-		return deliveryThreads;
+		return (Integer)configParameters.get(PARAM_DELIVERY_THREADS_ACTIVE_MAX);
 	}
 	
 	@Override
 	public int getDeliveryThreadsIdleMax() {
-		return idleDeliveryThreads;
+		return (Integer)configParameters.get(PARAM_DELIVERY_THREADS_IDLE_MAX);
 	}
 
 	@Override
 	public int getDeliveryTimeout() {
-		return connectionTimeout;
+		return (Integer)configParameters.get(PARAM_DELIVERY_TIMEOUT);
 	}
 	
 	@Override
 	public long getExpiry() {
-		return expiry;
+		return (Long)configParameters.get(PARAM_DELIVERY_EXPIRY);
 	}
 
 	@Override
 	public String getLoggerName() {
-		return loggerName;
+		return (String)configParameters.get(PARAM_LOGGER_NAME);
 	}
 
 	@Override
 	public String getLoggerPrefix() {
-		return loggerPrefix;
+		return (String)configParameters.get(PARAM_LOGGER_PREFIX);
 	}
 	
 	public MailStore getMailStore() {
 		if( mailStore == null )
 		{
+			String mailStoreClassName = (String)configParameters.get(PARAM_MAILSTORE_CLASS);
 			try {
 				Class<?> storeClass = (Class<?>) Class.forName(mailStoreClassName);
 				if( storeClass.getInterfaces()[0].equals(MailStore.class) )
@@ -444,6 +307,7 @@ public class Configuration implements ConfigurationMBean {
 	public QueueStore getQueueStore() {
 		if( queueStore == null )
 		{
+			String queueStoreClassName = (String)configParameters.get(PARAM_QUEUESTORE_CLASS);
 			try {
 				Class<?> storeClass = (Class<?>) Class.forName(queueStoreClassName);
 				if( storeClass.getInterfaces()[0].equals(QueueStore.class) )
@@ -458,74 +322,79 @@ public class Configuration implements ConfigurationMBean {
 	
 	@Override
 	public boolean isDeliveryBounceOnFailure() {
-		return bounceOnFailure;
+		return (Boolean)configParameters.get(PARAM_DELIVERY_BOUNCE_ON_FAILURE);
 	}
 
 	@Override
 	public boolean isDeliveryDebug() {
-		return debugCommunication;
+		return (Boolean)configParameters.get(PARAM_DELIVERY_DEBUG);
 	}
 
 	@Override
 	public void setDeliveryAttemptCount(int attemptCount) {
-		this.maxAttempts = attemptCount;
+		configParameters.put(PARAM_DELIVERY_ATTEMPT_COUNT, attemptCount);
+//		this.maxAttempts = attemptCount;
 		notifyListeners(PARAM_DELIVERY_ATTEMPT_COUNT);
 	}
 
 	@Override
 	public void setDeliveryAttemptDelay(int delay) {
-		this.retryInterval = delay;
+		configParameters.put(PARAM_DELIVERY_ATTEMPT_DELAY, delay);
+//		this.retryInterval = delay;
 		notifyListeners(PARAM_DELIVERY_ATTEMPT_DELAY);
 	}
 	
 	@Override
 	public void setDeliveryBounceOnFailure(boolean bounce) {
-		this.bounceOnFailure = bounce;
+		configParameters.put(PARAM_DELIVERY_BOUNCE_ON_FAILURE, bounce);
 		notifyListeners(PARAM_DELIVERY_BOUNCE_ON_FAILURE);
 	}
 
 	@Override
 	public void setDeliveryDebug(boolean debug) {
-		this.debugCommunication = debug;
+		configParameters.put(PARAM_DELIVERY_DEBUG, debug);
 		updateMailSession();
 		notifyListeners(PARAM_DELIVERY_DEBUG);
 	}
 
 	@Override
 	public void setDeliveryThreadsActiveMax(int activeThreadsMax) {
-		this.deliveryThreads = activeThreadsMax;
+		configParameters.put(PARAM_DELIVERY_THREADS_ACTIVE_MAX, activeThreadsMax);
 		notifyListeners(PARAM_DELIVERY_THREADS_ACTIVE_MAX);
 	}
 	
 	@Override
 	public void setDeliveryThreadsIdleMax(int idleThreadsMax) {
-		this.idleDeliveryThreads = idleThreadsMax;
+		configParameters.put(PARAM_DELIVERY_THREADS_IDLE_MAX, idleThreadsMax);
 		notifyListeners(PARAM_DELIVERY_THREADS_IDLE_MAX);
 	}
 
 	@Override
 	public void setDeliveryTimeout(int timeout) {
-		this.connectionTimeout = timeout;
+		configParameters.put(PARAM_DELIVERY_TIMEOUT, timeout);
+//		this.connectionTimeout = timeout;
 		updateMailSession();
 		notifyListeners(PARAM_DELIVERY_TIMEOUT);
 	}
 	
 	@Override
 	public void setExpiry(long expiry) {
-		this.expiry = expiry;
+		configParameters.put(PARAM_DELIVERY_EXPIRY, expiry);
 		notifyListeners(PARAM_DELIVERY_EXPIRY);
 	}
 
 	@Override
 	public void setLoggerName(String loggerName) {
-		Configuration.loggerName = loggerName;
+		configParameters.put(PARAM_LOGGER_NAME, loggerName);
+//		Configuration.loggerName = loggerName;
 		log = LoggerFactory.getLogger(loggerName);
 		notifyListeners(PARAM_LOGGER_NAME);
 	}
 
 	@Override
 	public void setLoggerPrefix(String loggerPrefix) {
-		this.loggerPrefix = loggerPrefix;
+		configParameters.put(PARAM_LOGGER_PREFIX, loggerPrefix);
+//		this.loggerPrefix = loggerPrefix;
 		notifyListeners(PARAM_LOGGER_PREFIX);
 	}
 	
@@ -585,33 +454,36 @@ public class Configuration implements ConfigurationMBean {
 
 	@Override
 	public String getMailStoreClassName() {
-		return mailStoreClassName;
+		return (String)configParameters.get(PARAM_MAILSTORE_CLASS);
 	}
 
 	@Override
 	public void setMailStoreClassName(String className) {
-		this.mailStoreClassName = className;
+		configParameters.put(PARAM_MAILSTORE_CLASS, className);
+//		this.mailStoreClassName = className;
 	}
 	
 	@Override
 	public String getQueueStoreClassName() {
-		return queueStoreClassName;
+		return (String)configParameters.get(PARAM_QUEUESTORE_CLASS);
 	}
 	
 	@Override
 	public void setQueueStoreClassName(String className) {
-		this.queueStoreClassName = className;
+		configParameters.put(PARAM_QUEUESTORE_CLASS, className);
+//		this.queueStoreClassName = className;
 	}
 	
 	public Logger getLogger() {
-		return LoggerFactory.getLogger(loggerName);
+		return LoggerFactory.getLogger((String)configParameters.get(PARAM_LOGGER_PREFIX));
 	}
 	
 	public Session getMailSession() {
-		/**
-		 * TODO check thread safe mode
-		 */
-		return mailSession;
+		return Session.getInstance(mailSession.getProperties());
+	}
+	
+	public Object getProperty(String name) {
+		return configParameters.get(name);
 	}
 	
 	private static final String MAIL_MIME_CHARSET = "mail.mime.charset";
@@ -635,6 +507,51 @@ public class Configuration implements ConfigurationMBean {
 			newSession.setDebug(true);
 		
 		mailSession = newSession;
+	}
+	
+	private class Parameter {
+		
+		public static final int TYPE_STRING = 0;
+		public static final int TYPE_INTEGER = 1;
+		public static final int TYPE_LONG = 2;
+		public static final int TYPE_BOOLEAN = 0;
+		
+		private String name;
+		private int type;
+		private Object defaultValue;
+		
+		public Parameter(String name, Object defaultValue, int type) {
+			this.name = name;
+			this.defaultValue = defaultValue;
+			this.type = type;
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		Object extractValue(Properties props) {
+			String tempString = props.getProperty(name);
+			if( tempString == null )
+				tempString = System.getProperty(name);
+			
+			if( tempString != null )
+			{
+				switch (type)
+				{
+				case TYPE_INTEGER :
+					return Integer.valueOf(tempString);
+				case TYPE_LONG :
+					return Long.valueOf(tempString);
+				case TYPE_BOOLEAN :
+					return ("true".equalsIgnoreCase(tempString) ) ? Boolean.TRUE : Boolean.FALSE;
+				default:
+					return tempString;
+				}
+			}
+			return defaultValue;
+		}
+		
 	}
 
 }
