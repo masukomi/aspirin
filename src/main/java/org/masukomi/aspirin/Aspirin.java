@@ -13,7 +13,6 @@ import org.masukomi.aspirin.core.store.mail.MailStore;
 import org.masukomi.aspirin.core.store.mail.SimpleMailStore;
 import org.masukomi.aspirin.core.store.queue.QueueInfo;
 import org.masukomi.aspirin.core.store.queue.QueueStore;
-import org.masukomi.aspirin.core.store.queue.SimpleQueueStore;
 
 /**
  * This is the facade class of the Aspirin package. You should to use this 

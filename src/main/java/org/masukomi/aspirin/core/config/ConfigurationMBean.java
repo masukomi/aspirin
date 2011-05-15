@@ -4,7 +4,6 @@ import javax.mail.Transport;
 
 import org.masukomi.aspirin.core.store.mail.FileMailStore;
 import org.masukomi.aspirin.core.store.mail.SimpleMailStore;
-import org.masukomi.aspirin.core.store.queue.SimpleQueueStore;
 
 /**
  * <p>This is the JMX bean of Aspirin configuration. Some configuration 
