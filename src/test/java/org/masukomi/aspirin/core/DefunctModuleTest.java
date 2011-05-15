@@ -51,7 +51,7 @@ public class DefunctModuleTest extends TestCase {
 		mbS.registerMBean(mq, new ObjectName("org.masukomi.aspirin:type=MailQue"));
 		
 		// 3.A Add test mail watcher
-		mq.addWatcher(new TestMailWatcher());
+//		mq.addWatcher(new TestMailWatcher());
 
 		File f = new File(args[0]);
 		Properties props = System.getProperties();
