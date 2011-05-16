@@ -59,7 +59,10 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		
 		// Set up stores and configuration listener 
 		queueStore = AspirinInternal.getConfiguration().getQueueStore();
+		queueStore.init();
+		
 		mailStore = AspirinInternal.getConfiguration().getMailStore();
+		mailStore.init();
 		
 		// Set up deliveryhandlers
 		// TODO create by configuration
@@ -95,8 +98,19 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 	public void run() {
 		running = true;
 		AspirinInternal.getLogger().info("DeliveryManager started.");
+		long lastMaintainedAt = 0L;
 		while( running )
 		{
+			// Maintain queues in every hour
+			try {
+				if( lastMaintainedAt < System.currentTimeMillis()-3600000 )
+				{
+					
+					lastMaintainedAt = System.currentTimeMillis();
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+			}
 			QueueInfo qi = null;
 			try {
 				qi = queueStore.next();
@@ -186,6 +200,8 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		queueStore.setSendingResult(qi);
 		if( AspirinInternal.getListenerManager() != null && !qi.hasState(DeliveryState.QUEUED) )
 			AspirinInternal.getListenerManager().notifyListeners(qi);
+		if( queueStore.isCompleted(qi.getMailid()) )
+			queueStore.remove(qi.getMailid());
 		AspirinInternal.getLogger().trace("DeliveryManager.release(): Release item '{}' with state: '{}' after {} attempts.",new Object[]{qi.getMailid(),qi.getState().name(), qi.getAttemptCount()});
 	}
 	

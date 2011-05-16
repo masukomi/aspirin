@@ -84,7 +84,12 @@ public class SimpleQueueStore implements QueueStore {
 		QueueInfo qInfo = queueInfoByMailidAndRecipient.get(createSearchKey(mailid, recipient));
 		return ( qInfo != null && qInfo.hasState(DeliveryState.FAILED, DeliveryState.SENT) );
 	}
-
+	
+	@Override
+	public void init() {
+		// Do nothing	
+	}
+	
 	@Override
 	public boolean isCompleted(String mailid) {
 		List<QueueInfo> qibmList = queueInfoByMailid.get(mailid);

@@ -33,9 +33,49 @@ public class FileMailStore implements MailStore {
 	private Random rand = new Random();
 	private Map<String, WeakReference<MimeMessage>> messageMap = new HashMap<String, WeakReference<MimeMessage>>();
 	private Map<String, String> messagePathMap = new HashMap<String, String>();
+	
+	@Override
+	public MimeMessage get(String mailid) {
+		WeakReference<MimeMessage> msgRef = messageMap.get(mailid);
+		MimeMessage msg = null;
+		if( msgRef != null )
+		{
+			msg = msgRef.get();
+			if( msg == null )
+			{
+				try {
+					msg = new MimeMessage(Session.getDefaultInstance(System.getProperties()),new FileInputStream(new File(messagePathMap.get(mailid))));
+					msgRef = new WeakReference<MimeMessage>(msg);
+				} catch (FileNotFoundException e) {
+					AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" No file representation found for name "+mailid,e);
+				} catch (MessagingException e) {
+					AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" There is a messaging exception with name "+mailid,e);
+				}
+			}
+		}
+		return msg;
+	}
+	
+	@Override
+	public void init() {
+		// TODO Initialize: read mime messages already exists
+		
+	}
 
 	@Override
-	public void set(String name, MimeMessage msg) {
+	public void remove(String mailid) {
+		synchronized (messageMap) {
+			messageMap.remove(mailid);
+			synchronized (messagePathMap) {
+				File f = new File(messagePathMap.get(mailid));
+				f.delete();
+				messagePathMap.remove(mailid);
+			}
+		}
+	}
+	
+	@Override
+	public void set(String mailid, MimeMessage msg) {
 		String filepath;
 		// Create file path
 		if( rootDir == null )
@@ -44,55 +84,21 @@ public class FileMailStore implements MailStore {
 		File dir = new File(rootDir, subDirName);
 		if( !dir.exists() )
 			dir.mkdirs();
-		filepath = new File(dir, name+".msg").getAbsolutePath();
+		filepath = new File(dir, mailid+".msg").getAbsolutePath();
 		// Save informations
 		try {
-			messageMap.put(name, new WeakReference<MimeMessage>(msg));
-			messagePathMap.put(name, filepath);
+			messageMap.put(mailid, new WeakReference<MimeMessage>(msg));
+			messagePathMap.put(mailid, filepath);
 			File msgFile = new File(filepath);
 			if( msgFile.exists() ) { msgFile.delete(); }
 			if( !msgFile.exists() ) { msgFile.createNewFile(); }
 			msg.writeTo(new FileOutputStream(msgFile));
 		} catch (FileNotFoundException e) {
-			AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" No file representation found for name "+name,e);
+			AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" No file representation found for name "+mailid,e);
 		} catch (IOException e) {
-			AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" Could not write file for name "+name,e);
+			AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" Could not write file for name "+mailid,e);
 		} catch (MessagingException e) {
-			AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" There is a messaging exception with name "+name,e);
-		}
-	}
-
-	@Override
-	public MimeMessage get(String name) {
-		WeakReference<MimeMessage> msgRef = messageMap.get(name);
-		MimeMessage msg = null;
-		if( msgRef != null )
-		{
-			msg = msgRef.get();
-			if( msg == null )
-			{
-				try {
-					msg = new MimeMessage(Session.getDefaultInstance(System.getProperties()),new FileInputStream(new File(messagePathMap.get(name))));
-					msgRef = new WeakReference<MimeMessage>(msg);
-				} catch (FileNotFoundException e) {
-					AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" No file representation found for name "+name,e);
-				} catch (MessagingException e) {
-					AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" There is a messaging exception with name "+name,e);
-				}
-			}
-		}
-		return msg;
-	}
-
-	@Override
-	public void remove(String name) {
-		synchronized (messageMap) {
-			messageMap.remove(name);
-			synchronized (messagePathMap) {
-				File f = new File(messagePathMap.get(name));
-				f.delete();
-				messagePathMap.remove(name);
-			}
+			AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" There is a messaging exception with name "+mailid,e);
 		}
 	}
 	

@@ -18,6 +18,7 @@ public interface QueueStore {
 	public QueueInfo createQueueInfo();
 	public long getNextAttempt(String mailid, String recipient);
 	public boolean hasBeenRecipientHandled(String mailid, String recipient);
+	public void init();
 	public boolean isCompleted(String mailid);
 	public QueueInfo next();
 	public void remove(String mailid);

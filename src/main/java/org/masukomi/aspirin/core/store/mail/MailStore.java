@@ -12,7 +12,8 @@ import javax.mail.internet.MimeMessage;
  *
  */
 public interface MailStore {
-	public void set(String name, MimeMessage msg);
-	public MimeMessage get(String name);
-	public void remove(String name);
+	public MimeMessage get(String mailid);
+	public void init();
+	public void remove(String mailid);
+	public void set(String mailid, MimeMessage msg);
 }

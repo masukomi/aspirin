@@ -19,19 +19,25 @@ public class SimpleMailStore implements MailStore {
 	
 	private HashMap<String, MimeMessage> messageMap = new HashMap<String, MimeMessage>();
 	
+
 	@Override
-	public void set(String name, MimeMessage msg) {
-		messageMap.put(name, msg);
+	public MimeMessage get(String mailid) {
+		return messageMap.get(mailid);
+	}
+	
+	@Override
+	public void init() {
+		// Do nothing	
 	}
 
 	@Override
-	public MimeMessage get(String name) {
-		return messageMap.get(name);
+	public void remove(String mailid) {
+		messageMap.remove(mailid);
 	}
 
 	@Override
-	public void remove(String name) {
-		messageMap.remove(name);
+	public void set(String mailid, MimeMessage msg) {
+		messageMap.put(mailid, msg);
 	}
 
 }
