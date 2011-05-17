@@ -1,6 +1,7 @@
 package org.masukomi.aspirin.core.store.queue;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
@@ -15,6 +16,13 @@ import javax.mail.internet.InternetAddress;
  */
 public interface QueueStore {
 	public void add(String mailid, long expire, Collection<InternetAddress> recipients) throws MessagingException;
+	/**
+	 * This method is called to clean QueueStore. In cleaning process the 
+	 * QueueStore have to remove all completed mailid, and after finishing it 
+	 * gives back list of unfinished mailids.
+	 * @return List of used mailids.
+	 */
+	public List<String> clean();
 	public QueueInfo createQueueInfo();
 	public long getNextAttempt(String mailid, String recipient);
 	public boolean hasBeenRecipientHandled(String mailid, String recipient);

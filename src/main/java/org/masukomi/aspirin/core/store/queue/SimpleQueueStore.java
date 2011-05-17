@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -63,7 +64,25 @@ public class SimpleQueueStore implements QueueStore {
 		} catch (Exception e) {
 			throw new MessagingException("Message queueing failed: "+mailid, e);
 		}
-		
+	}
+	
+	@Override
+	public List<String> clean() {
+		List<String> mailidList = null;
+		synchronized (lock) {
+			mailidList = new ArrayList<String>(queueInfoByMailid.keySet());
+		}
+		Iterator<String> mailidIt = mailidList.iterator();
+		while( mailidIt.hasNext() )
+		{
+			String mailid = mailidIt.next();
+			if( isCompleted(mailid) )
+			{
+				remove(mailid);
+				mailidIt.remove();
+			}
+		}
+		return mailidList;
 	}
 	
 	@Override
