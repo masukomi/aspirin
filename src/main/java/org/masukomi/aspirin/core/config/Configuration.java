@@ -400,6 +400,7 @@ public class Configuration implements ConfigurationMBean {
 	
 	public void setMailStore(MailStore mailStore) {
 		this.mailStore = mailStore;
+		notifyListeners(PARAM_MAILSTORE_CLASS);
 	}
 
 	@Override
@@ -421,6 +422,7 @@ public class Configuration implements ConfigurationMBean {
 	
 	public void setQueueStore(QueueStore queueStore) {
 		this.queueStore = queueStore;
+		notifyListeners(PARAM_QUEUESTORE_CLASS);
 	}
 	
 	public void addListener(ConfigurationChangeListener listener) {
@@ -460,6 +462,8 @@ public class Configuration implements ConfigurationMBean {
 	@Override
 	public void setMailStoreClassName(String className) {
 		configParameters.put(PARAM_MAILSTORE_CLASS, className);
+		mailStore = null;
+		notifyListeners(PARAM_MAILSTORE_CLASS);
 //		this.mailStoreClassName = className;
 	}
 	
@@ -471,6 +475,8 @@ public class Configuration implements ConfigurationMBean {
 	@Override
 	public void setQueueStoreClassName(String className) {
 		configParameters.put(PARAM_QUEUESTORE_CLASS, className);
+		queueStore = null;
+		notifyListeners(PARAM_QUEUESTORE_CLASS);
 //		this.queueStoreClassName = className;
 	}
 	
