@@ -29,6 +29,7 @@ import org.masukomi.aspirin.core.store.queue.QueueStore;
 public class DeliveryManager extends Thread implements ConfigurationChangeListener {
 	private MailStore mailStore;
 	private QueueStore queueStore;
+	private DeliveryMaintenanceThread maintenanceThread;
 	private Object mailingLock = new Object();
 	private ObjectPool deliveryThreadObjectPool = null;
 	private boolean running = false;
@@ -64,6 +65,9 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		mailStore = AspirinInternal.getConfiguration().getMailStore();
 		mailStore.init();
 		
+		maintenanceThread = new DeliveryMaintenanceThread();
+		maintenanceThread.start();
+		
 		// Set up deliveryhandlers
 		// TODO create by configuration
 		deliveryHandlers.put(SendMessage.class.getCanonicalName(), new SendMessage());
@@ -98,19 +102,8 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 	public void run() {
 		running = true;
 		AspirinInternal.getLogger().info("DeliveryManager started.");
-		long lastMaintainedAt = 0L;
 		while( running )
 		{
-			// Maintain queues in every hour
-			try {
-				if( lastMaintainedAt < System.currentTimeMillis()-3600000 )
-				{
-					
-					lastMaintainedAt = System.currentTimeMillis();
-				}
-			} catch (Exception e) {
-				// TODO: handle exception
-			}
 			QueueInfo qi = null;
 			try {
 				qi = queueStore.next();
@@ -237,6 +230,7 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		} catch (Exception e) {
 			AspirinInternal.getLogger().error("DeliveryManager.shutdown() failed.",e);
 		}
+		maintenanceThread.shutdown();
 	}
 
 }
