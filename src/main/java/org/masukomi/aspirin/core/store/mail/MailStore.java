@@ -1,5 +1,7 @@
 package org.masukomi.aspirin.core.store.mail;
 
+import java.util.List;
+
 import javax.mail.internet.MimeMessage;
 
 /**
@@ -13,6 +15,7 @@ import javax.mail.internet.MimeMessage;
  */
 public interface MailStore {
 	public MimeMessage get(String mailid);
+	public List<String> getMailIds();
 	public void init();
 	public void remove(String mailid);
 	public void set(String mailid, MimeMessage msg);

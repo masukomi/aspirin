@@ -6,7 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -57,9 +59,38 @@ public class FileMailStore implements MailStore {
 	}
 	
 	@Override
+	public List<String> getMailIds() {
+		return new ArrayList<String>(messageMap.keySet());
+	}
+	
+	@Override
 	public void init() {
-		// TODO Initialize: read mime messages already exists
-		
+		if( !rootDir.exists() ) { return; }
+		File[] subdirs = rootDir.listFiles();
+		if( subdirs == null ) { return; }
+		for( File subDir : subdirs )
+		{
+			if( subDir.isDirectory() )
+			{
+				File[] subdirFiles = subDir.listFiles();
+				if( subdirFiles == null ) { continue; }
+				for( File msgFile : subdirFiles )
+				{
+					try {
+						MimeMessage msg = new MimeMessage(Session.getDefaultInstance(System.getProperties()),new FileInputStream(msgFile));
+						String mailid = AspirinInternal.getMailID(msg);
+						synchronized (messageMap) {
+							messageMap.put(mailid, new WeakReference<MimeMessage>(msg));
+							messagePathMap.put(mailid, msgFile.getAbsolutePath());
+						}
+					} catch (FileNotFoundException e) {
+						AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" No file representation found with name "+msgFile.getAbsolutePath(),e);
+					} catch (MessagingException e) {
+						AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" There is a messaging exception in file "+msgFile.getAbsolutePath(),e);
+					}
+				}
+			}
+		}
 	}
 
 	@Override
@@ -87,12 +118,14 @@ public class FileMailStore implements MailStore {
 		filepath = new File(dir, mailid+".msg").getAbsolutePath();
 		// Save informations
 		try {
-			messageMap.put(mailid, new WeakReference<MimeMessage>(msg));
-			messagePathMap.put(mailid, filepath);
 			File msgFile = new File(filepath);
 			if( msgFile.exists() ) { msgFile.delete(); }
 			if( !msgFile.exists() ) { msgFile.createNewFile(); }
 			msg.writeTo(new FileOutputStream(msgFile));
+			synchronized (messageMap) {
+				messageMap.put(mailid, new WeakReference<MimeMessage>(msg));
+				messagePathMap.put(mailid, filepath);
+			}
 		} catch (FileNotFoundException e) {
 			AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName()+" No file representation found for name "+mailid,e);
 		} catch (IOException e) {

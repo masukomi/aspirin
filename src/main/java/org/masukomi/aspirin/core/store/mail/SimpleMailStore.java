@@ -1,6 +1,8 @@
 package org.masukomi.aspirin.core.store.mail;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.mail.internet.MimeMessage;
 
@@ -23,6 +25,11 @@ public class SimpleMailStore implements MailStore {
 	@Override
 	public MimeMessage get(String mailid) {
 		return messageMap.get(mailid);
+	}
+	
+	@Override
+	public List<String> getMailIds() {
+		return new ArrayList<String>(messageMap.keySet());
 	}
 	
 	@Override
