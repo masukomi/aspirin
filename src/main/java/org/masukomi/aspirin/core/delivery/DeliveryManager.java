@@ -3,6 +3,7 @@ package org.masukomi.aspirin.core.delivery;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
@@ -40,7 +41,7 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		// Set up default objects.
 		this.setName("Aspirin-"+getClass().getSimpleName()+"-"+getId());
 		
-		// Configure pool of RemoteDelivery threads
+		// Configure pool of DeliveryThread threads
 		GenericObjectPool.Config gopConf = new GenericObjectPool.Config();
 		gopConf.lifo = false;
 		gopConf.maxActive = AspirinInternal.getConfiguration().getDeliveryThreadsActiveMax();
@@ -49,14 +50,14 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		gopConf.testOnReturn = true;
 		gopConf.whenExhaustedAction = GenericObjectPool.WHEN_EXHAUSTED_BLOCK;
 		
-		// Create RemoteDelivery object factory used in pool
+		// Create DeliveryThread object factory used in pool
 		deliveryThreadObjectFactory = new GenericPoolableDeliveryThreadFactory();
 		
 		// Create pool
 		deliveryThreadObjectPool = new GenericObjectPool(deliveryThreadObjectFactory,gopConf);
 		
 		// Initialize object factory of pool
-		deliveryThreadObjectFactory.init(new ThreadGroup("RemoteDeliveryThreadGroup"),deliveryThreadObjectPool);
+		deliveryThreadObjectFactory.init(new ThreadGroup("DeliveryThreadGroup"),deliveryThreadObjectPool);
 		
 		// Set up stores and configuration listener 
 		queueStore = AspirinInternal.getConfiguration().getQueueStore();
@@ -134,6 +135,13 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 						 * of Aspirin sending thread shutdown.
 						 */
 						release(qi);
+					} catch ( NoSuchElementException nsee )
+					{
+						/*
+						 * This happens if there is a lot of mail to send, and 
+						 * no idle DeliveryThread is available.
+						 */
+						AspirinInternal.getLogger().debug("DeliveryManager.run(): No idle DeliveryThread is available: {}",nsee.getMessage());
 					} catch ( Exception e )
 					{
 						AspirinInternal.getLogger().error("DeliveryManager.run(): Failed borrow delivery thread object.",e);

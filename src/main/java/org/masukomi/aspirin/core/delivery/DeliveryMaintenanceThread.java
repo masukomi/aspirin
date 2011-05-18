@@ -41,6 +41,7 @@ public class DeliveryMaintenanceThread extends Thread {
 				MailStore mailStore = AspirinInternal.getConfiguration().getMailStore();
 				List<String> usedMailIds = queueStore.clean();
 				List<String> mailStoreMailIds = mailStore.getMailIds();
+				AspirinInternal.getLogger().debug("Maintenance running: usedMailIds: {}, mailStoreMailIds: {}.",new Object[]{usedMailIds.size(), mailStoreMailIds.size()});
 				if( mailStoreMailIds.removeAll(usedMailIds) )
 				{
 					for( String unusedMailId : mailStoreMailIds )

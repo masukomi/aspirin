@@ -7,7 +7,7 @@ import org.apache.commons.pool.ObjectPool;
 import org.masukomi.aspirin.core.AspirinInternal;
 
 /**
- * <p>This object handles the RemoteDelivery thread objects in the ObjectPool.
+ * <p>This object handles the DeliveryThread thread objects in the ObjectPool.
  * </p>
  *
  * @author Laszlo Solova
@@ -16,14 +16,14 @@ import org.masukomi.aspirin.core.AspirinInternal;
 public class GenericPoolableDeliveryThreadFactory extends BasePoolableObjectFactory {
 	
 	/**
-	 * This is the ThreadGroup of RemoteDelivery objects. On shutdown it is 
-	 * easier to close all RemoteDelivery threads with usage of this group.
+	 * This is the ThreadGroup of DeliveryThread objects. On shutdown it is 
+	 * easier to close all DeliveryThread threads with usage of this group.
 	 */
-	private ThreadGroup remoteDeliveryThreadGroup = null;
+	private ThreadGroup deliveryThreadGroup = null;
 	private ObjectPool myParentPool = null;
 	
 	/**
-	 * This is the counter of created RemoteDelivery thread objects.
+	 * This is the counter of created DeliveryThread thread objects.
 	 */
 	private Integer rdCount = 0;
 	
@@ -31,11 +31,11 @@ public class GenericPoolableDeliveryThreadFactory extends BasePoolableObjectFact
 	 * <p>Initialization of this Factory. Prerequisite of right working.</p>
 	 * 
 	 * @param deliveryThreadGroup The threadgroup which contains the 
-	 * RemoteDelivery threads.
+	 * DeliveryThread threads.
 	 * @param pool The pool which use this factory to create and handle objects.
 	 */
 	public void init(ThreadGroup deliveryThreadGroup, ObjectPool pool) {
-		remoteDeliveryThreadGroup = deliveryThreadGroup;
+		this.deliveryThreadGroup = deliveryThreadGroup;
 		myParentPool = pool;
 	}
 	
@@ -43,7 +43,7 @@ public class GenericPoolableDeliveryThreadFactory extends BasePoolableObjectFact
 	public Object makeObject() throws Exception {
 		if( myParentPool == null )
 			throw new RuntimeException("Please set the parent pool for right working.");
-		DeliveryThread dThread = new DeliveryThread(remoteDeliveryThreadGroup);
+		DeliveryThread dThread = new DeliveryThread(deliveryThreadGroup);
 		synchronized (rdCount) {
 			rdCount++;
 			dThread.setName(DeliveryThread.class.getSimpleName()+"-"+rdCount);

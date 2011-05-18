@@ -33,7 +33,7 @@ public class DeliveryThread extends Thread {
 	}
 	
 	public void shutdown() {
-		AspirinInternal.getLogger().trace("DeliveryThread ({}).shutdown(): Called.",getName());
+		AspirinInternal.getLogger().debug("DeliveryThread ({}).shutdown(): Called.",getName());
 		running = false;
 		synchronized (this) {
 			notify();
@@ -71,7 +71,7 @@ public class DeliveryThread extends Thread {
 						running = false;
 						try
 						{
-							AspirinInternal.getLogger().info("DeliveryThread ({}).run(): Invalidate RemoteDelivery object in the pool.",getName());
+							AspirinInternal.getLogger().trace("DeliveryThread ({}).run(): Invalidate DeliveryThread object in the pool.",getName());
 							parentObjectPool.invalidateObject(this);
 						}catch (Exception e)
 						{
@@ -111,7 +111,7 @@ public class DeliveryThread extends Thread {
 			{
 				try
 				{
-					AspirinInternal.getLogger().info("DeliveryThread ({}).run(): Try to give back RemoteDelivery object into the pool.",getName());
+					AspirinInternal.getLogger().trace("DeliveryThread ({}).run(): Try to give back DeliveryThread object into the pool.",getName());
 					parentObjectPool.returnObject(this);
 				}catch (Exception e)
 				{
