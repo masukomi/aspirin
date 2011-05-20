@@ -28,6 +28,15 @@ public interface QueueStore {
 	public boolean hasBeenRecipientHandled(String mailid, String recipient);
 	public void init();
 	public boolean isCompleted(String mailid);
+	/**
+	 * It gives back the next sendable QueueInfo object.
+	 * QueueInfo has
+	 * - the next valid attempt time (attempt before current time and attemptcount is under limit)
+	 * - valid expiry (expiry is unset or is after current time)
+	 * - QUEUED status
+	 * 
+	 * @return next sendable QueueInfo or null
+	 */
 	public QueueInfo next();
 	public void remove(String mailid);
 	public void removeRecipient(String recipient);
