@@ -157,9 +157,9 @@ public class DeliveryThread extends Thread {
 				qInfo.setResultInfo(de.getMessage());
 				AspirinInternal.getLogger().info("DeliveryThread ({}).deliver(): Mail delivery failed: {}. qi={}", new Object[]{getName(),qInfo.getResultInfo(),dCtx});
 				if( de.isPermanent() )
-					qInfo.setState(DeliveryState.FAILED);
+					qInfo.setTempState(DeliveryState.FAILED);
 				else
-					qInfo.setState(DeliveryState.QUEUED);
+					qInfo.setTempState(DeliveryState.QUEUED);
 				return;
 			}
 		}
@@ -168,7 +168,7 @@ public class DeliveryThread extends Thread {
 			if( qInfo.getResultInfo() == null )
 				qInfo.setResultInfo("250 OK");
 			AspirinInternal.getLogger().info("DeliveryThread ({}).deliver(): Mail delivery success: {}. qi={}", new Object[]{getName(),qInfo.getResultInfo(),dCtx});
-			qInfo.setState(DeliveryState.SENT);
+			qInfo.setTempState(DeliveryState.SENT);
 		}
 	}
 

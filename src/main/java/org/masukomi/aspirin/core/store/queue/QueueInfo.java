@@ -16,6 +16,7 @@ public class QueueInfo {
 	private int attemptCount = 0;
 	private long expiry = -1L;
 	private DeliveryState state = DeliveryState.QUEUED;
+	private DeliveryState tempState = null;
 	
 	private transient String complexId = null;
 	
@@ -62,17 +63,34 @@ public class QueueInfo {
 		this.expiry = expiry;
 	}
 	public DeliveryState getState() {
-		return state;
+		return tempState!=null?tempState:state;
 	}
+	/**
+	 * This method set original state, and notify all AspirinListener about the 
+	 * state change, if the new change is not QUEUED. Please call only once, on 
+	 * persisting - if persisted - this item.
+	 * 
+	 * For example in {@link SimpleQueueStore} we use only once: in the 
+	 * setSendingResult() method. 
+	 * 
+	 * @param state The new state.
+	 */
 	public void setState(DeliveryState state) {
 		this.state = state;
+		this.tempState = null;
+		if( AspirinInternal.getListenerManager() != null && hasState(DeliveryState.QUEUED) )
+			AspirinInternal.getListenerManager().notifyListeners(this);
+	}
+	public void setTempState(DeliveryState tempState) {
+		this.tempState = tempState;
 	}
 	
 	public boolean hasState(DeliveryState... states) {
 		for( DeliveryState st : states )
 		{
-			if( st.equals(this.state) )
+			if( st.equals(this.state) || st.equals(tempState) )
 				return true;
+			
 		}
 		return false;
 	}

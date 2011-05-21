@@ -137,12 +137,12 @@ public class SimpleQueueStore implements QueueStore {
 						if( !qi.isInTimeBounds() )
 						{
 							qi.setResultInfo("Delivery is out of time or attempt.");
-							qi.setState(DeliveryState.FAILED);
+							qi.setTempState(DeliveryState.FAILED);
 							setSendingResult(qi);
 						}
 						else
 						{	
-							qi.setState(DeliveryState.IN_PROGRESS);
+							qi.setTempState(DeliveryState.IN_PROGRESS);
 							return qi;
 						}
 					}
