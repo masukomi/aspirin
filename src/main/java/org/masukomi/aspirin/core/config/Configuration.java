@@ -491,6 +491,9 @@ public class Configuration implements ConfigurationMBean {
 	public Object getProperty(String name) {
 		return configParameters.get(name);
 	}
+	public void setProperty(String name, Object value) {
+		configParameters.put(name, value);
+	}
 	
 	private static final String MAIL_MIME_CHARSET = "mail.mime.charset";
 	private static final String MAIL_SMTP_CONNECTIONTIMEOUT = "mail.smtp.connectiontimeout";
