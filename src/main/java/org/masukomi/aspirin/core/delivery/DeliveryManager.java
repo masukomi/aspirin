@@ -110,10 +110,18 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 				qi = queueStore.next();
 				if( qi != null )
 				{
-					AspirinInternal.getLogger().trace("DeliveryManager.run(): Pool state. A{}/I{}",new Object[]{deliveryThreadObjectPool.getNumActive(),deliveryThreadObjectPool.getNumIdle()});
+					MimeMessage message = get(qi);
+					if( message == null )
+					{
+						qi.setTempState(DeliveryState.FAILED);
+						qi.setResultInfo("No MimeMessage found.");
+						release(qi);
+						continue;
+					}
 					DeliveryContext dCtx = new DeliveryContext()
 						.setQueueInfo(qi)
-						.setMessage(get(qi));
+						.setMessage(message);
+					AspirinInternal.getLogger().trace("DeliveryManager.run(): Pool state. A{}/I{}",new Object[]{deliveryThreadObjectPool.getNumActive(),deliveryThreadObjectPool.getNumIdle()});
 					try 
 					{
 						AspirinInternal.getLogger().debug("DeliveryManager.run(): Start delivery. qi={}",qi);
