@@ -113,7 +113,7 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 					MimeMessage message = get(qi);
 					if( message == null )
 					{
-						qi.setTempState(DeliveryState.FAILED);
+						qi.setState(DeliveryState.FAILED);
 						qi.setResultInfo("No MimeMessage found.");
 						release(qi);
 						continue;
@@ -197,12 +197,12 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		{
 			if( qi.isInTimeBounds() )
 			{
-				qi.setTempState(DeliveryState.QUEUED);
+				qi.setState(DeliveryState.QUEUED);
 				AspirinInternal.getLogger().trace("DeliveryManager.release(): Releasing: QUEUED.");
 			}
 			else
 			{
-				qi.setTempState(DeliveryState.FAILED);
+				qi.setState(DeliveryState.FAILED);
 				AspirinInternal.getLogger().trace("DeliveryManager.release(): Releasing: FAILED.");
 			}
 		}

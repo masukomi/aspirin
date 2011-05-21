@@ -128,21 +128,21 @@ public class SimpleQueueStore implements QueueStore {
 		Collections.sort(queueInfoList, queueInfoComparator);
 		if( !queueInfoList.isEmpty() )
 		{
-			ListIterator<QueueInfo> queueInfoIt = queueInfoList.listIterator();
-			while( queueInfoIt.hasNext() )
-			{
-				QueueInfo qi = queueInfoIt.next();
-				if( qi.isSendable() ) {
-					synchronized (lock) {
+			synchronized (lock) {
+				ListIterator<QueueInfo> queueInfoIt = queueInfoList.listIterator();
+				while( queueInfoIt.hasNext() )
+				{
+					QueueInfo qi = queueInfoIt.next();
+					if( qi.isSendable() ) {
 						if( !qi.isInTimeBounds() )
 						{
 							qi.setResultInfo("Delivery is out of time or attempt.");
-							qi.setTempState(DeliveryState.FAILED);
+							qi.setState(DeliveryState.FAILED);
 							setSendingResult(qi);
 						}
 						else
 						{	
-							qi.setTempState(DeliveryState.IN_PROGRESS);
+							qi.setState(DeliveryState.IN_PROGRESS);
 							return qi;
 						}
 					}

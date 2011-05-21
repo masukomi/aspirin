@@ -16,8 +16,8 @@ public class QueueInfo {
 	private int attemptCount = 0;
 	private long expiry = -1L;
 	private DeliveryState state = DeliveryState.QUEUED;
-	private DeliveryState tempState = null;
 	
+	private transient boolean notifiedAlready = false;
 	private transient String complexId = null;
 	
 	public String getComplexId() {
@@ -66,7 +66,7 @@ public class QueueInfo {
 		this.expiry = expiry;
 	}
 	public DeliveryState getState() {
-		return tempState!=null?tempState:state;
+		return state;
 	}
 	/**
 	 * This method set original state, and notify all AspirinListener about the 
@@ -80,18 +80,17 @@ public class QueueInfo {
 	 */
 	public void setState(DeliveryState state) {
 		this.state = state;
-		this.tempState = null;
-		if( AspirinInternal.getListenerManager() != null && hasState(DeliveryState.QUEUED) )
+		if( AspirinInternal.getListenerManager() != null && !notifiedAlready && !hasState(DeliveryState.QUEUED, DeliveryState.IN_PROGRESS) )
+		{
 			AspirinInternal.getListenerManager().notifyListeners(this);
-	}
-	public void setTempState(DeliveryState tempState) {
-		this.tempState = tempState;
+			notifiedAlready = true;
+		}
 	}
 	
 	public boolean hasState(DeliveryState... states) {
 		for( DeliveryState st : states )
 		{
-			if( st.equals(this.state) || st.equals(tempState) )
+			if( st.equals(this.state) )
 				return true;
 			
 		}
