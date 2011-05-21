@@ -56,6 +56,9 @@ public class QueueInfo {
 	public void incAttemptCount() {
 		this.attemptCount++;
 	}
+	public void setAttemptCount(int attemptCount) {
+		this.attemptCount = attemptCount;
+	}
 	public long getExpiry() {
 		return expiry;
 	}
