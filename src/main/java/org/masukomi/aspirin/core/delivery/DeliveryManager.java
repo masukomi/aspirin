@@ -150,6 +150,7 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 						 * no idle DeliveryThread is available.
 						 */
 						AspirinInternal.getLogger().debug("DeliveryManager.run(): No idle DeliveryThread is available: {}",nsee.getMessage());
+						release(qi);
 					} catch ( Exception e )
 					{
 						AspirinInternal.getLogger().error("DeliveryManager.run(): Failed borrow delivery thread object.",e);
