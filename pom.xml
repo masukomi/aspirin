@@ -9,7 +9,8 @@
     <name>Aspirin</name>
     <description>Aspirin is an embeddable send-only SMTP server.</description>
 
-	<licenses>
+    <url>https://github.com/masukomi/aspirin</url>
+    <licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
@@ -25,7 +26,11 @@
     	<javax.mail.version>1.4.2</javax.mail.version>
     </properties>
 
-	<build>
+    <scm>
+    	<developerConnection>Kate Rhodes, Laszlo Solova</developerConnection>
+    	<url>https://github.com/masukomi/aspirin.git</url>
+    </scm>
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
