@@ -82,8 +82,8 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 		long expiry = AspirinInternal.getExpiry(mimeMessage);
 		Collection<InternetAddress> recipients = AspirinInternal.extractRecipients(mimeMessage);
 		synchronized (mailingLock) {
-			queueStore.add(mailid, expiry, recipients);
 			mailStore.set(mailid, mimeMessage);
+			queueStore.add(mailid, expiry, recipients);
 		}
 		return mailid;
 	}
@@ -94,8 +94,8 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 	
 	public void remove(String messageName) {
 		synchronized (mailingLock) {
-			queueStore.remove(messageName);
 			mailStore.remove(messageName);
+			queueStore.remove(messageName);
 		}
 	}
 	
@@ -113,8 +113,9 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 					MimeMessage message = get(qi);
 					if( message == null )
 					{
-						qi.setState(DeliveryState.FAILED);
+						AspirinInternal.getLogger().warn("No MimeMessage found for qi={}",qi);
 						qi.setResultInfo("No MimeMessage found.");
+						qi.setState(DeliveryState.FAILED);
 						release(qi);
 						continue;
 					}
@@ -199,12 +200,12 @@ public class DeliveryManager extends Thread implements ConfigurationChangeListen
 			if( qi.isInTimeBounds() )
 			{
 				qi.setState(DeliveryState.QUEUED);
-				AspirinInternal.getLogger().trace("DeliveryManager.release(): Releasing: QUEUED.");
+				AspirinInternal.getLogger().trace("DeliveryManager.release(): Releasing: QUEUED. qi={}",qi);
 			}
 			else
 			{
 				qi.setState(DeliveryState.FAILED);
-				AspirinInternal.getLogger().trace("DeliveryManager.release(): Releasing: FAILED.");
+				AspirinInternal.getLogger().trace("DeliveryManager.release(): Releasing: FAILED. qi={}",qi);
 			}
 		}
 		queueStore.setSendingResult(qi);
