@@ -9,6 +9,14 @@
     <name>Aspirin</name>
     <description>Aspirin is an embeddable send-only SMTP server.</description>
 
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
     <properties>
     	<javax.activation.version>1.1.1</javax.activation.version>
     	<commons.logging.version>1.1.1</commons.logging.version>
@@ -17,15 +25,7 @@
     	<javax.mail.version>1.4.2</javax.mail.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>maven2-repository.dev.java.net</id>
-            <name>Java.net Repository for Maven</name>
-            <url>http://download.java.net/maven/2/</url>
-            </repository>
-    </repositories>
-
-    <build>
+	<build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -53,7 +53,60 @@
                     </excludes>
                 </configuration>
             </plugin>
-        </plugins>
+            <plugin>
+            	<groupId>org.apache.maven.plugins</groupId>
+            	<artifactId>maven-source-plugin</artifactId>
+            	<executions>
+            		<execution>
+            			<id>attach-sources</id>
+            			<goals>
+            				<goal>jar</goal>
+            			</goals>
+            		</execution>
+            	</executions>
+			</plugin>
+            <plugin>
+            	<groupId>org.apache.maven.plugins</groupId>
+            	<artifactId>maven-javadoc-plugin</artifactId>
+            	<configuration>
+            		<charset>utf-8</charset>
+            		<show>private</show>
+            	</configuration>
+            	<executions>
+            		<execution>
+            			<id>generate-javadoc-jar</id>
+            			<phase>compile</phase>
+            			<goals>
+            				<goal>jar</goal>
+            			</goals>
+            		</execution>
+            	</executions>
+            </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-repository-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>bundle-pack</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
     </build>
 
     <reporting>
@@ -83,7 +136,7 @@
             </plugin>
         </plugins>
     </reporting>
-
+	
     <dependencies>
 
         <!-- 3rd party -->
@@ -112,6 +165,11 @@
           <artifactId>mail</artifactId>
           <version>${javax.mail.version}</version>
         </dependency>
+        <dependency>
+        	<groupId>org.slf4j</groupId>
+        	<artifactId>slf4j-api</artifactId>
+        	<version>1.6.1</version>
+        </dependency>
 
         <!-- test -->
         <dependency>
@@ -133,11 +191,14 @@
 		  </exclusions>
 		</dependency>
 
-        <dependency>
-        	<groupId>org.slf4j</groupId>
-        	<artifactId>slf4j-api</artifactId>
-        	<version>1.6.1</version>
-        </dependency>
     </dependencies>
+    
+    <distributionManagement>
+    	<repository>
+    		<id>sonatype-nexus-staging</id>
+    		<name>Nexus Staging Repository</name>
+    		<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    	</repository>
+    </distributionManagement>
 
 </project>
