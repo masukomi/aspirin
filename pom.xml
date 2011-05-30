@@ -8,6 +8,14 @@
     <packaging>jar</packaging>
     <name>Aspirin</name>
     <description>Aspirin is an embeddable send-only SMTP server.</description>
+    <developers>
+   		<developer>
+   			<name>Kate Rhodes</name>
+   		</developer>
+   		<developer>
+   			<name>Laszlo Solova</name>
+   		</developer>
+    </developers>
 
     <url>https://github.com/masukomi/aspirin</url>
     <licenses>
