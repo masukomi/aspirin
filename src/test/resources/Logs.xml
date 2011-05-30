@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<preferences EXTERNAL_XML_VERSION="1.0">
+  <root type="system">
+    <map />
+    <node name="org">
+      <map />
+      <node name="masukomi">
+        <map />
+        <node name="tools">
+          <map />
+          <node name="logging">
+            <map />
+              <node name="Logs">
+	            <map>
+	              <entry key="entriesLogFile" value="" />
+	              <!-- enter the path to a log file as the value if you wish to have one -->
+	              <entry key="logFileRequired" value="false" />
+	              <!-- if this is true and it can't open the log file specified in entriesLogFile
+	              	it will barf -->
+	              <entry key="entriesToSystemOut" value="false" />
+	              <!--
+	              	would you like nicely formatted log messages printed to standard out?
+	              	-->
+	              <entry key="entryLogThreshold" value="DEBUG" />
+	              <!-- options for entryLogThreshold are:
+	              	DEBUG
+	              	INFO
+	              	WARN
+	              	ERROR
+	              	-->
+	              <entry key="entriesWarningLevel" value="-1" />
+	              <!-- leave the following entries. they aren't currently used in Aspirin-->
+	              <entry key="webmaster" value="masukomi@masukomi.org" />
+	              <entry key="smtpServer" value="localhost" />
+	              <entry key="FATAL_htmlColor" value="#ff4533" />
+                  <entry key="ERROR_htmlColor" value="#ffa018" />
+                  <entry key="WARN_htmlColor" value="#ffce0b" />
+	            </map>
+              </node>
+          </node>
+        </node>
+      </node>
+    </node>
+  </root>
+</preferences>

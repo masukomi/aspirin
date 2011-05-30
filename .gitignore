@@ -1,5 +1,9 @@
 bin
+build
 *.class
 *.swp
 *~
-build/aspirin
+target
+.classpath
+.project
+.settings/*
