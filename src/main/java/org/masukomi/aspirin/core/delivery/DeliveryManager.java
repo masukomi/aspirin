@@ -27,7 +27,7 @@ import org.masukomi.aspirin.core.store.queue.QueueStore;
  * @author Laszlo Solova
  *
  */
-public class DeliveryManager extends Thread implements ConfigurationChangeListener {
+public final class DeliveryManager extends Thread implements ConfigurationChangeListener {
 	private MailStore mailStore;
 	private QueueStore queueStore;
 	private DeliveryMaintenanceThread maintenanceThread;

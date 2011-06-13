@@ -26,6 +26,7 @@ public class GenericPoolableDeliveryThreadFactory extends BasePoolableObjectFact
 	 * This is the counter of created DeliveryThread thread objects.
 	 */
 	private Integer rdCount = 0;
+	private Object rdLock = new Object();
 	
 	/**
 	 * <p>Initialization of this Factory. Prerequisite of right working.</p>
@@ -44,7 +45,7 @@ public class GenericPoolableDeliveryThreadFactory extends BasePoolableObjectFact
 		if( myParentPool == null )
 			throw new RuntimeException("Please set the parent pool for right working.");
 		DeliveryThread dThread = new DeliveryThread(deliveryThreadGroup);
-		synchronized (rdCount) {
+		synchronized (rdLock) {
 			rdCount++;
 			dThread.setName(DeliveryThread.class.getSimpleName()+"-"+rdCount);
 		}

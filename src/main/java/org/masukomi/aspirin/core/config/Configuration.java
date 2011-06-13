@@ -163,7 +163,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Configuration implements ConfigurationMBean {
 	
-	private static Configuration instance;
+	private static volatile Configuration instance;
 	private Map<String, Object> configParameters = new HashMap<String, Object>();
 	private static Logger log = null; // inherited from aspirin.logger.name
 	private MailStore mailStore = null;
@@ -172,6 +172,7 @@ public class Configuration implements ConfigurationMBean {
 	private Session mailSession = null;
 	
 	private List<ConfigurationChangeListener> listeners;
+	private Object listenerLock = new Object();
 
 	static public Configuration getInstance() {
 		if (instance == null) {
@@ -428,7 +429,7 @@ public class Configuration implements ConfigurationMBean {
 	public void addListener(ConfigurationChangeListener listener) {
 		if( listeners == null )
 			listeners = new ArrayList<ConfigurationChangeListener>();
-		synchronized (listeners) {
+		synchronized (listenerLock) {
 			listeners.add(listener);
 		}
 	}
@@ -436,7 +437,7 @@ public class Configuration implements ConfigurationMBean {
 	public void removeListener(ConfigurationChangeListener listener) {
 		if( listeners != null )
 		{
-			synchronized (listeners) {
+			synchronized (listenerLock) {
 				listeners.remove(listener);
 			}
 		}
@@ -447,7 +448,7 @@ public class Configuration implements ConfigurationMBean {
 		{
 			if( log.isInfoEnabled() )
 				log.info(getClass().getSimpleName()+".notifyListeners(): Configuration parameter '"+changedParameterName+"' changed.");
-			synchronized (listeners) {
+			synchronized (listenerLock) {
 				for( ConfigurationChangeListener listener : listeners )
 					listener.configChanged(changedParameterName);
 			}
