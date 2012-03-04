@@ -4,7 +4,7 @@
 
     <groupId>org.masukomi</groupId>
     <artifactId>aspirin</artifactId>
-    <version>0.10.01</version>
+    <version>0.10.02</version>
     <packaging>jar</packaging>
     <name>Aspirin</name>
     <description>Aspirin is an embeddable send-only SMTP server.</description>

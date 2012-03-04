@@ -521,10 +521,10 @@ public class Configuration implements ConfigurationMBean {
 	
 	private class Parameter {
 		
-		public static final int TYPE_STRING = 0;
-		public static final int TYPE_INTEGER = 1;
-		public static final int TYPE_LONG = 2;
-		public static final int TYPE_BOOLEAN = 0;
+		public static final int TYPE_STRING		= 0;
+		public static final int TYPE_INTEGER	= 1;
+		public static final int TYPE_LONG		= 2;
+		public static final int TYPE_BOOLEAN	= 3;
 		
 		private String name;
 		private int type;
