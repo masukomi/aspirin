@@ -4,10 +4,18 @@
 
     <groupId>org.masukomi</groupId>
     <artifactId>aspirin</artifactId>
-    <version>0.10.00</version>
+    <version>0.10.03</version>
     <packaging>jar</packaging>
     <name>Aspirin</name>
     <description>Aspirin is an embeddable send-only SMTP server.</description>
+    <developers>
+   		<developer>
+   			<name>Kate Rhodes</name>
+   		</developer>
+   		<developer>
+   			<name>Laszlo Solova</name>
+   		</developer>
+    </developers>
 
     <url>https://github.com/masukomi/aspirin</url>
     <licenses>
@@ -20,7 +28,6 @@
 
     <properties>
     	<javax.activation.version>1.1.1</javax.activation.version>
-    	<commons.logging.version>1.1.1</commons.logging.version>
     	<commons.pool.version>1.5.5</commons.pool.version>
     	<dnsjava.version>2.0.8</dnsjava.version>
     	<javax.mail.version>1.4.2</javax.mail.version>
@@ -149,11 +156,6 @@
           <groupId>javax.activation</groupId>
           <artifactId>activation</artifactId>
           <version>${javax.activation.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>commons-logging</groupId>
-          <artifactId>commons-logging</artifactId>
-          <version>${commons.logging.version}</version>
         </dependency>
         <dependency>
           <groupId>commons-pool</groupId>
