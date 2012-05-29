@@ -55,7 +55,9 @@ public class DeliveryMaintenanceThread extends Thread {
 	
 	public void shutdown() {
 		running = false;
-		notify();
+		synchronized (this) {
+			notify();
+		}
 	}
 
 }

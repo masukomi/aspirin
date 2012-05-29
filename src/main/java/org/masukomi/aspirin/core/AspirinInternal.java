@@ -35,17 +35,18 @@ public class AspirinInternal {
 	public static final SimpleDateFormat expiryFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 	
 	/** This session is used to generate new MimeMessage objects. */
-	private static Session defaultSession = null;
+	private static volatile Session defaultSession = null;
 	
 	/** This counter is used to generate unique message ids. */
 	private static Integer idCounter = 0;
+	private static Object idCounterLock = new Object();
 	
 	/** Configuration object of Aspirin. */
 	private static Configuration configuration = Configuration.getInstance();
 	/** AspirinListener management object. Create on first request. */
-	private static ListenerManager listenerManager = null;
+	private static volatile ListenerManager listenerManager = null;
 	/** Delivery and QoS service management. Create on first request. */
-	private static DeliveryManager deliveryManager = new DeliveryManager();
+	private static volatile DeliveryManager deliveryManager = new DeliveryManager();
 	
 	/**
 	 * You can get configuration object, which could be changed to set up new 
@@ -119,7 +120,7 @@ public class AspirinInternal {
 		if( defaultSession == null )
 			defaultSession = Session.getDefaultInstance(System.getProperties());
 		MimeMessage mMesg = new MimeMessage(defaultSession);
-		synchronized (idCounter) {
+		synchronized (idCounterLock) {
 			long nowTime = System.currentTimeMillis()/1000;
 			String newId = nowTime+"."+Integer.toHexString(idCounter++);
 			try {
