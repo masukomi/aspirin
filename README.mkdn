@@ -65,6 +65,6 @@ Aspirin uses commons logging.
 
 ## Who wrote all this stuff? ##
 
-Aspirin is written and maintained by Kate Rhodes masukomi at masukomi dot org.  Any code contributions or suggestions would be greatly appreciated.
+Aspirin was written by masukomi and has received no small amount of help from Laszlo Solova.  Any code contributions or suggestions would be greatly appreciated.
 
 Aspirin builds upon the great work of Apache's James team. Aspirin takes some of James' core classes and combines them with a new queing system to make a small SMTP server. 

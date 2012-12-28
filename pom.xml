@@ -10,7 +10,7 @@
     <description>Aspirin is an embeddable send-only SMTP server.</description>
     <developers>
    		<developer>
-   			<name>Kate Rhodes</name>
+   			<name>Masukomi</name>
    		</developer>
    		<developer>
    			<name>Laszlo Solova</name>
@@ -34,7 +34,7 @@
     </properties>
 
     <scm>
-    	<developerConnection>Kate Rhodes, Laszlo Solova</developerConnection>
+    	<developerConnection>Masukomi, Laszlo Solova</developerConnection>
     	<url>https://github.com/masukomi/aspirin.git</url>
     </scm>
     <build>
