@@ -33,7 +33,7 @@ import org.masukomi.aspirin.core.store.queue.QueueStore;
  * recipient together, so one email could associated to more QueueInfo objects. 
  * This is an inside object, which contains all control informations of a mail 
  * item. In Aspirin package there is a {@link QueueStore} for in-memory use 
- * {@link SimpleQueueStore}, this is the default implementation to store 
+ * {@link org.masukomi.aspirin.core.store.queue.SimpleQueueStore}, this is the default implementation to store
  * QueueInfo objects. You can find an additional package, which use SQLite 
  * (based on <a href="http://sqljet.com">SQLJet</a>) to store QueueInfo 
  * object.</p>
