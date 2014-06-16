@@ -15,7 +15,7 @@ import org.masukomi.aspirin.core.delivery.DeliveryHandler;
  * INPUT (REQUIRED) variables:
  * - none
  * OUTPUT (CREATED) variables:
- * - targetservers Collection<URLName>
+ * - targetservers Collection&lt;URLName&gt;
  * 
  * @author Laszlo Solova
  *

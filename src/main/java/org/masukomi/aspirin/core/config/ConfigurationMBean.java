@@ -125,12 +125,12 @@ public interface ConfigurationMBean {
 	public void setDeliveryDebug(boolean debug);
 	/**
 	 * Set the maximal count of paralel running delivery threads.
-	 * @param threadsCount The count of delivery threads.
+	 * @param activeThreadsMax The count of delivery threads.
 	 */
 	public void setDeliveryThreadsActiveMax(int activeThreadsMax);
 	/**
 	 * Set the maximal count of idle delivery threads stored in pool.
-	 * @param threadsCount The count of delivery threads.
+	 * @param idleThreadsMax The count of delivery threads.
 	 */
 	public void setDeliveryThreadsIdleMax(int idleThreadsMax);
 	/**
@@ -165,7 +165,7 @@ public interface ConfigurationMBean {
 	/**
 	 * Set the mail store class name, where MimeMessages will be stored. 
 	 * Built-in stores are {@link SimpleMailStore} and {@link FileMailStore}.
-	 * @param className
+	 * @param className mail store class
 	 */
 	public void setMailStoreClassName(String className);
 	/**
@@ -176,8 +176,8 @@ public interface ConfigurationMBean {
 	public void setPostmasterEmail(String emailAddress);
 	/**
 	 * Set the queue store class name, where queue informations are placed in. 
-	 * Built-in store is the {@link SimpleQueueStore}.
-	 * @param className
+	 * Built-in store is the {@link org.masukomi.aspirin.core.store.queue.SimpleQueueStore}.
+	 * @param className queue store class
 	 */
 	public void setQueueStoreClassName(String className);
 	/**

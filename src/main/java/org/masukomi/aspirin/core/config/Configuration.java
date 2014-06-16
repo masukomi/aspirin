@@ -51,12 +51,12 @@ import org.slf4j.LoggerFactory;
  *   <li>Get the instance and initialize with a Properties object.</li>
  * </ol>
  * 
- * <p>There is a way to change behavior of Aspirin dinamically. You can use 
+ * <p>There is a way to change behavior of Aspirin dynamically. You can use
  * JMX to change configuration parameters. In the parameters list we marked the 
- * parameters which are applied immediately. For more informations view 
+ * parameters which are applied immediately. For more information view
  * {@link ConfigurationMBean}.</p>
  * 
- * <table border="1">
+ * <table border="1" summary="Parameters">
  *   <tr>
  *     <th>Name</th>
  *     <th>Type</th>
@@ -128,7 +128,7 @@ import org.slf4j.LoggerFactory;
  *     <td>String</td>
  *     <td>
  *       The name of the logger. <i>Change by JMX applied immediately.</i>
- *       <br/>
+ *       <br>
  *       <strong>WARNING! Changing logger name cause replacing of logger.</strong>
  *     </td>
  *   </tr>

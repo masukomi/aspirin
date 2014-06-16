@@ -7,3 +7,7 @@ target
 .classpath
 .project
 .settings/*
+
+# IntelliJ IDE internal files
+aspirin.iml
+.idea
