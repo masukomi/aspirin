@@ -58,6 +58,7 @@ public class SendMessage implements DeliveryHandler {
 					transport = session.getTransport(outgoingMailServer);
 					try {
 						transport.connect();
+						message.saveChanges();
 						transport.sendMessage(message, addr);
 						if( transport instanceof SMTPTransport )
 						{
