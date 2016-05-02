@@ -23,8 +23,8 @@ import org.masukomi.aspirin.core.store.queue.QueueStore;
  * <p>All email is represented by two main object:</p>
  * 
  * <p>A {@link MimeMessage}, which contains the RAW content of an email, so it 
- * could be very large. It is stored in a {@link MailStore} (there is two 
- * different implementation in Aspirin - one for simple in-memory usage
+ * could be very large. It is stored in a {@link MailStore} (there are two 
+ * different implementations in Aspirin - one for simple in-memory usage
  * {@link SimpleMailStore} and one for heavy usage {@link FileMailStore}, this 
  * stores all MimeMessage objects on filesystem.) If no one of these default 
  * stores is good for you, you can implement the MailStore interface.</p>
