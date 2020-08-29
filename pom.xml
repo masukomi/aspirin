@@ -46,8 +46,8 @@
                 <!-- set to 1.6 to work around eclipse wining about @Override annotation on methods implementing interfaces -->
                 <configuration>
                     <encoding>utf8</encoding>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -176,6 +176,12 @@
         	<groupId>org.slf4j</groupId>
         	<artifactId>slf4j-api</artifactId>
         	<version>1.6.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jetbrains/annotations -->
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>20.0.0</version>
         </dependency>
 
         <!-- test -->

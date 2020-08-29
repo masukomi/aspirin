@@ -1,15 +1,16 @@
 package org.masukomi.aspirin.core.delivery;
 
+import org.jetbrains.annotations.NotNull;
 import org.masukomi.aspirin.core.config.Configuration;
 
 /**
  * This interface defines an atomic part of delivery chain.
- * A DeliveryHandler is a particular task in the delivery chain. You can create 
+ * A DeliveryHandler is a particular task in the delivery chain. You can create
  * your own chain in the {@link Configuration}.
- * 
- * @author Laszlo Solova
  *
+ * @author Laszlo Solova
  */
+@FunctionalInterface
 public interface DeliveryHandler {
-	public void handle(DeliveryContext dCtx) throws DeliveryException;
+    void handle(@NotNull DeliveryContext dCtx) throws DeliveryException;
 }

@@ -22,26 +22,30 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.masukomi.aspirin.core.listener;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
- * <p>This is a listener interface. This defines the mail delivery listeners, 
- * which could get messages if an email is delivered to a recipient (with the 
+ * <p>This is a listener interface. This defines the mail delivery listeners,
+ * which could get messages if an email is delivered to a recipient (with the
  * delivery result) and if an email is delivered to all recipients.</p>
- * 
+ *
  * @author kate rhodes,  masukomi at masukomi dot org
  * @author Laszlo Solova
- * 
  */
+@FunctionalInterface
 public interface AspirinListener {
-	/**
-	 * Called on delivery comes back with a persistent delivery result.
-	 * @param mailId Unique mail ID extracted from mail header.
-	 * @param recipient Recipient email address. It could be null - if state is 
-	 * finished and there were more recipients, then it is allowed to be null.
-	 * @param state Delivery result state: SENT, FAILED, FINISHED. FINISHED 
-	 * state is associated to a unique mail id - we get this state when all 
-	 * recipients has a persistent, final delivery state. 
-	 * @param resultContent Content of delivery result. On FINISHED state it 
-	 * could be null or empty.
-	 */
-	public void delivered(String mailId, String recipient, ResultState state, String resultContent);
+    /**
+     * Called on delivery comes back with a persistent delivery result.
+     *
+     * @param mailId        Unique mail ID extracted from mail header.
+     * @param recipient     Recipient email address. It could be null - if state is
+     *                      finished and there were more recipients, then it is allowed to be null.
+     * @param state         Delivery result state: SENT, FAILED, FINISHED. FINISHED
+     *                      state is associated to a unique mail id - we get this state when all
+     *                      recipients has a persistent, final delivery state.
+     * @param resultContent Content of delivery result. On FINISHED state it
+     *                      could be null or empty.
+     */
+    void delivered(@Nullable String mailId, @Nullable String recipient, @NotNull ResultState state, @Nullable String resultContent);
 }
