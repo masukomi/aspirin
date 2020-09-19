@@ -17,13 +17,14 @@ public class SimpleQueueStore implements QueueStore {
     @NotNull
     private final Map<String, QueueInfo> queueInfoByMailidAndRecipient = new HashMap<>();
     @NotNull
-    private final Map<String, List<QueueInfo>> queueInfoByMailid = new HashMap<>();
+    private final Map<String, Collection<QueueInfo>> queueInfoByMailid = new HashMap<>();
     @NotNull
-    private final Map<String, List<QueueInfo>> queueInfoByRecipient = new HashMap<>();
+    private final Map<String, Collection<QueueInfo>> queueInfoByRecipient = new HashMap<>();
     @NotNull
     private final Object lock = new Object();
     @NotNull
-    private final Comparator<QueueInfo> queueInfoComparator = (o1, o2) -> (int) (o2.getAttempt() - o1.getAttempt());
+    private final Comparator<QueueInfo> queueInfoComparator =
+            (o1, o2) -> Long.compare(o2.getAttempt(), o1.getAttempt());
 
     @NotNull
     private static String createSearchKey(@Nullable String mailid, @Nullable String recipient) {
@@ -35,27 +36,28 @@ public class SimpleQueueStore implements QueueStore {
         Objects.requireNonNull(recipients, "recipients");
 
         try {
-            for (InternetAddress recipient : recipients) {
+            recipients.forEach(recipient -> {
                 QueueInfo queueInfo = new QueueInfo();
                 queueInfo.setExpiry(expiry);
                 queueInfo.setMailid(mailid);
                 queueInfo.setRecipient(recipient.getAddress());
+
                 synchronized (lock) {
-
                     queueInfoList.add(queueInfo);
-
                     queueInfoByMailidAndRecipient.put(createSearchKey(queueInfo.getMailid(), queueInfo.getRecipient()), queueInfo);
 
                     if (!queueInfoByMailid.containsKey(queueInfo.getMailid()))
                         queueInfoByMailid.put(queueInfo.getMailid(), new ArrayList<>());
+
                     queueInfoByMailid.get(queueInfo.getMailid()).add(queueInfo);
 
                     if (!queueInfoByRecipient.containsKey(queueInfo.getRecipient()))
                         queueInfoByRecipient.put(queueInfo.getRecipient(), new ArrayList<>());
+
                     queueInfoByRecipient.get(queueInfo.getRecipient()).add(queueInfo);
 
                 }
-            }
+            });
         } catch (RuntimeException e) {
             throw new MessagingException("Message queueing failed: " + mailid, e);
         }
@@ -65,17 +67,22 @@ public class SimpleQueueStore implements QueueStore {
     @Override
     public List<String> clean() {
         List<String> mailidList;
+
         synchronized (lock) {
             mailidList = new ArrayList<>(queueInfoByMailid.keySet());
         }
+
         Iterator<String> mailidIt = mailidList.iterator();
+
         while (mailidIt.hasNext()) {
             String mailid = mailidIt.next();
+
             if (isCompleted(mailid)) {
                 remove(mailid);
                 mailidIt.remove();
             }
         }
+
         return mailidList;
     }
 
@@ -106,7 +113,7 @@ public class SimpleQueueStore implements QueueStore {
 
     @Override
     public boolean isCompleted(@Nullable String mailid) {
-        List<QueueInfo> qibmList = queueInfoByMailid.get(mailid);
+        Collection<QueueInfo> qibmList = queueInfoByMailid.get(mailid);
 
         if (qibmList != null)
             return qibmList.stream().noneMatch(sqi -> sqi.hasState(DeliveryState.IN_PROGRESS, DeliveryState.QUEUED));
@@ -117,7 +124,7 @@ public class SimpleQueueStore implements QueueStore {
     @Override
     @Nullable
     public QueueInfo next() {
-        Collections.sort(queueInfoList, queueInfoComparator);
+        queueInfoList.sort(queueInfoComparator);
 
         if (!queueInfoList.isEmpty())
             synchronized (lock) {
@@ -126,6 +133,7 @@ public class SimpleQueueStore implements QueueStore {
                         if (!qi.isInTimeBounds()) {
                             if (qi.getResultInfo() == null || qi.getResultInfo().isEmpty())
                                 qi.setResultInfo("Delivery is out of time or attempt.");
+
                             qi.setState(DeliveryState.FAILED);
                             setSendingResult(qi);
                         } else {
@@ -143,10 +151,10 @@ public class SimpleQueueStore implements QueueStore {
         synchronized (lock) {
             Iterable<QueueInfo> removeableQueueInfos = queueInfoByMailid.remove(mailid);
 
-            if (removeableQueueInfos != null) for (QueueInfo sqi : removeableQueueInfos) {
+            if (removeableQueueInfos != null) removeableQueueInfos.forEach(sqi -> {
                 queueInfoByMailidAndRecipient.remove(createSearchKey(sqi.getMailid(), sqi.getRecipient()));
                 queueInfoByRecipient.get(sqi.getRecipient()).remove(sqi);
-            }
+            });
         }
     }
 
@@ -155,10 +163,10 @@ public class SimpleQueueStore implements QueueStore {
         synchronized (lock) {
             Iterable<QueueInfo> removeableQueueInfos = queueInfoByRecipient.remove(recipient);
 
-            if (removeableQueueInfos != null) for (QueueInfo sqi : removeableQueueInfos) {
+            if (removeableQueueInfos != null) removeableQueueInfos.forEach(sqi -> {
                 queueInfoByMailidAndRecipient.remove(createSearchKey(sqi.getMailid(), sqi.getRecipient()));
                 queueInfoByMailid.get(sqi.getMailid()).remove(sqi);
-            }
+            });
         }
     }
 

@@ -1,5 +1,7 @@
 package org.masukomi.aspirin.core.config;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.masukomi.aspirin.core.store.mail.FileMailStore;
 import org.masukomi.aspirin.core.store.mail.SimpleMailStore;
 
@@ -12,21 +14,21 @@ import javax.mail.Transport;
  * @author Laszlo Solova
  */
 public interface ConfigurationMBean {
-    String PARAM_DELIVERY_ATTEMPT_DELAY = "aspirin.delivery.attempt.delay";
-    String PARAM_DELIVERY_ATTEMPT_COUNT = "aspirin.delivery.attempt.count";
-    String PARAM_DELIVERY_BOUNCE_ON_FAILURE = "aspirin.delivery.bounce-on-failure";
-    String PARAM_DELIVERY_DEBUG = "aspirin.delivery.debug";
-    String PARAM_DELIVERY_EXPIRY = "aspirin.delivery.expiry";
-    String PARAM_DELIVERY_THREADS_ACTIVE_MAX = "aspirin.delivery.threads.active.max";
-    String PARAM_DELIVERY_THREADS_IDLE_MAX = "aspirin.delivery.threads.idle.max";
-    String PARAM_DELIVERY_TIMEOUT = "aspirin.delivery.timeout";
-    String PARAM_ENCODING = "aspirin.encoding";
-    String PARAM_HOSTNAME = "aspirin.hostname";
-    String PARAM_LOGGER_NAME = "aspirin.logger.name";
-    String PARAM_LOGGER_PREFIX = "aspirin.logger.prefix";
-    String PARAM_POSTMASTER_EMAIL = "aspirin.postmaster.email";
-    String PARAM_MAILSTORE_CLASS = "aspirin.mailstore.class";
-    String PARAM_QUEUESTORE_CLASS = "aspirin.queuestore.class";
+    @NotNull String PARAM_DELIVERY_ATTEMPT_DELAY = "aspirin.delivery.attempt.delay";
+    @NotNull String PARAM_DELIVERY_ATTEMPT_COUNT = "aspirin.delivery.attempt.count";
+    @NotNull String PARAM_DELIVERY_BOUNCE_ON_FAILURE = "aspirin.delivery.bounce-on-failure";
+    @NotNull String PARAM_DELIVERY_DEBUG = "aspirin.delivery.debug";
+    @NotNull String PARAM_DELIVERY_EXPIRY = "aspirin.delivery.expiry";
+    @NotNull String PARAM_DELIVERY_THREADS_ACTIVE_MAX = "aspirin.delivery.threads.active.max";
+    @NotNull String PARAM_DELIVERY_THREADS_IDLE_MAX = "aspirin.delivery.threads.idle.max";
+    @NotNull String PARAM_DELIVERY_TIMEOUT = "aspirin.delivery.timeout";
+    @NotNull String PARAM_ENCODING = "aspirin.encoding";
+    @NotNull String PARAM_HOSTNAME = "aspirin.hostname";
+    @NotNull String PARAM_LOGGER_NAME = "aspirin.logger.name";
+    @NotNull String PARAM_LOGGER_PREFIX = "aspirin.logger.prefix";
+    @NotNull String PARAM_POSTMASTER_EMAIL = "aspirin.postmaster.email";
+    @NotNull String PARAM_MAILSTORE_CLASS = "aspirin.mailstore.class";
+    @NotNull String PARAM_QUEUESTORE_CLASS = "aspirin.queuestore.class";
 
     /**
      * Value of never expiration. If an email expire is marked with this value,
@@ -101,6 +103,7 @@ public interface ConfigurationMBean {
     /**
      * @return The name of MIME encoding of emails.
      */
+    @Nullable
     String getEncoding();
 
     /**
@@ -126,6 +129,7 @@ public interface ConfigurationMBean {
     /**
      * @return The name of the logger.
      */
+    @Nullable
     String getLoggerName();
 
     /**
@@ -139,6 +143,7 @@ public interface ConfigurationMBean {
     /**
      * @return The prefix appended to the start of the log entries.
      */
+    @Nullable
     String getLoggerPrefix();
 
     /**
@@ -147,12 +152,13 @@ public interface ConfigurationMBean {
      *
      * @param loggerPrefix The prefix string.
      */
-    void setLoggerPrefix(String loggerPrefix);
+    void setLoggerPrefix(@Nullable String loggerPrefix);
 
     /**
      * @return The directory object's class name where the mimemessage objects
      * could be stored.
      */
+    @Nullable
     String getMailStoreClassName();
 
     /**
@@ -161,11 +167,12 @@ public interface ConfigurationMBean {
      *
      * @param className mail store class
      */
-    void setMailStoreClassName(String className);
+    void setMailStoreClassName(@Nullable String className);
 
     /**
      * @return The email address of the postmaster.
      */
+    @NotNull
     String getPostmasterEmail();
 
     /**
@@ -174,12 +181,13 @@ public interface ConfigurationMBean {
      *
      * @param emailAddress The email address of postmaster.
      */
-    void setPostmasterEmail(String emailAddress);
+    void setPostmasterEmail(@Nullable String emailAddress);
 
     /**
      * @return The directory object's class name where the email informations
      * could be stored.
      */
+    @Nullable
     String getQueueStoreClassName();
 
     /**
@@ -188,11 +196,12 @@ public interface ConfigurationMBean {
      *
      * @param className queue store class
      */
-    void setQueueStoreClassName(String className);
+    void setQueueStoreClassName(@Nullable String className);
 
     /**
      * @return The hostname of this server. It is used in HELO SMTP command.
      */
+    @Nullable
     String getHostname();
 
     /**
@@ -203,7 +212,7 @@ public interface ConfigurationMBean {
      *
      * @param hostname The name of this server or application.
      */
-    void setHostname(String hostname);
+    void setHostname(@Nullable String hostname);
 
     /**
      * @return If true, then a bounce email will be send to postmaster on
@@ -230,5 +239,4 @@ public interface ConfigurationMBean {
      * @param debug If true, then the full communication will be logged.
      */
     void setDeliveryDebug(boolean debug);
-
 }

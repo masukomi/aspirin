@@ -1,48 +1,39 @@
 /**
  * MS.java
- * 
- * 
+ * <p>
+ * <p>
  * Created: Thu Sep 2 18:05:35 2004
- * 
+ *
  * @author <a href="mailto:shiva@int">Shiva Chaudhuri </a>
  * @version 1.0
  */
 package org.masukomi.aspirin.core;
 
+import org.junit.Assert;
+import org.masukomi.aspirin.Aspirin;
+
 import javax.mail.Message;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import org.masukomi.aspirin.Aspirin;
-
 public class MS {
-	public MS() {
-
-	}
-
-	public static void main(String[] args) {
-		try {
-			System.out.println("starting");
-			MimeMessage message = AspirinInternal.createNewMimeMessage();
-
-			message.setFrom(new InternetAddress(
-					"jUnit-aspirin-test@masukomi.org"));
-			message.addRecipient(Message.RecipientType.TO, new InternetAddress(
-					"aspirin-test@masukomi.org"));
-			message.setSubject("Aspirin - test to show it doesn't shut down");
-			message.setText("This is the text");
-			Aspirin.add(message);
-			System.out.println("queing mail");
-			Aspirin.shutdown();
-			System.out.println("shutting down");
-
-			
-		} catch (Exception ex) {
-			ex.printStackTrace();
-
-		}
-
-	}
+    public static void main(String[] args) {
+        try {
+            System.out.println("starting");
+            MimeMessage message = AspirinInternal.createNewMimeMessage();
+            message.setFrom(new InternetAddress("jUnit-aspirin-test@masukomi.org"));
+            message.addRecipient(Message.RecipientType.TO, new InternetAddress("aspirin-test@masukomi.org"));
+            message.setSubject("Aspirin - test to show it doesn't shut down");
+            message.setText("This is the text");
+            Aspirin.add(message);
+            System.out.println("queing mail");
+            Aspirin.shutdown();
+            System.out.println("shutting down");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Assert.fail();
+        }
+    }
 
 //	/**
 //	 * Flush pending messages and shut down queue. Ideally, a mail queue should

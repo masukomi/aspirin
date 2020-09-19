@@ -4,16 +4,14 @@ import junit.framework.TestCase;
 
 /**
  * <p>Test of RemoteDelivery object pool in QueueManager.</p>
- *
  */
 public class DefunctGenericObjectPoolTest extends TestCase {
+    public static void main(String[] args) {
+    }
 
-	public static void main(String[] args) {
-	}
-
-	public void testPoolObject() throws Exception {
+    public void testPoolObject() {
 //		DeliveryManager dM = AspirinInternal.getDeliveryManager();
-		
+
 //		
 //		QueManager qm = new QueManager(new MailQue());
 //		ObjectPool qmPool = qm.getRemoteDeliveryObjectPool();
@@ -38,6 +36,6 @@ public class DefunctGenericObjectPoolTest extends TestCase {
 //		qmPool.returnObject(rd3);
 //
 //		qmPool.clear();
-	}
+    }
 
 }

@@ -13,7 +13,6 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.net.ConnectException;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Properties;
@@ -113,10 +112,9 @@ public class SendMessage implements DeliveryHandler {
                 }
             } catch (MessagingException me) {
                 String exMessage = resolveException(me).getMessage();
-                if ('5' == exMessage.charAt(0))
-                    throw new DeliveryException(exMessage, true);
-                else
-                    throw new DeliveryException(exMessage, false);
+
+                if ('5' == exMessage.charAt(0)) throw new DeliveryException(exMessage, true);
+                else throw new DeliveryException(exMessage, false);
             }
         }
 

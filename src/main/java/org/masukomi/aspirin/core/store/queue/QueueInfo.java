@@ -30,8 +30,7 @@ public class QueueInfo {
     private String qiToString;
 
     public String getComplexId() {
-        if (complexId == null)
-            complexId = mailid + "-" + recipient;
+        if (complexId == null) complexId = mailid + "-" + recipient;
         return complexId;
     }
 

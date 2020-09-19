@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <preferences EXTERNAL_XML_VERSION="1.0">
-  <root type="file">
-    <map />
-    <node name="root">
-      <map>
-        <entry key="maxAttempts" value="1" group="" />
-        <entry key="postmaster" value="root@localhost" group="" />
-        <entry key="deliveryThreads" value="1" group="" />
-        <entry key="retryInterval" value="60000" group="" />
-      </map>
-    </node>
-  </root>
+    <root type="file">
+        <map/>
+        <node name="root">
+            <map>
+                <entry key="maxAttempts" value="1" group=""/>
+                <entry key="postmaster" value="root@localhost" group=""/>
+                <entry key="deliveryThreads" value="1" group=""/>
+                <entry key="retryInterval" value="60000" group=""/>
+            </map>
+        </node>
+    </root>
 </preferences>
-

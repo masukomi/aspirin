@@ -4,7 +4,7 @@ import org.masukomi.aspirin.core.AspirinInternal;
 import org.masukomi.aspirin.core.store.mail.MailStore;
 import org.masukomi.aspirin.core.store.queue.QueueStore;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * This is a maintenance thread, to clean up stores - remove all finished
@@ -23,6 +23,7 @@ public class DeliveryMaintenanceThread extends Thread {
     public void run() {
         AspirinInternal.getLogger().info("Maintenance thread started.");
         running = true;
+
         while (running) {
             try {
                 synchronized (this) {
@@ -32,12 +33,13 @@ public class DeliveryMaintenanceThread extends Thread {
                 running = false;
                 AspirinInternal.getLogger().info("Maintenance thread goes down.");
             }
+
             // Maintain queues in every hour
             try {
                 QueueStore queueStore = AspirinInternal.getConfiguration().getQueueStore();
                 MailStore mailStore = AspirinInternal.getConfiguration().getMailStore();
-                List<String> usedMailIds = queueStore.clean();
-                List<String> mailStoreMailIds = mailStore.getMailIds();
+                Collection<String> usedMailIds = queueStore.clean();
+                Collection<String> mailStoreMailIds = mailStore.getMailIds();
 
                 AspirinInternal.getLogger().debug(
                         "Maintenance running: usedMailIds: {}, mailStoreMailIds: {}.",
@@ -53,6 +55,7 @@ public class DeliveryMaintenanceThread extends Thread {
 
     public void shutdown() {
         running = false;
+
         synchronized (this) {
             notifyAll();
         }

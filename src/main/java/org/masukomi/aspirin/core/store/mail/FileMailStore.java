@@ -9,6 +9,7 @@ import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 import java.io.*;
 import java.lang.ref.WeakReference;
+import java.nio.file.Files;
 import java.util.*;
 
 /**
@@ -99,7 +100,14 @@ public class FileMailStore implements MailStore {
 
             synchronized (messagePathMap) {
                 File file = new File(messagePathMap.get(mailid));
-                file.delete();
+
+                try {
+                    Files.delete(file.toPath());
+                } catch (IOException e) {
+                    AspirinInternal.getConfiguration().getLogger().error(
+                            getClass().getSimpleName() + " Could not write file for name " + mailid, e);
+                }
+
                 messagePathMap.remove(mailid);
             }
         }
@@ -126,27 +134,28 @@ public class FileMailStore implements MailStore {
         // Save information
         try {
             File msgFile = new File(filepath);
-            if (msgFile.exists()) {
-                msgFile.delete();
-            }
-            if (!msgFile.exists()) {
-                msgFile.createNewFile();
-            }
+            if (msgFile.exists()) Files.delete(msgFile.toPath());
+            if (!msgFile.exists()) msgFile.createNewFile();
             msg.writeTo(new FileOutputStream(msgFile));
+
             synchronized (messageMap) {
                 messageMap.put(mailid, new WeakReference<>(msg));
                 messagePathMap.put(mailid, filepath);
             }
         } catch (FileNotFoundException e) {
-            AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName() + " No file representation found for name " + mailid, e);
+            AspirinInternal.getConfiguration().getLogger().error(
+                    getClass().getSimpleName() + " No file representation found for name " + mailid, e);
         } catch (IOException e) {
-            AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName() + " Could not write file for name " + mailid, e);
+            AspirinInternal.getConfiguration().getLogger().error(
+                    getClass().getSimpleName() + " Could not write file for name " + mailid, e);
         } catch (MessagingException e) {
-            AspirinInternal.getConfiguration().getLogger().error(getClass().getSimpleName() + " There is a messaging exception with name " + mailid, e);
+            AspirinInternal.getConfiguration().getLogger().error(
+                    getClass().getSimpleName() + " There is a messaging exception with name " + mailid, e);
         }
     }
 
-    public @Nullable File getRootDir() {
+    @Nullable
+    public File getRootDir() {
         return rootDir;
     }
 

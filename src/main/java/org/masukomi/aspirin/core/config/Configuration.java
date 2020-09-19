@@ -468,6 +468,7 @@ public class Configuration implements ConfigurationMBean {
         }
     }
 
+    @Nullable
     @Override
     public String getMailStoreClassName() {
         return (String) configParameters.get(PARAM_MAILSTORE_CLASS);
@@ -481,6 +482,7 @@ public class Configuration implements ConfigurationMBean {
 //		this.mailStoreClassName = className;
     }
 
+    @Nullable
     @Override
     public String getQueueStoreClassName() {
         return (String) configParameters.get(PARAM_QUEUESTORE_CLASS);

@@ -58,7 +58,7 @@ public class AspirinInternal {
     /**
      * This counter is used to generate unique message ids.
      */
-    private static Integer idCounter = 0;
+    private static int idCounter;
 
     /**
      * You can get configuration object, which could be changed to set up new
@@ -143,15 +143,18 @@ public class AspirinInternal {
             defaultSession.set(Session.getDefaultInstance(System.getProperties()));
 
         MimeMessage mMesg = new MimeMessage(defaultSession.get());
+
         synchronized (idCounterLock) {
             long nowTime = System.currentTimeMillis() / 1000L;
             String newId = nowTime + "." + Integer.toHexString(idCounter++);
+
             try {
                 mMesg.setHeader(Aspirin.HEADER_MAIL_ID, newId);
             } catch (MessagingException msge) {
                 getLogger().warn("Aspirin Mail ID could not be generated.", msge);
             }
         }
+
         return mMesg;
     }
 
@@ -208,8 +211,7 @@ public class AspirinInternal {
 
         try {
             headers = message.getHeader(Aspirin.HEADER_MAIL_ID);
-            if (headers != null && 0 < headers.length)
-                return headers[0];
+            if (headers != null && 0 < headers.length) return headers[0];
         } catch (MessagingException e) {
             getLogger().error("MailID header could not be get from MimeMessage.", e);
         }
@@ -227,20 +229,20 @@ public class AspirinInternal {
         String[] headers;
         try {
             headers = message.getHeader(Aspirin.HEADER_EXPIRY);
-            if (headers != null && 0 < headers.length)
-                return expiryFormat.parse(headers[0]).getTime();
+            if (headers != null && 0 < headers.length) return expiryFormat.parse(headers[0]).getTime();
         } catch (ParseException | MessagingException e) {
             getLogger().error("Expiration header could not be get from MimeMessage.", e);
         }
-        if (configuration.getExpiry() == ConfigurationMBean.NEVER_EXPIRES)
-            return Long.MAX_VALUE;
+
+        if (configuration.getExpiry() == ConfigurationMBean.NEVER_EXPIRES) return Long.MAX_VALUE;
+
         try {
             Date sentDate = message.getReceivedDate();
-            if (sentDate != null)
-                return sentDate.getTime() + configuration.getExpiry();
+            if (sentDate != null) return sentDate.getTime() + configuration.getExpiry();
         } catch (MessagingException e) {
             getLogger().error("Expiration calculation could not be based on message date.", e);
         }
+
         return System.currentTimeMillis() + configuration.getExpiry();
     }
 
@@ -264,6 +266,7 @@ public class AspirinInternal {
         return deliveryManager;
     }
 
+    @NotNull
     public static ListenerManager getListenerManager() {
         return listenerManager.get();
     }
@@ -271,5 +274,4 @@ public class AspirinInternal {
     public static void shutdown() {
         deliveryManager.shutdown();
     }
-
 }

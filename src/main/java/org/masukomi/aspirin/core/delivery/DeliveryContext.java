@@ -38,7 +38,8 @@ public class DeliveryContext {
         return this;
     }
 
-    public @Nullable MimeMessage getMessage() {
+    @Nullable
+    public MimeMessage getMessage() {
         return message;
     }
 
@@ -47,7 +48,8 @@ public class DeliveryContext {
         return this;
     }
 
-    public @Nullable Session getMailSession() {
+    @Nullable
+    public Session getMailSession() {
         return mailSession;
     }
 
@@ -57,7 +59,8 @@ public class DeliveryContext {
         return this;
     }
 
-    public @NotNull Map<String, Object> getContextVariables() {
+    @NotNull
+    public Map<String, Object> getContextVariables() {
         return contextVariables;
     }
 
@@ -83,6 +86,7 @@ public class DeliveryContext {
             ctxToString = getClass().getSimpleName() + " [" +
                     "qi=" + queueInfo +
                     "]; ";
+
         return ctxToString;
     }
 }

@@ -174,6 +174,7 @@ public final class DeliveryManager extends Thread implements ConfigurationChange
                 } else {
                     if (AspirinInternal.getLogger().isTraceEnabled() && 0 < queueStore.size())
                         AspirinInternal.getLogger().trace("DeliveryManager.run(): There is no sendable item in the queue. Fallback to waiting state for a minute.");
+
                     synchronized (this) {
                         try {
                             /*
@@ -188,8 +189,7 @@ public final class DeliveryManager extends Thread implements ConfigurationChange
                 }
 
             } catch (UnsupportedOperationException t) {
-                if (qi != null)
-                    release(qi);
+                if (qi != null) release(qi);
             }
 
         }
@@ -233,6 +233,7 @@ public final class DeliveryManager extends Thread implements ConfigurationChange
     @Override
     public void configChanged(@NotNull String parameterName) {
         Objects.requireNonNull(parameterName, "parameterName");
+
         synchronized (mailingLock) {
             if (parameterName.equals(ConfigurationMBean.PARAM_MAILSTORE_CLASS))
                 mailStore = AspirinInternal.getConfiguration().getMailStore();
@@ -253,12 +254,14 @@ public final class DeliveryManager extends Thread implements ConfigurationChange
 
     public void shutdown() {
         running = false;
+
         try {
             deliveryThreadObjectPool.close();
             deliveryThreadObjectPool.clear();
         } catch (Exception e) {
             AspirinInternal.getLogger().error("DeliveryManager.shutdown() failed.", e);
         }
+
         maintenanceThread.shutdown();
     }
 }

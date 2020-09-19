@@ -42,6 +42,7 @@ public class DnsResolver {
     @NotNull
     public static List<URLName> getMXRecordsForHost(String hostName) {
         List<URLName> recordsColl = new Vector<>();
+
         try {
             boolean foundOriginalMX = true;
             Record[] records = new Lookup(hostName, Type.MX).run();
@@ -72,6 +73,7 @@ public class DnsResolver {
                 Arrays.sort(records, Comparator.comparingInt(arg0 -> ((MXRecord) arg0).getPriority()));
                 // Create records collection
                 recordsColl = new Vector<>(records.length);
+
                 for (Record record : records) {
                     MXRecord mx = (MXRecord) record;
                     String targetString = mx.getTarget().toString();
@@ -96,9 +98,9 @@ public class DnsResolver {
              */
             if (!foundOriginalMX) {
                 Record[] recordsTypeA = new Lookup(hostName, Type.A).run();
-                if (recordsTypeA != null && recordsTypeA.length > 0) {
+
+                if (recordsTypeA != null && recordsTypeA.length > 0)
                     recordsColl.add(0, new URLName(SMTP_PROTOCOL_PREFIX + hostName));
-                }
             }
 
         } catch (TextParseException e) {
